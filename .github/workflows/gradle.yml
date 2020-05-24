@@ -1,4 +1,4 @@
-name: "Validate SAST"
+name: "Validate SAST DEP"
 on: [push, pull_request]
 
 jobs:
@@ -18,3 +18,8 @@ jobs:
         with:
           name: sast-scan-reports
           path: reports
+      - name: Self dep-scan
+        uses: AppThreat/dep-scan-action@master
+        env:
+          VULNDB_HOME: ${{ github.workspace }}/db
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}:[]
