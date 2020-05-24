@@ -13,14 +13,18 @@ jobs:
         with:
          output: reports
          type: java,bash
-      
-      - name: Self dep-scan
-        uses: AppThreat/dep-scan-action@master
-        env:
-          VULNDB_HOME: ${{ github.workspace }}/db
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}:[]
       - name: Upload scan reports
         uses: actions/upload-artifact@v1.0.0
         with:
           name: sast-scan-reports
           path: reports
+      - name: Self dep-scan
+        uses: AppThreat/dep-scan-action@master
+        env:
+          VULNDB_HOME: ${{ github.workspace }}/db
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}:[]
+      - uses: actions/upload-artifact@v1
+        with:
+          name: reports
+          path: reports          
+          
