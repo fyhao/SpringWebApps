@@ -47,7 +47,7 @@ dependencies {
     compile("org.webjars:bootstrap:4.5.0")
     compile("org.webjars:jquery:3.5.1")
     compile("org.springframework.boot:spring-boot-starter-activemq:2.3.0.RELEASE")
-    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat:2.3.0.RELEASE'
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat:2.3.2.RELEASE'
     testCompile("org.springframework.boot:spring-boot-starter-test:2.3.0.RELEASE")
 }
 configurations {
