@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
 
 	
-	@RequestMapping(method= RequestMethod.GET, value = "/test", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	public String test() {
-		return new java.util.Date().toString();
+	@RequestMapping("/")
+	public @ResponseBody String greeting() {
+		return "Hello, World";
 	}
-}
