@@ -14,7 +14,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
-        run: ./gradlew build
+        run: 
+          - ./gradlew build
+          - ./gradlew generateLicenseReport
+          - ./gradlew dependencyCheckAnalyze
+      - uses: actions/upload-artifact@v1
+        with:
+          name: licenseDependencyReport
+          path: build/reports
       - uses: gradle/wrapper-validation-action@v1
       - name: Self dep-scan
         uses: AppThreat/dep-scan-action@master
