@@ -19,3 +19,4 @@ public class TestController {
 	public @ResponseBody String greeting() {
 		return "Hello, World";
 	}
+}
