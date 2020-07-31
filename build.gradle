@@ -1,9 +1,14 @@
 buildscript {
     repositories {
         mavenCentral()
+		maven {
+		  url "https://plugins.gradle.org/m2/"
+		}
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:2.3.2.RELEASE")
+        classpath "com.github.jk1:gradle-license-report:1.14"
+        classpath 'org.owasp:dependency-check-gradle:5.2.1'
     }
 }
 
@@ -13,6 +18,9 @@ apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: "war"
+apply plugin: "project-report"
+apply plugin: "com.github.jk1.dependency-license-report"
+apply plugin: 'org.owasp.dependencycheck'
 
 bootJar {
     baseName = 'SpringWebApps'
