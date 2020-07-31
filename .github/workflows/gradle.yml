@@ -14,10 +14,11 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
-        run: 
-          - ./gradlew build
-          - ./gradlew generateLicenseReport
-          - ./gradlew dependencyCheckAnalyze
+        run: ./gradlew build
+      - name: generateLicenseReport with Gradle
+        run: ./gradlew generateLicenseReport
+      - name: dependencyCheckAnalyze with Gradle
+        run: ./gradlew dependencyCheckAnalyze
       - uses: actions/upload-artifact@v1
         with:
           name: licenseDependencyReport
