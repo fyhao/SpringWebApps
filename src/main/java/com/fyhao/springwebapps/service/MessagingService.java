@@ -52,4 +52,12 @@ public class MessagingService {
         conv.addMessageWithInput(input);
         return 0;
     }
+    public int getMessageCount(long conversation_id) {
+        Optional<Conversation> conversation = conversationRepository.findById(conversation_id);
+        if(conversation.isEmpty()) {
+            return -1;
+        }
+        Conversation conv = conversation.get();
+        return conv.getMessages().size();
+    }
 }

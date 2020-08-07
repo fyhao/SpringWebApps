@@ -34,4 +34,9 @@ public class WebchatController {
         messagingService.sendTextMessage(id, input);
 		return "0";
     }
+    @RequestMapping("/getmessagecount")
+	public @ResponseBody int getmessagecount(@RequestParam long id) {
+        logger.info("sendmessage");
+        return messagingService.getMessageCount(id);
+    }
 }
