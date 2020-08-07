@@ -42,6 +42,6 @@ public class TestingWebApplicationTests {
         //https://8080-ad1cca16-319c-41ea-88af-31d7c741202d.ws-us02.gitpod.io/webchat/getmessagecount?id=2
         String messagecount = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getmessagecount?id=" + conversationid,
                 String.class);
-        assertThat(messagecount).contains("0");
+        assertThat(messagecount).contains("1");
 	}
 }

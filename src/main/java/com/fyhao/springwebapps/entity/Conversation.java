@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -39,10 +40,10 @@ public class Conversation implements Serializable {
     @JoinColumn(name = "contact_id")
     Contact contact;
 
-    @OneToMany(mappedBy = "conversation")
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "conversation")
     private List<Message> messages = new ArrayList<Message>();
     
-    @OneToMany(mappedBy = "conversation")
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "conversation")
     private List<Context> contexts = new ArrayList<Context>();
     public Long getId() {
         return id;
@@ -115,6 +116,7 @@ public class Conversation implements Serializable {
         Context context = new Context();
         context.setKey(key);
         context.setValue(value);
+        context.setConversation(this);
         getContexts().add(context);
     }
 

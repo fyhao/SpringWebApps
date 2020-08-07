@@ -44,12 +44,13 @@ public class MessagingService {
         return conversation.getId();
     }
     public int sendTextMessage(long conversation_id, String input) {
-        Optional<Conversation> conversation = conversationRepository.findById(conversation_id);
-        if(conversation.isEmpty()) {
+        Optional<Conversation> conv = conversationRepository.findById(conversation_id);
+        if(conv.isEmpty()) {
             return 100;
         }
-        Conversation conv = conversation.get();
-        conv.addMessageWithInput(input);
+        Conversation conversation = conv.get();
+        conversation.addMessageWithInput(input);
+        conversationRepository.save(conversation);
         return 0;
     }
     public int getMessageCount(long conversation_id) {
