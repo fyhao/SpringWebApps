@@ -36,7 +36,12 @@ public class WebchatController {
     }
     @RequestMapping("/getmessagecount")
 	public @ResponseBody int getmessagecount(@RequestParam long id) {
-        logger.info("sendmessage");
+        logger.info("getmessagecount");
         return messagingService.getMessageCount(id);
+    }
+    @RequestMapping("/findcontext")
+	public @ResponseBody String findcontext(@RequestParam long id, @RequestParam String key) {
+        logger.info("findcontext");
+        return messagingService.findContext(id, key);
     }
 }

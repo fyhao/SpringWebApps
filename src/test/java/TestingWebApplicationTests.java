@@ -43,5 +43,20 @@ public class TestingWebApplicationTests {
         String messagecount = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getmessagecount?id=" + conversationid,
                 String.class);
         assertThat(messagecount).contains("1");
+        sendmessageresult = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=test1",
+                String.class);
+        assertThat(sendmessageresult).contains("0");
+        //https://8080-ad1cca16-319c-41ea-88af-31d7c741202d.ws-us02.gitpod.io/webchat/getmessagecount?id=2
+        messagecount = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getmessagecount?id=" + conversationid,
+                String.class);
+        assertThat(messagecount).contains("2");
+        String context = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/findcontext?id=" + conversationid + "&key=state",
+                String.class);
+        assertThat(context).contains("bot");
+        sendmessageresult = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=transferagent",
+                String.class);
+        context = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/findcontext?id=" + conversationid + "&key=state",
+                String.class);
+        assertThat(context).contains("agent");
 	}
 }

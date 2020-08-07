@@ -25,6 +25,9 @@ public class MessagingService {
     @Autowired
     ContactRepository contactRepository;
 
+    @Autowired
+    ChatService chatService;
+
     public long createConversation(String email) {
         Contact contact = contactRepository.findByEmail(email);
         if(contact == null) {
@@ -39,7 +42,7 @@ public class MessagingService {
         conversation.setStartTime(new Timestamp(new Date().getTime()));
         conversation.setChannel("webchat");
         conversation.setEndTime(new Timestamp(new Date().getTime()));
-        conversation.addContext("state","bot");
+        conversation.saveContext("state","bot");
         conversationRepository.save(conversation);
         return conversation.getId();
     }
@@ -49,7 +52,7 @@ public class MessagingService {
             return 100;
         }
         Conversation conversation = conv.get();
-        conversation.addMessageWithInput(input);
+        chatService.processMessage(conversation, input);
         conversationRepository.save(conversation);
         return 0;
     }
@@ -60,5 +63,13 @@ public class MessagingService {
         }
         Conversation conv = conversation.get();
         return conv.getMessages().size();
+    }
+    public String findContext(long conversation_id, String key) {
+        Optional<Conversation> conversation = conversationRepository.findById(conversation_id);
+        if(conversation.isEmpty()) {
+            return null;
+        }
+        Conversation conv = conversation.get();
+        return conv.findContext(key);
     }
 }

@@ -101,23 +101,33 @@ public class Conversation implements Serializable {
     public void setMessages(List<Message> messages) {
         this.messages = messages;
     }
-
-    public String findContext(String key) {
+    public Context findContextObject(String key) {
         List<Context> contexts = getContexts();
         if(contexts == null || contexts.isEmpty()) return null;
         Optional<Context> o = contexts.stream().filter(context -> context.key.equals(key)).findFirst();
         if(!o.isEmpty()) {
             Context context = o.get();
-            return context.getValue();
+            return context;
         }
         return null;
     }
-    public void addContext(String key, String value) {
-        Context context = new Context();
-        context.setKey(key);
-        context.setValue(value);
-        context.setConversation(this);
-        getContexts().add(context);
+    public String findContext(String key) {
+        Context obj = findContextObject(key);
+        return obj != null ? obj.getValue() : null;
+    }
+    public void saveContext(String key, String value) {
+        Context context = findContextObject(key);
+        if(context == null) {
+            context = new Context();
+            context.setKey(key);
+            context.setValue(value);
+            context.setConversation(this);
+            getContexts().add(context);
+        }
+        else {
+            context.setValue(value);
+            context.setConversation(this);
+        }
     }
 
     public void addMessageWithInput(String input) {
