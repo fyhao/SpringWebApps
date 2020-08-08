@@ -2,6 +2,8 @@ package com.fyhao.springwebapps.hook;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Map;
 
@@ -19,16 +21,26 @@ public class HookProcessor {
     @Autowired
     ApplicationContext applicationContext;
 
-    public void executeHookCC(String methodName, Conversation conversation, String input) {
-        Map<String, Object> beans = applicationContext.getBeansWithAnnotation(HookCC.class);
+    public void execute(Class clazz, String methodName, Object... objs) {
+        Map<String, Object> beans = applicationContext.getBeansWithAnnotation(clazz);
         for (Map.Entry<String, Object> entry : beans.entrySet()) {
             try {
-                Method method = entry.getValue().getClass().getDeclaredMethod(methodName, Conversation.class, String.class);
-                if (method != null) {
-                    method.invoke(entry.getValue(), conversation, input);
+                Method[] methods = entry.getValue().getClass().getDeclaredMethods();
+                for(Method method : methods) {
+                    if(method.getName().equals(methodName)) {
+                        Type[] types = method.getParameterTypes();
+                        boolean allMatched = true;
+                        for(int i = 0; i < types.length; i++) {
+                            Type type = types[i];
+                            if(!type.getTypeName().equals(objs[i].getClass().getName())) {
+                                allMatched = false;
+                            }
+                        }
+                        if(allMatched) {
+                            method.invoke(entry.getValue(), objs);
+                        }
+                    }
                 }
-            } catch (NoSuchMethodException ex) {
-                ex.printStackTrace();
             } catch (IllegalAccessException ex) {
                 ex.printStackTrace();
             } catch (IllegalArgumentException e) {
