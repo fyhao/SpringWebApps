@@ -21,34 +21,7 @@ public class ChatService {
     
     public void processCustomerMessage(Conversation conversation, String input) {
         hookProcessor.execute(HookCC.class, "preChatProcessCustomerMessage", conversation, input);
-        boolean hasFoundAgent = false;
-        boolean isTransferAgent = false;
-        if(input.equals("transferagent")) {
-            isTransferAgent = true;
-            conversation.saveContext("hint", "1");
-            String agentName = agentAvailabilityService.findAgent(conversation);
-            if(agentName != null) {
-                conversation.saveContext("state", "agent");
-                hasFoundAgent = true;
-            }
-        }
-        else if(input.equals("transferagentfail")) {
-            isTransferAgent = true;
-            conversation.saveContext("hint", "0");
-            String agentName = agentAvailabilityService.findAgent(conversation);
-            if(agentName != null) {
-                conversation.saveContext("state", "agent");
-            }
-        }
         conversation.addMessageWithInput(input);
-        if(isTransferAgent) {
-            if(hasFoundAgent) {
-                conversation.addSystemMessageWithInput("you are chatting with our agent");
-            }
-            else {
-                conversation.addSystemMessageWithInput("agent not available");
-            }
-        }
         hookProcessor.execute(HookCC.class, "postChatProcessCustomerMessage", conversation, input);
     }
     public void processSystemMessage(Conversation conversation, String input) {

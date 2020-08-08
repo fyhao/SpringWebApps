@@ -132,6 +132,17 @@ public class Conversation implements Serializable {
             context.setConversation(this);
         }
     }
+    public boolean findContextBool(String key) {
+        String value = findContext(key);
+        if(value != null && value.equals("true")) {
+            return true;
+        }
+        return false;
+    }
+    public void saveContextBool(String key, boolean value) {
+        String str = value ? "true" : "false";
+        saveContext(key, str);
+    }
 
     public void addMessageWithInput(String input) {
         Message message = new Message();
