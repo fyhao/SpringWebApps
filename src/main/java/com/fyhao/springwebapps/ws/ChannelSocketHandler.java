@@ -74,6 +74,7 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
     }
     
     public static void sendChatMessageToCustomer(String conversationid, String message) {
+        logger.info("ChannelSocketHandler.sendChatMessageToCustomer " + conversationid + " - " + message);
         ObjectMapper objectMapper = new ObjectMapper();
         for(WebSocketSession session : sessions) {
             String id = (String)session.getAttributes().get("conversationid");

@@ -1,5 +1,7 @@
 package com.fyhao.springwebapps.rest;
 
+import java.net.URLDecoder;
+
 import com.fyhao.springwebapps.service.MessagingService;
 
 import org.slf4j.Logger;
@@ -34,6 +36,7 @@ public class WebchatController {
     }
     @RequestMapping("/sendmessage")
 	public @ResponseBody String sendmessage(@RequestParam String id, @RequestParam String input) {
+        input = URLDecoder.decode(input);
         logger.info("sendmessage");
         messagingService.sendCustomerMessage(id, input);
 		return "0";
@@ -41,6 +44,7 @@ public class WebchatController {
     @RequestMapping("/sendagentmessage")
 	public @ResponseBody String sendagentmessage(@RequestParam String id, @RequestParam String agentname, @RequestParam String input) {
         logger.info("sendagentmessage");
+        input = URLDecoder.decode(input);
         messagingService.sendAgentMessage(id, agentname, input);
 		return "0";
     }

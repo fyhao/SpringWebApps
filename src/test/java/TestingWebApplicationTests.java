@@ -17,7 +17,9 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -107,15 +109,31 @@ public class TestingWebApplicationTests {
         assertThat(getlastmessagecontent(conversationid2)).contains("agent not available");
         
     }
+    
     @Test
 	public void testwebsocketconnection() throws Exception {
         CompletableFuture<String> futureConversationid = new CompletableFuture<>();
         CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
+        List<String> testCaseCust = new ArrayList<String>();
+        List<String> testCaseAns = new ArrayList<String>();
         String conversationid5 = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
+        testCaseCust.add("Hello I need help");
+        testCaseAns.add("This is abc hotel.");
+        testCaseCust.add("book hotel");
+        testCaseAns.add("When you want to book hotel?");
+        testCaseCust.add("11:00am");
+        testCaseAns.add("Confirm to book hotel on 11:00am?");
+        testCaseCust.add("yes");
+        testCaseAns.add("Thank you for booking with us. What else we can help?");
+        testCaseCust.add("do you know about abcde?");
+        testCaseAns.add("Sorry I am not understand. Will handover to agent.");
+        testCaseAns.add("hello i am sjeffers, how can i help you?");
         try {
             WebSocketClient webSocketClient = new StandardWebSocketClient();
  
             WebSocketSession webSocketSession = webSocketClient.doHandshake(new TextWebSocketHandler() {
+                int c = 0;
+                boolean isAfterSendAgent = false;
                 @Override
                 public void handleTextMessage(WebSocketSession session, TextMessage message) {
                     //LOGGER.info("received message - " + message.getPayload());
@@ -124,13 +142,29 @@ public class TestingWebApplicationTests {
                     Map<String, Object> jsonMap = springParser.parseMap(message.getPayload());
                     if(jsonMap.get("action").equals("ready")) {
                         String conversationid = (String) jsonMap.get("conversationid");
-                        sendChatMessage(session, conversationid, "Hello I need help");
+                        sendChatMessage(session, conversationid, testCaseCust.get(c));
                     }
                     else if(jsonMap.get("action").equals("chatMessageReceived")) {
                         String conversationid = (String) jsonMap.get("conversationid");
                         String content = (String)jsonMap.get("content");
                         futureConversationid.complete(conversationid);
-                        futureTestCompletion.complete("completed");
+                        if(!content.equals(testCaseAns.get(c))) {
+                            futureTestCompletion.complete("error");
+                            return;
+                        }
+                        c++;
+                        if(isAfterSendAgent) {
+                            futureTestCompletion.complete("completed");
+                            return;
+                        }
+                        if(c >= testCaseCust.size()) {
+                            // test send agent message                            
+                            sendagentmessage(conversationid5, "sjeffers", "hello i am sjeffers, how can i help you?");
+                            isAfterSendAgent = true;
+                        }
+                        else {
+                            sendChatMessage(session, conversationid, testCaseCust.get(c));
+                        }
                     }
                 }
  
@@ -203,7 +237,8 @@ public class TestingWebApplicationTests {
         sendmessage(conversationid4, "book hotel");
         assertThat(getcontext(conversationid4, "finalbookinginfo")).isNullOrEmpty();
         assertThat(getcontext(conversationid4, "botmenu")).contains("menubookhoteltime");
-        sendmessage(conversationid4, "9:00am");
+        sendmessage(conversationid4, "10:00am");
+        assertThat(getlastmessagecontent(conversationid4)).contains("Confirm to book hotel on 10:00am?");
         sendmessage(conversationid4, "no");
         assertThat(getcontext(conversationid4, "botmenu")).contains("home");
         assertThat(getcontext(conversationid4, "finalbookinginfo")).isNullOrEmpty();
