@@ -70,13 +70,19 @@ public class TestingWebApplicationTests {
         assertThat(getmessagecount(conversationid)).contains("4");
         assertThat(getmessagecount(conversationid2)).contains("1");
         assertThat(getmessagecount(conversationid3)).contains("0");
+        assertThat(getconversationendtime(conversationid)).isNullOrEmpty();
+        sendmessage(conversationid, "bye");
+        assertThat(getconversationendtime(conversationid)).isNotNull();
+        assertThat(getconversationendtime(conversationid2)).isNullOrEmpty();
+        assertThat(getcontext(conversationid, "state")).contains("end");
+        assertThat(getcontext(conversationid2, "state")).doesNotContain("end");
     }
     private String createconversation(String email) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=" + email,
                 String.class);
     }
     private void sendmessage(String conversationid, String input) {
-        this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=transferagent",
+        this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=" + input,
                 String.class);
     }
     private String getmessagecount(String conversationid) {
@@ -93,6 +99,10 @@ public class TestingWebApplicationTests {
     }
     private String getcontactscount() {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getcontactscount",
+                String.class);
+    }
+    private String getconversationendtime(String conversationid) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getconversationendtime?id=" + conversationid,
                 String.class);
     }
 }

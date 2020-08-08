@@ -53,4 +53,9 @@ public class WebchatController {
         logger.info("getcontactscount");
         return messagingService.getContactsCount();
     }
+    @RequestMapping("/getconversationendtime")
+	public @ResponseBody String getconversationendtime(@RequestParam String id) {
+        logger.info("getconversationendtime");
+        return messagingService.getConversationEndTime(id);
+    }
 }

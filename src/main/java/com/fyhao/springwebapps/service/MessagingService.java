@@ -42,7 +42,6 @@ public class MessagingService {
         conversation.setContact(contact);
         conversation.setStartTime(new Timestamp(new Date().getTime()));
         conversation.setChannel("webchat");
-        conversation.setEndTime(new Timestamp(new Date().getTime()));
         conversation.saveContext("state","bot");
         conversationRepository.save(conversation);
         return conversation.getId().toString();
@@ -83,5 +82,14 @@ public class MessagingService {
     }
     public long getContactsCount() {
         return contactRepository.count();
+    }
+    public String getConversationEndTime(String conversation_id) {
+        Optional<Conversation> conversation = conversationRepository.findById(UUID.fromString(conversation_id));
+        if(conversation.isEmpty()) {
+            return null;
+        }
+        Conversation conv = conversation.get();
+        if(conv.getEndTime() != null) return conv.getEndTime().toString();
+        return null;
     }
 }
