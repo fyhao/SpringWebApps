@@ -109,6 +109,15 @@ public class TestingWebApplicationTests {
         sendmessage(conversationid4, "yes");
         assertThat(getlastmessagecontent(conversationid4)).contains("Thank you for booking with us. What else we can help?");
         assertThat(getcontext(conversationid4, "finalbookinginfo")).contains("book time: 9:00am");
+        // conversationid4 talking to bot book second time with negative confirmation
+        assertThat(getcontext(conversationid4, "botmenu")).contains("home");
+        sendmessage(conversationid4, "book hotel");
+        assertThat(getcontext(conversationid4, "finalbookinginfo")).isNullOrEmpty();
+        assertThat(getcontext(conversationid4, "botmenu")).contains("menubookhoteltime");
+        sendmessage(conversationid4, "9:00am");
+        sendmessage(conversationid4, "no");
+        assertThat(getcontext(conversationid4, "botmenu")).contains("home");
+        assertThat(getcontext(conversationid4, "finalbookinginfo")).isNullOrEmpty();
         // conversationid4 talking to bot but bot decided handover to agent
         assertThat(getcontext(conversationid4, "state")).contains("bot");
         sendmessage(conversationid4, "do you know about abcde?");

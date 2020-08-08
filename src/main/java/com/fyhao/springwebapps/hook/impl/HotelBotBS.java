@@ -28,9 +28,18 @@ public class HotelBotBS implements BotServiceHook {
             botmenu = "home";
         }
         if(botmenu.equals("home")) {
+            conversation.saveContext("finalbookinginfo","");
             if(input.equals("book hotel")) {
                 botmenu = "menubookhoteltime";
                 messagingService.sendBotMessage(conversation.getId().toString(), "When you want to book hotel?");
+            }
+            else if(input.equals("do you know about abcde?")) {
+                messagingService.sendBotMessage(conversation.getId().toString(), "Sorry I am not understand. Will handover to agent.");
+                conversation.saveContext("hint", "1");
+                String agentName = agentAvailabilityService.findAgent(conversation);
+                if(agentName != null) {
+                    conversation.saveContext("state", "agent");
+                }
             }
             else {
                 messagingService.sendBotMessage(conversation.getId().toString(), "This is abc hotel.");
@@ -43,22 +52,13 @@ public class HotelBotBS implements BotServiceHook {
         }
         else if(botmenu.equals("menubookhoteltimeconfirm")) {
             if(input.equals("yes")) {
-                botmenu = "test";
+                botmenu = "home";
                 conversation.saveContext("finalbookinginfo", "book time: " + conversation.findContext("entitytime"));
                 messagingService.sendBotMessage(conversation.getId().toString(), "Thank you for booking with us. What else we can help?");
             }
             else {
+                botmenu = "home";
                 messagingService.sendBotMessage(conversation.getId().toString(), "Thank you see you next time.");
-            }
-        }
-        else if(botmenu.equals("test")) {
-            if(input.equals("do you know about abcde?")) {
-                messagingService.sendBotMessage(conversation.getId().toString(), "Sorry I am not understand. Will handover to agent.");
-                conversation.saveContext("hint", "1");
-                String agentName = agentAvailabilityService.findAgent(conversation);
-                if(agentName != null) {
-                    conversation.saveContext("state", "agent");
-                }
             }
         }
         conversation.saveContext("botmenu", botmenu);
