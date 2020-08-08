@@ -89,6 +89,10 @@ public class TestingWebApplicationTests {
         sendmessage(conversationid2, "transferagentfail");
         assertThat(getcontext(conversationid2, "state")).doesNotContain("agent");
         assertThat(getlastmessagecontent(conversationid2)).contains("agent not available");
+        
+    }
+    @Test
+	public void testhotelbotusecase() throws Exception {
         // conversationid4 used for full testing now
         String conversationid4 = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
         assertThat(getchannel(conversationid4)).contains("webchathotel");
