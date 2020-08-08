@@ -76,6 +76,11 @@ public class TestingWebApplicationTests {
         assertThat(getmessagecount(conversationid2)).contains("2");
         assertThat(getmessagecount(conversationid3)).contains("1");
         assertThat(getconversationendtime(conversationid)).isNullOrEmpty();
+        sendagentmessage(conversationid, "sjeffers", "I am agent how can i help u?");
+        assertThat(getmessagecount(conversationid)).contains("7");
+        assertThat(getlastmessagefromparty(conversationid)).contains("sjeffers");
+        assertThat(getlastmessagetoparty(conversationid)).contains("fyhao1@gmail.com");
+        assertThat(getlastmessagecontent(conversationid)).contains("I am agent how can i help u?");
         sendmessage(conversationid, "bye");
         assertThat(getconversationendtime(conversationid)).isNotNull();
         assertThat(getconversationendtime(conversationid2)).isNullOrEmpty();
@@ -91,6 +96,10 @@ public class TestingWebApplicationTests {
     }
     private void sendmessage(String conversationid, String input) {
         this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=" + input,
+                String.class);
+    }
+    private void sendagentmessage(String conversationid, String agentname, String input) {
+        this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendagentmessage?id=" + conversationid + "&agentname=" + agentname + "&input=" + input,
                 String.class);
     }
     private String getmessagecount(String conversationid) {

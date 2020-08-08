@@ -163,4 +163,13 @@ public class Conversation implements Serializable {
         message.setConversation(this);
         getMessages().add(message);
     }
+    public void addAgentMessageWithInput(String agentName, String input) {
+        Message message = new Message();
+        message.setContent(input);
+        message.setCreatedTime(new java.sql.Timestamp(new Date().getTime()));
+        message.setFromparty(agentName);
+        message.setToparty(this.getContact().getEmail());
+        message.setConversation(this);
+        getMessages().add(message);
+    }
 }

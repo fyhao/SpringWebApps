@@ -68,6 +68,16 @@ public class MessagingService {
         conversationRepository.save(conversation);
         return 0;
     }
+    public int sendAgentMessage(String conversation_id, String agentName, String input) {
+        Optional<Conversation> conv = conversationRepository.findById(UUID.fromString(conversation_id));
+        if(conv.isEmpty()) {
+            return 100;
+        }
+        Conversation conversation = conv.get();
+        chatService.processAgentMessage(conversation, agentName, input);
+        conversationRepository.save(conversation);
+        return 0;
+    }
     public int getMessageCount(String conversation_id) {
         Optional<Conversation> conversation = conversationRepository.findById(UUID.fromString(conversation_id));
         if(conversation.isEmpty()) {

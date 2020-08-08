@@ -27,4 +27,7 @@ public class ChatService {
         conversation.addSystemMessageWithInput(input);
         hookProcessor.execute(HookCS.class, "postChatProcessSystemMessage", conversation, input);
     }
+    public void processAgentMessage(Conversation conversation, String agentName, String input) {
+        conversation.addAgentMessageWithInput(agentName, input);
+    }
 }

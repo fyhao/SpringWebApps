@@ -33,6 +33,12 @@ public class WebchatController {
         messagingService.sendCustomerMessage(id, input);
 		return "0";
     }
+    @RequestMapping("/sendagentmessage")
+	public @ResponseBody String sendagentmessage(@RequestParam String id, @RequestParam String agentname, @RequestParam String input) {
+        logger.info("sendagentmessage");
+        messagingService.sendAgentMessage(id, agentname, input);
+		return "0";
+    }
     @RequestMapping("/getmessagecount")
 	public @ResponseBody int getmessagecount(@RequestParam String id) {
         logger.info("getmessagecount");
