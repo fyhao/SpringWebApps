@@ -80,6 +80,8 @@ public class TestingWebApplicationTests {
         assertThat(getconversationendtime(conversationid2)).isNullOrEmpty();
         assertThat(getcontext(conversationid, "state")).contains("end");
         assertThat(getcontext(conversationid2, "state")).doesNotContain("end");
+        sendmessage(conversationid2, "transferagentfail");
+        assertThat(getcontext(conversationid2, "state")).doesNotContain("agent");
     }
     private String createconversation(String email) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=" + email,
