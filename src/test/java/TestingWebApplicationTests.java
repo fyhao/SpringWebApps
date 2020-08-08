@@ -65,6 +65,12 @@ public class TestingWebApplicationTests {
         sendmessage(conversationid, "hello");
         assertThat(getmessagecount(conversationid)).contains("4");
         assertThat(getmessagecount(conversationid2)).contains("1");
+        String conversationid3 = createconversation("fyhao2@gmail.com");
+        assertThat(getcontactscount()).contains("2");
+        assertThat(getchannel(conversationid2)).contains("webchat");
+        assertThat(getmessagecount(conversationid)).contains("4");
+        assertThat(getmessagecount(conversationid2)).contains("1");
+        assertThat(getmessagecount(conversationid3)).contains("0");
     }
     private String createconversation(String email) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=" + email,
