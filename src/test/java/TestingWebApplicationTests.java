@@ -53,10 +53,16 @@ public class TestingWebApplicationTests {
         String context = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/findcontext?id=" + conversationid + "&key=state",
                 String.class);
         assertThat(context).contains("bot");
-        sendmessageresult = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=transferagent",
-                String.class);
-        context = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/findcontext?id=" + conversationid + "&key=state",
-                String.class);
+        sendmessage(conversationid, "transferagent");
+        context = getcontext(conversationid);
         assertThat(context).contains("agent");
-	}
+    }
+    private void sendmessage(String conversationid, String input) {
+        String sendmessageresult = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=transferagent",
+                String.class);
+    }
+    private String getcontext(String conversationid) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/findcontext?id=" + conversationid + "&key=state",
+                String.class);
+    }
 }
