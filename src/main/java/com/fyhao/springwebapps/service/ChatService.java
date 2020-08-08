@@ -1,11 +1,9 @@
 package com.fyhao.springwebapps.service;
 
-import java.util.Date;
-
 import com.fyhao.springwebapps.entity.Conversation;
 import com.fyhao.springwebapps.hook.HookCC;
+import com.fyhao.springwebapps.hook.HookCS;
 import com.fyhao.springwebapps.hook.HookProcessor;
-import com.fyhao.springwebapps.util.Util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +23,8 @@ public class ChatService {
         hookProcessor.execute(HookCC.class, "postChatProcessCustomerMessage", conversation, input);
     }
     public void processSystemMessage(Conversation conversation, String input) {
+        hookProcessor.execute(HookCS.class, "preChatProcessSystemMessage", conversation, input);
         conversation.addSystemMessageWithInput(input);
+        hookProcessor.execute(HookCS.class, "postChatProcessSystemMessage", conversation, input);
     }
 }
