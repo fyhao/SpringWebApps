@@ -21,14 +21,14 @@ public class BotCC implements ChatCustomerHook {
     BotService botService;
     @Override
     public void preChatProcessCustomerMessage(Conversation conversation, String input) {
-        String state = conversation.findContext("state");
-        if(state == null || !state.equals("bot")) return;
-        botService.processCustomerMessage(conversation, input);
+        
     }
 
     @Override
     public void postChatProcessCustomerMessage(Conversation conversation, String input) {
-       
+        String state = conversation.findContext("state");
+        if(state == null || !state.equals("bot")) return;
+        botService.processCustomerMessage(conversation, input);
     }
     
 }

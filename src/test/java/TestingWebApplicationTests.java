@@ -89,9 +89,28 @@ public class TestingWebApplicationTests {
         sendmessage(conversationid2, "transferagentfail");
         assertThat(getcontext(conversationid2, "state")).doesNotContain("agent");
         assertThat(getlastmessagecontent(conversationid2)).contains("agent not available");
+        // conversationid4 used for full testing now
+        String conversationid4 = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
+        assertThat(getchannel(conversationid4)).contains("webchathotel");
+        assertThat(getcontext(conversationid4, "state")).contains("bot");
+        // talking to bot
+        sendmessage(conversationid4, "hello");
+        assertThat(getlastmessagecontent(conversationid4)).contains("This is abc hotel.");
+        assertThat(getlastmessagefromparty(conversationid4)).contains("bot");
+        assertThat(getlastmessagetoparty(conversationid4)).contains("fyhao1@gmail.com");
+        assertThat(getcontext(conversationid4, "botmenu")).contains("home");
+        sendmessage(conversationid4, "book hotel");
+        assertThat(getlastmessagecontent(conversationid4)).contains("When you want to book hotel?");
+        assertThat(getcontext(conversationid4, "botmenu")).contains("menubookhoteltime");
+        assertThat(getlastmessagefromparty(conversationid4)).contains("bot");
+        assertThat(getlastmessagetoparty(conversationid4)).contains("fyhao1@gmail.com");
     }
     private String createconversation(String email) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=" + email,
+                String.class);
+    }
+    private String createconversationwithchannel(String email, String channel) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversationwithchannel?email=" + email + "&channel=" + channel,
                 String.class);
     }
     private void sendmessage(String conversationid, String input) {
@@ -100,6 +119,10 @@ public class TestingWebApplicationTests {
     }
     private void sendagentmessage(String conversationid, String agentname, String input) {
         this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendagentmessage?id=" + conversationid + "&agentname=" + agentname + "&input=" + input,
+                String.class);
+    }
+    private void sendbotmessage(String conversationid, String input) {
+        this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendbotmessage?id=" + conversationid + "&input=" + input,
                 String.class);
     }
     private String getmessagecount(String conversationid) {

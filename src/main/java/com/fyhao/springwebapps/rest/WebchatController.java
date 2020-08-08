@@ -27,6 +27,11 @@ public class WebchatController {
         logger.info("createconversation");
         return messagingService.createConversation(email);
     }
+    @RequestMapping("/createconversationwithchannel")
+	public @ResponseBody String createconversationwithchannel(@RequestParam String email, @RequestParam String channel) {
+        logger.info("createconversationwithchannel");
+        return messagingService.createConversation(email, channel);
+    }
     @RequestMapping("/sendmessage")
 	public @ResponseBody String sendmessage(@RequestParam String id, @RequestParam String input) {
         logger.info("sendmessage");

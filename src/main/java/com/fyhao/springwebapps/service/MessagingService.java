@@ -11,13 +11,15 @@ import com.fyhao.springwebapps.model.ContactRepository;
 import com.fyhao.springwebapps.model.ConversationRepository;
 import com.fyhao.springwebapps.model.MessageRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 
 @Service
 public class MessagingService {
-    
+    static Logger logger = LoggerFactory.getLogger(MessagingService.class);
     @Autowired
     ConversationRepository conversationRepository;
     
@@ -31,6 +33,9 @@ public class MessagingService {
     ChatService chatService;
 
     public String createConversation(String email) {
+        return createConversation(email, "webchat");
+    }
+    public String createConversation(String email, String channel) {
         Contact contact = contactRepository.findByEmail(email);
         if(contact == null) {
             contact = new Contact();
@@ -42,7 +47,7 @@ public class MessagingService {
         Conversation conversation = new Conversation();
         conversation.setContact(contact);
         conversation.setStartTime(new Timestamp(new Date().getTime()));
-        conversation.setChannel("webchat");
+        conversation.setChannel(channel);
         conversation.saveContext("state","bot");
         conversationRepository.save(conversation);
         sendSystemMessage(conversation.getId().toString(), "Hi welcome " + contact.getEmail());
@@ -75,6 +80,16 @@ public class MessagingService {
         }
         Conversation conversation = conv.get();
         chatService.processAgentMessage(conversation, agentName, input);
+        conversationRepository.save(conversation);
+        return 0;
+    }
+    public int sendBotMessage(String conversation_id, String input) {
+        Optional<Conversation> conv = conversationRepository.findById(UUID.fromString(conversation_id));
+        if(conv.isEmpty()) {
+            return 100;
+        }
+        Conversation conversation = conv.get();
+        chatService.processBotMessage(conversation, input);
         conversationRepository.save(conversation);
         return 0;
     }

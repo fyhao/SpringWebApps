@@ -30,4 +30,7 @@ public class ChatService {
     public void processAgentMessage(Conversation conversation, String agentName, String input) {
         conversation.addAgentMessageWithInput(agentName, input);
     }
+    public void processBotMessage(Conversation conversation, String input) {
+        conversation.addBotMessageWithInput(input);
+    }
 }
