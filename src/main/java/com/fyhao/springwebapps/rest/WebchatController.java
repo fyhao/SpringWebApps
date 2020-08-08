@@ -44,4 +44,9 @@ public class WebchatController {
         logger.info("findcontext");
         return messagingService.findContext(id, key);
     }
+    @RequestMapping("/findchannel")
+	public @ResponseBody String findchannel(@RequestParam long id) {
+        logger.info("findchannel");
+        return messagingService.findChannel(id);
+    }
 }

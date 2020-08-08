@@ -50,19 +50,24 @@ public class TestingWebApplicationTests {
         messagecount = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getmessagecount?id=" + conversationid,
                 String.class);
         assertThat(messagecount).contains("2");
-        String context = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/findcontext?id=" + conversationid + "&key=state",
-                String.class);
+        String context = getcontext(conversationid, "state");
         assertThat(context).contains("bot");
         sendmessage(conversationid, "transferagent");
-        context = getcontext(conversationid);
+        context = getcontext(conversationid, "state");
         assertThat(context).contains("agent");
+        String channel = getchannel(conversationid);
+        assertThat(channel).contains("webchat");
     }
     private void sendmessage(String conversationid, String input) {
-        String sendmessageresult = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=transferagent",
+        this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=transferagent",
                 String.class);
     }
-    private String getcontext(String conversationid) {
-        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/findcontext?id=" + conversationid + "&key=state",
+    private String getcontext(String conversationid, String key) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/findcontext?id=" + conversationid + "&key=" + key,
+                String.class);
+    }
+    private String getchannel(String conversationid) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/findchannel?id=" + conversationid + "&key=state",
                 String.class);
     }
 }

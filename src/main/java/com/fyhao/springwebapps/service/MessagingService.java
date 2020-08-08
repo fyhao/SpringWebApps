@@ -72,4 +72,12 @@ public class MessagingService {
         Conversation conv = conversation.get();
         return conv.findContext(key);
     }
+    public String findChannel(long conversation_id) {
+        Optional<Conversation> conversation = conversationRepository.findById(conversation_id);
+        if(conversation.isEmpty()) {
+            return null;
+        }
+        Conversation conv = conversation.get();
+        return conv.getChannel();
+    }
 }
