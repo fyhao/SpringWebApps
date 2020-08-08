@@ -104,6 +104,11 @@ public class TestingWebApplicationTests {
         assertThat(getcontext(conversationid4, "botmenu")).contains("menubookhoteltime");
         assertThat(getlastmessagefromparty(conversationid4)).contains("bot");
         assertThat(getlastmessagetoparty(conversationid4)).contains("fyhao1@gmail.com");
+        sendmessage(conversationid4, "9:00am");
+        assertThat(getlastmessagecontent(conversationid4)).contains("Confirm to book hotel on 9:00am?");
+        sendmessage(conversationid4, "yes");
+        assertThat(getlastmessagecontent(conversationid4)).contains("Thank you for booking with us.");
+        assertThat(getcontext(conversationid4, "finalbookinginfo")).contains("book time: 9:00am");
     }
     private String createconversation(String email) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=" + email,

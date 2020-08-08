@@ -29,6 +29,20 @@ public class BotService {
                 messagingService.sendBotMessage(conversation.getId().toString(), "This is abc hotel.");
             }
         }
+        else if(botmenu.equals("menubookhoteltime")) {
+            botmenu = "menubookhoteltimeconfirm";
+            conversation.saveContext("entitytime", input);
+            messagingService.sendBotMessage(conversation.getId().toString(), "Confirm to book hotel on " + input + "?");
+        }
+        else if(botmenu.equals("menubookhoteltimeconfirm")) {
+            if(input.equals("yes")) {
+                conversation.saveContext("finalbookinginfo", "book time: " + conversation.findContext("entitytime"));
+                messagingService.sendBotMessage(conversation.getId().toString(), "Thank you for booking with us.");
+            }
+            else {
+                messagingService.sendBotMessage(conversation.getId().toString(), "Thank you see you next time.");
+            }
+        }
         conversation.saveContext("botmenu", botmenu);
     }
 }
