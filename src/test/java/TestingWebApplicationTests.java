@@ -54,24 +54,25 @@ public class TestingWebApplicationTests {
         assertThat(messagecount).contains("3");
         assertThat(getcontext(conversationid, "state")).contains("bot");
         sendmessage(conversationid, "transferagent");
+        assertThat(getlastmessagecontent(conversationid)).contains("you are chatting with our agent");
         assertThat(getcontext(conversationid, "state")).contains("agent");
         assertThat(getchannel(conversationid)).contains("webchat");
         assertThat(getcontactscount()).contains("1");
         String conversationid2 = createconversation("fyhao1@gmail.com");
         assertThat(getcontactscount()).contains("1");
         assertThat(getchannel(conversationid2)).contains("webchat");
-        assertThat(getmessagecount(conversationid)).contains("4");
+        assertThat(getmessagecount(conversationid)).contains("5");
         assertThat(getmessagecount(conversationid2)).contains("1");
         sendmessage(conversationid2, "hello");
-        assertThat(getmessagecount(conversationid)).contains("4");
+        assertThat(getmessagecount(conversationid)).contains("5");
         assertThat(getmessagecount(conversationid2)).contains("2");
         sendmessage(conversationid, "hello");
-        assertThat(getmessagecount(conversationid)).contains("5");
+        assertThat(getmessagecount(conversationid)).contains("6");
         assertThat(getmessagecount(conversationid2)).contains("2");
         String conversationid3 = createconversation("fyhao2@gmail.com");
         assertThat(getcontactscount()).contains("2");
         assertThat(getchannel(conversationid2)).contains("webchat");
-        assertThat(getmessagecount(conversationid)).contains("5");
+        assertThat(getmessagecount(conversationid)).contains("6");
         assertThat(getmessagecount(conversationid2)).contains("2");
         assertThat(getmessagecount(conversationid3)).contains("1");
         assertThat(getconversationendtime(conversationid)).isNullOrEmpty();
@@ -82,6 +83,7 @@ public class TestingWebApplicationTests {
         assertThat(getcontext(conversationid2, "state")).doesNotContain("end");
         sendmessage(conversationid2, "transferagentfail");
         assertThat(getcontext(conversationid2, "state")).doesNotContain("agent");
+        assertThat(getlastmessagecontent(conversationid2)).contains("agent not available");
     }
     private String createconversation(String email) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=" + email,
@@ -114,8 +116,13 @@ public class TestingWebApplicationTests {
     private String getlastmessagefromparty(String conversationid) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getlastmessagefromparty?id=" + conversationid,
                 String.class);
-    }private String getlastmessagetoparty(String conversationid) {
+    }
+    private String getlastmessagetoparty(String conversationid) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getlastmessagetoparty?id=" + conversationid,
+                String.class);
+    }
+    private String getlastmessagecontent(String conversationid) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getlastmessagecontent?id=" + conversationid,
                 String.class);
     }
 }

@@ -122,4 +122,13 @@ public class MessagingService {
         Message message = conv.getMessages().get(conv.getMessages().size() - 1);
         return message.getToparty();
     }
+    public String getLastMessageContent(String conversation_id) {
+        Optional<Conversation> conversation = conversationRepository.findById(UUID.fromString(conversation_id));
+        if(conversation.isEmpty()) {
+            return null;
+        }
+        Conversation conv = conversation.get();
+        Message message = conv.getMessages().get(conv.getMessages().size() - 1);
+        return message.getContent();
+    }
 }

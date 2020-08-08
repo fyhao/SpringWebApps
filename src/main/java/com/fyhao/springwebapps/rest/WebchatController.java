@@ -68,4 +68,9 @@ public class WebchatController {
         logger.info("getlastmessagetoparty");
         return messagingService.getLastMessageToParty(id);
     }
+    @RequestMapping("/getlastmessagecontent")
+	public @ResponseBody String getlastmessagecontent(@RequestParam String id) {
+        logger.info("getlastmessagecontent");
+        return messagingService.getLastMessageContent(id);
+    }
 }
