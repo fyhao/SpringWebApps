@@ -10,6 +10,10 @@ public class BotService {
 
     @Autowired
     MessagingService messagingService;
+    @Autowired
+    AgentAvailabilityService agentAvailabilityService;
+
+    
     public void processCustomerMessage(Conversation conversation, String input) {
         if(conversation.getChannel().equals("webchathotel")) {
             processHotelBot(conversation, input);
@@ -36,11 +40,22 @@ public class BotService {
         }
         else if(botmenu.equals("menubookhoteltimeconfirm")) {
             if(input.equals("yes")) {
+                botmenu = "test";
                 conversation.saveContext("finalbookinginfo", "book time: " + conversation.findContext("entitytime"));
-                messagingService.sendBotMessage(conversation.getId().toString(), "Thank you for booking with us.");
+                messagingService.sendBotMessage(conversation.getId().toString(), "Thank you for booking with us. What else we can help?");
             }
             else {
                 messagingService.sendBotMessage(conversation.getId().toString(), "Thank you see you next time.");
+            }
+        }
+        else if(botmenu.equals("test")) {
+            if(input.equals("do you know about abcde?")) {
+                messagingService.sendBotMessage(conversation.getId().toString(), "Sorry I am not understand. Will handover to agent.");
+                conversation.saveContext("hint", "1");
+                String agentName = agentAvailabilityService.findAgent(conversation);
+                if(agentName != null) {
+                    conversation.saveContext("state", "agent");
+                }
             }
         }
         conversation.saveContext("botmenu", botmenu);
