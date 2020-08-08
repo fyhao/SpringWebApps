@@ -1,15 +1,31 @@
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.json.JsonParser;
+import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketHttpHeaders;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.client.WebSocketClient;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fyhao.springwebapps.*;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fyhao.springwebapps.*;
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
+import static java.util.concurrent.TimeUnit.SECONDS;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = SpringWebMain.class)
 public class TestingWebApplicationTests {
 
@@ -91,6 +107,50 @@ public class TestingWebApplicationTests {
         assertThat(getlastmessagecontent(conversationid2)).contains("agent not available");
         
     }
+    @Test
+	public void testwebsocketconnection() throws Exception {
+        CompletableFuture<String> futureConversationid = new CompletableFuture<>();
+        String conversationid5 = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
+        try {
+            WebSocketClient webSocketClient = new StandardWebSocketClient();
+ 
+            WebSocketSession webSocketSession = webSocketClient.doHandshake(new TextWebSocketHandler() {
+                @Override
+                public void handleTextMessage(WebSocketSession session, TextMessage message) {
+                    //LOGGER.info("received message - " + message.getPayload());
+                    JsonParser springParser = JsonParserFactory.getJsonParser();
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    Map<String, Object> jsonMap = springParser.parseMap(message.getPayload());
+                    if(jsonMap.get("action").equals("ready")) {
+                        String conversationid = (String) jsonMap.get("conversationid");
+                        futureConversationid.complete(conversationid);
+                    }
+                }
+ 
+                @Override
+                public void afterConnectionEstablished(WebSocketSession session) {
+                    //LOGGER.info("established connection - " + session);
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    Map<String,Object> jsonMap = new HashMap<String,Object>();
+                    jsonMap.put("action","register");
+                    jsonMap.put("conversationid", conversationid5);
+                    try {
+                        String message = objectMapper.writeValueAsString(jsonMap);
+                        session.sendMessage(new TextMessage(message));
+                    } catch (Exception ex) {
+
+                    }
+                }
+            }, new WebSocketHttpHeaders(), URI.create("ws://localhost:" + port + "/channel?conversationid=" + conversationid5)).get();
+            
+            
+        } catch (Exception e) {
+            //LOGGER.error("Exception while accessing websockets", e);
+        }
+        // hold and wait
+        assertThat(futureConversationid.get(2, SECONDS)).contains(conversationid5);
+    }
+    
     @Test
 	public void testhotelbotusecase() throws Exception {
         // conversationid4 used for full testing now
