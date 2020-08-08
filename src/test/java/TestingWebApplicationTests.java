@@ -110,6 +110,7 @@ public class TestingWebApplicationTests {
     @Test
 	public void testwebsocketconnection() throws Exception {
         CompletableFuture<String> futureConversationid = new CompletableFuture<>();
+        CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
         String conversationid5 = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
         try {
             WebSocketClient webSocketClient = new StandardWebSocketClient();
@@ -123,7 +124,13 @@ public class TestingWebApplicationTests {
                     Map<String, Object> jsonMap = springParser.parseMap(message.getPayload());
                     if(jsonMap.get("action").equals("ready")) {
                         String conversationid = (String) jsonMap.get("conversationid");
+                        sendChatMessage(session, conversationid, "Hello I need help");
+                    }
+                    else if(jsonMap.get("action").equals("chatMessageReceived")) {
+                        String conversationid = (String) jsonMap.get("conversationid");
+                        String content = (String)jsonMap.get("content");
                         futureConversationid.complete(conversationid);
+                        futureTestCompletion.complete("completed");
                     }
                 }
  
@@ -134,6 +141,23 @@ public class TestingWebApplicationTests {
                     Map<String,Object> jsonMap = new HashMap<String,Object>();
                     jsonMap.put("action","register");
                     jsonMap.put("conversationid", conversationid5);
+                    jsonMap.put("serverport", port);
+                    try {
+                        String message = objectMapper.writeValueAsString(jsonMap);
+                        session.sendMessage(new TextMessage(message));
+                    } catch (Exception ex) {
+
+                    }
+                }
+                private void sendChatMessage(WebSocketSession session, String conversationid, String chatMessage) {
+                    Map<String,Object> jsonMap = new HashMap<String,Object>();
+                    jsonMap.put("action", "sendChatMessage");
+                    jsonMap.put("conversationid", conversationid);
+                    jsonMap.put("chatMessage", chatMessage);
+                    sendMessage(session, jsonMap);
+                }
+                private void sendMessage(WebSocketSession session, Map<String,Object> jsonMap) {
+                    ObjectMapper objectMapper = new ObjectMapper();
                     try {
                         String message = objectMapper.writeValueAsString(jsonMap);
                         session.sendMessage(new TextMessage(message));
@@ -149,6 +173,7 @@ public class TestingWebApplicationTests {
         }
         // hold and wait
         assertThat(futureConversationid.get(2, SECONDS)).contains(conversationid5);
+        assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }
     
     @Test

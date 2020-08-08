@@ -10,6 +10,7 @@ import com.fyhao.springwebapps.entity.Message;
 import com.fyhao.springwebapps.model.ContactRepository;
 import com.fyhao.springwebapps.model.ConversationRepository;
 import com.fyhao.springwebapps.model.MessageRepository;
+import com.fyhao.springwebapps.ws.ChannelSocketHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +82,7 @@ public class MessagingService {
         Conversation conversation = conv.get();
         chatService.processAgentMessage(conversation, agentName, input);
         conversationRepository.save(conversation);
+        ChannelSocketHandler.sendChatMessageToCustomer(conversation.getId().toString(), input);
         return 0;
     }
     public int sendBotMessage(String conversation_id, String input) {
@@ -91,6 +93,7 @@ public class MessagingService {
         Conversation conversation = conv.get();
         chatService.processBotMessage(conversation, input);
         conversationRepository.save(conversation);
+        ChannelSocketHandler.sendChatMessageToCustomer(conversation.getId().toString(), input);
         return 0;
     }
     public int getMessageCount(String conversation_id) {
