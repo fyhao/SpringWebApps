@@ -34,7 +34,6 @@ public class TestingWebApplicationTests {
 	public void testconversation() throws Exception {
         String conversationid = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=fyhao1@gmail.com",
                 String.class);
-        System.out.println("Created conversation id: " + conversationid);
         assertThat(conversationid).contains("2");
         String sendmessageresult = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=test1",
                 String.class);
@@ -50,18 +49,33 @@ public class TestingWebApplicationTests {
         messagecount = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getmessagecount?id=" + conversationid,
                 String.class);
         assertThat(messagecount).contains("2");
-        String context = getcontext(conversationid, "state");
-        assertThat(context).contains("bot");
+        assertThat(getcontext(conversationid, "state")).contains("bot");
         sendmessage(conversationid, "transferagent");
-        context = getcontext(conversationid, "state");
-        assertThat(context).contains("agent");
-        String channel = getchannel(conversationid);
-        assertThat(channel).contains("webchat");
-        String contactscount = getcontactscount();
-        assertThat(contactscount).contains("1");
+        assertThat(getcontext(conversationid, "state")).contains("agent");
+        assertThat(getchannel(conversationid)).contains("webchat");
+        assertThat(getcontactscount()).contains("1");
+        String conversationid2 = createconversation("fyhao1@gmail.com");
+        assertThat(getcontactscount()).contains("1");
+        assertThat(getchannel(conversationid2)).contains("webchat");
+        assertThat(getmessagecount(conversationid)).contains("3");
+        assertThat(getmessagecount(conversationid2)).contains("0");
+        sendmessage(conversationid2, "hello");
+        assertThat(getmessagecount(conversationid)).contains("3");
+        assertThat(getmessagecount(conversationid2)).contains("1");
+        sendmessage(conversationid, "hello");
+        assertThat(getmessagecount(conversationid)).contains("4");
+        assertThat(getmessagecount(conversationid2)).contains("1");
+    }
+    private String createconversation(String email) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=" + email,
+                String.class);
     }
     private void sendmessage(String conversationid, String input) {
         this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=transferagent",
+                String.class);
+    }
+    private String getmessagecount(String conversationid) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getmessagecount?id=" + conversationid,
                 String.class);
     }
     private String getcontext(String conversationid, String key) {
