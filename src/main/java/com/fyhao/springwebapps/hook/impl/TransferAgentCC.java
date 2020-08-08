@@ -26,6 +26,7 @@ public class TransferAgentCC implements ChatCustomerHook {
             String agentName = agentAvailabilityService.findAgent(conversation);
             if(agentName != null) {
                 conversation.saveContext("state", "agent");
+                conversation.saveContext("agentName", agentName);
                 hasFoundAgent = true;
             }
         }
@@ -35,6 +36,7 @@ public class TransferAgentCC implements ChatCustomerHook {
             String agentName = agentAvailabilityService.findAgent(conversation);
             if(agentName != null) {
                 conversation.saveContext("state", "agent");
+                conversation.saveContext("agentName", agentName);
             }
         }
         conversation.saveContextBool("hasFoundAgent", hasFoundAgent);

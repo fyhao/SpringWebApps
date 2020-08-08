@@ -127,7 +127,16 @@ public class TestingWebApplicationTests {
         sendmessage(conversationid4, "do you know about abcde?");
         assertThat(getcontext(conversationid4, "state")).contains("agent");
         // conversationid4 start to agent
-        // TODO sendagentmessage
+        sendagentmessage(conversationid4, "sjeffers", "hello i am sjeffers, how can i help you?");
+        assertThat(getlastmessagefromparty(conversationid4)).contains("sjeffers");
+        assertThat(getlastmessagetoparty(conversationid4)).contains("fyhao1@gmail.com");
+        sendmessage(conversationid4, "hi i have some issue");
+        assertThat(getlastmessagefromparty(conversationid4)).contains("fyhao1@gmail.com");
+        assertThat(getlastmessagetoparty(conversationid4)).contains("sjeffers");
+        // customer initiated bye
+        assertThat(getcontext(conversationid4, "state")).contains("agent");
+        sendmessage(conversationid4, "bye");
+        assertThat(getcontext(conversationid4, "state")).contains("end");
     }
     private String createconversation(String email) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=" + email,

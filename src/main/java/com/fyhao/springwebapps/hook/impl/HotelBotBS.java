@@ -39,6 +39,7 @@ public class HotelBotBS implements BotServiceHook {
                 String agentName = agentAvailabilityService.findAgent(conversation);
                 if(agentName != null) {
                     conversation.saveContext("state", "agent");
+                    conversation.saveContext("agentName", agentName);
                 }
             }
             else {

@@ -150,7 +150,13 @@ public class Conversation implements Serializable {
         message.setCreatedTime(new java.sql.Timestamp(new Date().getTime()));
         message.setFromparty(this.getContact().getEmail());
         String state = findContext("state");
-        message.setToparty(state);
+        if(state.equals("agent")) {
+            String agentName = findContext("agentName");
+            message.setToparty(agentName);
+        }
+        else if(state.equals("bot")) {
+            message.setToparty("bot");
+        }
         message.setConversation(this);
         getMessages().add(message);
     }
