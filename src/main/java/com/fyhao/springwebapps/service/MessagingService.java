@@ -80,4 +80,7 @@ public class MessagingService {
         Conversation conv = conversation.get();
         return conv.getChannel();
     }
+    public long getContactsCount() {
+        return contactRepository.count();
+    }
 }

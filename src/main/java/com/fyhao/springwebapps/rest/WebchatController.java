@@ -49,4 +49,9 @@ public class WebchatController {
         logger.info("findchannel");
         return messagingService.findChannel(id);
     }
+    @RequestMapping("/getcontactscount")
+	public @ResponseBody long getcontactscount() {
+        logger.info("getcontactscount");
+        return messagingService.getContactsCount();
+    }
 }

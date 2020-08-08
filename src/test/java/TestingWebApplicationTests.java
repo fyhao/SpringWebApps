@@ -57,6 +57,8 @@ public class TestingWebApplicationTests {
         assertThat(context).contains("agent");
         String channel = getchannel(conversationid);
         assertThat(channel).contains("webchat");
+        String contactscount = getcontactscount();
+        assertThat(contactscount).contains("1");
     }
     private void sendmessage(String conversationid, String input) {
         this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=transferagent",
@@ -68,6 +70,10 @@ public class TestingWebApplicationTests {
     }
     private String getchannel(String conversationid) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/findchannel?id=" + conversationid + "&key=state",
+                String.class);
+    }
+    private String getcontactscount() {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getcontactscount",
                 String.class);
     }
 }
