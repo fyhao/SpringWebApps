@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,8 +21,9 @@ public class Contact implements Serializable {
     private static final long serialVersionUID = 1L;
     
     @Id
-    @GeneratedValue
-    private Long id;
+	@GeneratedValue
+	@Column(name="id")
+	UUID id;
 
     @Column(name="name")
     private String name;
@@ -38,11 +40,11 @@ public class Contact implements Serializable {
     @OneToMany(mappedBy = "contact")
     private List<Conversation> items = new ArrayList<Conversation>();
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

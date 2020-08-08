@@ -34,7 +34,6 @@ public class TestingWebApplicationTests {
 	public void testconversation() throws Exception {
         String conversationid = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=fyhao1@gmail.com",
                 String.class);
-        assertThat(conversationid).contains("2");
         String sendmessageresult = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=test1",
                 String.class);
         assertThat(sendmessageresult).contains("0");

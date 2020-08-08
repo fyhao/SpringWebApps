@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -24,8 +26,9 @@ public class Conversation implements Serializable {
      */
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue
-    private Long id;
+	@GeneratedValue
+	@Column(name="id")
+	UUID id;
 
     @Column(name="startTime")
     Timestamp startTime;
@@ -45,11 +48,11 @@ public class Conversation implements Serializable {
     
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "conversation")
     private List<Context> contexts = new ArrayList<Context>();
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

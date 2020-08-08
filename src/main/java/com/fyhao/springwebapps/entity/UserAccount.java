@@ -1,6 +1,7 @@
 package com.fyhao.springwebapps.entity;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,8 +16,9 @@ public class UserAccount implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue
-    private Long id;
+	@GeneratedValue
+	@Column(name="id")
+	UUID id;
 
     @Column(name="username")
     private String username;
@@ -27,11 +29,11 @@ public class UserAccount implements Serializable {
     @Column(name="status")
     private String status;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

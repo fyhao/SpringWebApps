@@ -25,27 +25,26 @@ public class WebchatController {
     @RequestMapping("/createconversation")
 	public @ResponseBody String createconversation(@RequestParam String email) {
         logger.info("createconversation");
-        long id = messagingService.createConversation(email);
-		return id + "";
+        return messagingService.createConversation(email);
     }
     @RequestMapping("/sendmessage")
-	public @ResponseBody String sendmessage(@RequestParam long id, @RequestParam String input) {
+	public @ResponseBody String sendmessage(@RequestParam String id, @RequestParam String input) {
         logger.info("sendmessage");
         messagingService.sendTextMessage(id, input);
 		return "0";
     }
     @RequestMapping("/getmessagecount")
-	public @ResponseBody int getmessagecount(@RequestParam long id) {
+	public @ResponseBody int getmessagecount(@RequestParam String id) {
         logger.info("getmessagecount");
         return messagingService.getMessageCount(id);
     }
     @RequestMapping("/findcontext")
-	public @ResponseBody String findcontext(@RequestParam long id, @RequestParam String key) {
+	public @ResponseBody String findcontext(@RequestParam String id, @RequestParam String key) {
         logger.info("findcontext");
         return messagingService.findContext(id, key);
     }
     @RequestMapping("/findchannel")
-	public @ResponseBody String findchannel(@RequestParam long id) {
+	public @ResponseBody String findchannel(@RequestParam String id) {
         logger.info("findchannel");
         return messagingService.findChannel(id);
     }
