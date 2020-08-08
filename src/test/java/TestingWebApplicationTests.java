@@ -34,20 +34,24 @@ public class TestingWebApplicationTests {
 	public void testconversation() throws Exception {
         String conversationid = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=fyhao1@gmail.com",
                 String.class);
+        assertThat(getlastmessagefromparty(conversationid)).contains("system");
+        assertThat(getlastmessagetoparty(conversationid)).contains("fyhao1@gmail.com");
         String sendmessageresult = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=test1",
                 String.class);
         assertThat(sendmessageresult).contains("0");
+        assertThat(getlastmessagefromparty(conversationid)).contains("fyhao1@gmail.com");
+        assertThat(getlastmessagetoparty(conversationid)).contains("bot");
         //https://8080-ad1cca16-319c-41ea-88af-31d7c741202d.ws-us02.gitpod.io/webchat/getmessagecount?id=2
         String messagecount = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getmessagecount?id=" + conversationid,
                 String.class);
-        assertThat(messagecount).contains("1");
+        assertThat(messagecount).contains("2");
         sendmessageresult = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=test1",
                 String.class);
         assertThat(sendmessageresult).contains("0");
         //https://8080-ad1cca16-319c-41ea-88af-31d7c741202d.ws-us02.gitpod.io/webchat/getmessagecount?id=2
         messagecount = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getmessagecount?id=" + conversationid,
                 String.class);
-        assertThat(messagecount).contains("2");
+        assertThat(messagecount).contains("3");
         assertThat(getcontext(conversationid, "state")).contains("bot");
         sendmessage(conversationid, "transferagent");
         assertThat(getcontext(conversationid, "state")).contains("agent");
@@ -56,20 +60,20 @@ public class TestingWebApplicationTests {
         String conversationid2 = createconversation("fyhao1@gmail.com");
         assertThat(getcontactscount()).contains("1");
         assertThat(getchannel(conversationid2)).contains("webchat");
-        assertThat(getmessagecount(conversationid)).contains("3");
-        assertThat(getmessagecount(conversationid2)).contains("0");
-        sendmessage(conversationid2, "hello");
-        assertThat(getmessagecount(conversationid)).contains("3");
-        assertThat(getmessagecount(conversationid2)).contains("1");
-        sendmessage(conversationid, "hello");
         assertThat(getmessagecount(conversationid)).contains("4");
         assertThat(getmessagecount(conversationid2)).contains("1");
+        sendmessage(conversationid2, "hello");
+        assertThat(getmessagecount(conversationid)).contains("4");
+        assertThat(getmessagecount(conversationid2)).contains("2");
+        sendmessage(conversationid, "hello");
+        assertThat(getmessagecount(conversationid)).contains("5");
+        assertThat(getmessagecount(conversationid2)).contains("2");
         String conversationid3 = createconversation("fyhao2@gmail.com");
         assertThat(getcontactscount()).contains("2");
         assertThat(getchannel(conversationid2)).contains("webchat");
-        assertThat(getmessagecount(conversationid)).contains("4");
-        assertThat(getmessagecount(conversationid2)).contains("1");
-        assertThat(getmessagecount(conversationid3)).contains("0");
+        assertThat(getmessagecount(conversationid)).contains("5");
+        assertThat(getmessagecount(conversationid2)).contains("2");
+        assertThat(getmessagecount(conversationid3)).contains("1");
         assertThat(getconversationendtime(conversationid)).isNullOrEmpty();
         sendmessage(conversationid, "bye");
         assertThat(getconversationendtime(conversationid)).isNotNull();
@@ -103,6 +107,13 @@ public class TestingWebApplicationTests {
     }
     private String getconversationendtime(String conversationid) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getconversationendtime?id=" + conversationid,
+                String.class);
+    }
+    private String getlastmessagefromparty(String conversationid) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getlastmessagefromparty?id=" + conversationid,
+                String.class);
+    }private String getlastmessagetoparty(String conversationid) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getlastmessagetoparty?id=" + conversationid,
                 String.class);
     }
 }

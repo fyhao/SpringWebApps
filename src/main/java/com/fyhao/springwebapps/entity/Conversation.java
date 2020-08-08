@@ -143,4 +143,13 @@ public class Conversation implements Serializable {
         message.setConversation(this);
         getMessages().add(message);
     }
+    public void addSystemMessageWithInput(String input) {
+        Message message = new Message();
+        message.setContent(input);
+        message.setCreatedTime(new java.sql.Timestamp(new Date().getTime()));
+        message.setFromparty("system");
+        message.setToparty(this.getContact().getEmail());
+        message.setConversation(this);
+        getMessages().add(message);
+    }
 }

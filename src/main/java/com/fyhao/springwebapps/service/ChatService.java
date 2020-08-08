@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ChatService {
     
-    public void processMessage(Conversation conversation, String input) {
+    public void processCustomerMessage(Conversation conversation, String input) {
         if(input.equals("transferagent")) {
             conversation.saveContext("state", "agent");
         }
@@ -19,5 +19,8 @@ public class ChatService {
             conversation.setEndTime(Util.getSQLTimestamp(new Date()));
         }
         conversation.addMessageWithInput(input);
+    }
+    public void processSystemMessage(Conversation conversation, String input) {
+        conversation.addSystemMessageWithInput(input);
     }
 }

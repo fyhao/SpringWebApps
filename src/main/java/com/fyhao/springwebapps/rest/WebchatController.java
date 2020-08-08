@@ -30,7 +30,7 @@ public class WebchatController {
     @RequestMapping("/sendmessage")
 	public @ResponseBody String sendmessage(@RequestParam String id, @RequestParam String input) {
         logger.info("sendmessage");
-        messagingService.sendTextMessage(id, input);
+        messagingService.sendCustomerMessage(id, input);
 		return "0";
     }
     @RequestMapping("/getmessagecount")
@@ -57,5 +57,15 @@ public class WebchatController {
 	public @ResponseBody String getconversationendtime(@RequestParam String id) {
         logger.info("getconversationendtime");
         return messagingService.getConversationEndTime(id);
+    }
+    @RequestMapping("/getlastmessagefromparty")
+	public @ResponseBody String getlastmessagefromparty(@RequestParam String id) {
+        logger.info("getlastmessagefromparty");
+        return messagingService.getLastMessageFromParty(id);
+    }
+    @RequestMapping("/getlastmessagetoparty")
+	public @ResponseBody String getlastmessagetoparty(@RequestParam String id) {
+        logger.info("getlastmessagetoparty");
+        return messagingService.getLastMessageToParty(id);
     }
 }

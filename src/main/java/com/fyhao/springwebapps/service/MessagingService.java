@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.fyhao.springwebapps.entity.Contact;
 import com.fyhao.springwebapps.entity.Conversation;
+import com.fyhao.springwebapps.entity.Message;
 import com.fyhao.springwebapps.model.ContactRepository;
 import com.fyhao.springwebapps.model.ConversationRepository;
 import com.fyhao.springwebapps.model.MessageRepository;
@@ -44,15 +45,26 @@ public class MessagingService {
         conversation.setChannel("webchat");
         conversation.saveContext("state","bot");
         conversationRepository.save(conversation);
+        sendSystemMessage(conversation.getId().toString(), "Hi welcome " + contact.getEmail());
         return conversation.getId().toString();
     }
-    public int sendTextMessage(String conversation_id, String input) {
+    public int sendSystemMessage(String conversation_id, String input) {
         Optional<Conversation> conv = conversationRepository.findById(UUID.fromString(conversation_id));
         if(conv.isEmpty()) {
             return 100;
         }
         Conversation conversation = conv.get();
-        chatService.processMessage(conversation, input);
+        chatService.processSystemMessage(conversation, input);
+        conversationRepository.save(conversation);
+        return 0;
+    }
+    public int sendCustomerMessage(String conversation_id, String input) {
+        Optional<Conversation> conv = conversationRepository.findById(UUID.fromString(conversation_id));
+        if(conv.isEmpty()) {
+            return 100;
+        }
+        Conversation conversation = conv.get();
+        chatService.processCustomerMessage(conversation, input);
         conversationRepository.save(conversation);
         return 0;
     }
@@ -91,5 +103,23 @@ public class MessagingService {
         Conversation conv = conversation.get();
         if(conv.getEndTime() != null) return conv.getEndTime().toString();
         return null;
+    }
+    public String getLastMessageFromParty(String conversation_id) {
+        Optional<Conversation> conversation = conversationRepository.findById(UUID.fromString(conversation_id));
+        if(conversation.isEmpty()) {
+            return null;
+        }
+        Conversation conv = conversation.get();
+        Message message = conv.getMessages().get(conv.getMessages().size() - 1);
+        return message.getFromparty();
+    }
+    public String getLastMessageToParty(String conversation_id) {
+        Optional<Conversation> conversation = conversationRepository.findById(UUID.fromString(conversation_id));
+        if(conversation.isEmpty()) {
+            return null;
+        }
+        Conversation conv = conversation.get();
+        Message message = conv.getMessages().get(conv.getMessages().size() - 1);
+        return message.getToparty();
     }
 }
