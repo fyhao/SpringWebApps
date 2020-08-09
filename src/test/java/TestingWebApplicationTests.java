@@ -379,8 +379,54 @@ public class TestingWebApplicationTests {
         assignagentskillaction("rbarrows", "english", AgentSkillDto.REMOVED_FROM_SKILL);
         assertThat(getskillnamesofagent("rbarrows")).hasSize(0);
         assertThat(getskillnamesofagent("rbarrows")).doesNotContain("english");
+        // register agent
+        assertThat(getagentterminalscount()).contains("0");
+        registeragent("sjeffers");
+        assertThat(getagentterminalscount()).contains("1");
+        registeragent("rbarrows");
+        assertThat(getagentterminalscount()).contains("2");
+        // unregister agent
+        unregisteragent("sjeffers");
+        assertThat(getagentterminalscount()).contains("1");
+        unregisteragent("rbarrows");
+        assertThat(getagentterminalscount()).contains("0");
     }
-
+    private String registeragent(String agentName) {
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentName);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = this.restTemplate.postForEntity("http://localhost:" + port + "/agentterminal/registeragent", request,
+                String.class);
+        return resp.getBody();
+    }
+    private String unregisteragent(String agentName) {
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentName);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = this.restTemplate.postForEntity("http://localhost:" + port + "/agentterminal/unregisteragent", request,
+                String.class);
+        return resp.getBody();
+    }
+    private String getagentterminalscount() {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/agentterminal/getagentterminalscount",
+                String.class);
+    }
     private String createagentprofile(String agentName) {
         AgentProfileDto dto = new AgentProfileDto();
         dto.setName(agentName);

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.JoinColumn;
 
 @Entity
@@ -42,6 +44,10 @@ public class Agent implements Serializable {
     joinColumns = @JoinColumn(name = "agent_id"), 
     inverseJoinColumns = @JoinColumn(name = "skill_id"))
     Set<Skill> agentSkills;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "agentterminal_id", referencedColumnName = "id")
+    AgentTerminal agentTerminal;
 
     public UUID getId() {
         return id;
@@ -74,6 +80,14 @@ public class Agent implements Serializable {
     public void setAgentSkills(Set<Skill> agentSkills) {
         this.agentSkills = agentSkills;
     }
+
+	public AgentTerminal getAgentTerminal() {
+		return agentTerminal;
+	}
+
+	public void setAgentTerminal(AgentTerminal agentTerminal) {
+		this.agentTerminal = agentTerminal;
+	}
 
     
 }
