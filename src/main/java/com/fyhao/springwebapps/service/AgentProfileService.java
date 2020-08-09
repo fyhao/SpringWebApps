@@ -1,5 +1,8 @@
 package com.fyhao.springwebapps.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fyhao.springwebapps.dto.AgentProfileDto;
 import com.fyhao.springwebapps.dto.AgentSkillDto;
 import com.fyhao.springwebapps.dto.SkillDto;
@@ -99,5 +102,18 @@ public class AgentProfileService {
     }
     public long getSkillCount() {
         return skillRepository.count();
+    }
+    public List<String> getSkillNamesOfAgent(String agentName) {
+        Agent agent = agentRepository.findByName(agentName);
+        if (agent == null) {
+            return null;
+        }
+        List<String> list = new ArrayList<String>();
+        if(!agent.getAgentSkills().isEmpty()) {
+            for(Skill skill : agent.getAgentSkills()) {
+                list.add(skill.getName());
+            }
+        }
+        return list;
     }
 }

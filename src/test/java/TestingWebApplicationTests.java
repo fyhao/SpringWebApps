@@ -27,11 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fyhao.springwebapps.*;
 import com.fyhao.springwebapps.dto.AgentProfileDto;
+import com.fyhao.springwebapps.dto.AgentSkillDto;
 import com.fyhao.springwebapps.dto.SkillDto;
 
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
@@ -341,6 +343,9 @@ public class TestingWebApplicationTests {
         assertThat(getagentcount()).contains("0");
         createagentprofile("sjeffers");
         assertThat(getagentcount()).contains("1");
+        assertThat(getskillnamesofagent("sjeffers")).hasSize(0);
+        assignagentskillaction("sjeffers", "english", AgentSkillDto.ASSIGNED_TO_AGENT);
+        assertThat(getskillnamesofagent("sjeffers")).hasSize(1);
     }
 
     private String createagentprofile(String agentName) {
@@ -374,6 +379,34 @@ public class TestingWebApplicationTests {
         ResponseEntity<String> resp = this.restTemplate.postForEntity("http://localhost:" + port + "/agentprofile/createskillprofile", request,
                 String.class);
         return resp.getBody();
+    }
+    private String assignagentskillaction(String agentName, String skillName, String action) {
+        AgentSkillDto dto = new AgentSkillDto();
+        dto.setAgent(agentName);
+        dto.setSkill(skillName);
+        dto.setAction(action);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = this.restTemplate.postForEntity("http://localhost:" + port + "/agentprofile/assignagentskillaction", request,
+                String.class);
+        return resp.getBody();
+    }
+    private List<String> getskillnamesofagent(String agent) {
+        String resp = this.restTemplate.getForObject("http://localhost:" + port + "/agentprofile/getskillnamesofagent?agent=" + agent,
+                String.class);
+        JsonParser springParser = JsonParserFactory.getJsonParser();
+        List<Object> list = springParser.parseList(resp);
+        List<String> strList = list.stream()
+                           .map( Object::toString )
+                           .collect( Collectors.toList() );
+        return strList;
     }
     private String getagentcount() {
         return this.restTemplate.getForObject("http://localhost:" + port + "/agentprofile/getagentcount",
