@@ -72,6 +72,7 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
 		}
     }
     public static void sendAgentJoinedEvent(String conversationid) {
+        logger.info("ChannelSocketHandler sendAgentJoinedEvent " + conversationid);
         Map<String, Object> jsonMap = new HashMap<String, Object>();
         jsonMap.put("action", "agentJoined");
         jsonMap.put("conversationid", conversationid);

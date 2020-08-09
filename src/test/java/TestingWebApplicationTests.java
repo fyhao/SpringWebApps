@@ -588,8 +588,9 @@ public class TestingWebApplicationTests {
             hasError = true;
         }
         jsonMap = incomingReceived.get(2, SECONDS);
+        String agentConversationid = null;
         if(jsonMap.get("action").equals("incomingTask")) { 
-            String agentConversationid = (String)jsonMap.get("conversationid");
+            agentConversationid = (String)jsonMap.get("conversationid");
         }
         else {
             hasError = true;
@@ -602,6 +603,40 @@ public class TestingWebApplicationTests {
         else {
             hasError = true;
         }
+        // now agent start send message to customer
+        
+        agent.sendChatMessage(agentConversationid, "agent sending to customer now");
+        customerIncomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+       
+        if (jsonMap.get("action").equals("chatMessageReceived")) {
+            String content = (String) jsonMap.get("content");
+            
+            if(!content.equals("agent sending to customer now")) {
+                futureTestCompletion.complete("error");
+                hasError = true;
+            }
+            
+        }
+        else {
+            hasError = true;
+        }
+        // now customer start send message to agent
+        customer.sendChatMessage("hi i am customer i need help");
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        if (jsonMap.get("action").equals("chatMessageReceived")) {
+            String content = (String) jsonMap.get("content");
+            
+            if(!content.equals("hi i am customer i need help")) {
+                futureTestCompletion.complete("error");
+                hasError = true;
+            }
+        }
+        else {
+            hasError = true;
+        }
+
         if(hasError) {
             futureTestCompletion.complete("error");
         }

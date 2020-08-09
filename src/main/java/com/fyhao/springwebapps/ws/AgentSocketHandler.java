@@ -61,6 +61,16 @@ public class AgentSocketHandler extends TextWebSocketHandler {
             String status = (String)jsonMap.get("status");
             setagentstatus(agentid, status, serverport);
         }
+        else if(jsonMap.get("action").equals("sendChatMessage")) {
+            logger.info("AgentSocketHandler agent to customer sendChatMessage");
+            String conversationid = (String)jsonMap.get("conversationid");
+            logger.info("AgentSocketHandler conversationid " + conversationid);
+            String chatMessage = (String)jsonMap.get("chatMessage");
+            Integer serverport = (Integer)session.getAttributes().get("serverport");
+            logger.info("AgentSocketHandler chatMessage " + chatMessage);
+            String agentid = (String)jsonMap.get("agentid");
+            sendAgentMessage(conversationid, agentid, chatMessage, serverport);
+        }
 	}
 
 	@Override
@@ -120,10 +130,17 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         }
     }
     
-    public void sendCustomerMessage(String conversationid, String message, Integer port) {
-        logger.info("AgentSocketHandler sendCustomerMessage " + conversationid + " - " + message);
+    public static void sendCustomerMessage(String conversationid, String agentid, String message) {
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "chatMessageReceived");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("conversationid", conversationid);
+        jsonMap.put("content", message);
+        sendCommandToAgent(agentid, jsonMap);
+    }
+    private void sendAgentMessage(String conversationid, String agentname, String input, Integer port) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=" + URLEncoder.encode(message),
+        restTemplate.getForObject("http://localhost:" + port + "/webchat/sendagentmessage?id=" + conversationid + "&agentname=" + agentname + "&input=" + URLEncoder.encode(input),
                 String.class);
     }
 

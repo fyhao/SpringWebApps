@@ -65,12 +65,13 @@ public class MyAgentClient {
         incomingJsonMapReceived = new CompletableFuture<Map<String, Object>>();
         return incomingJsonMapReceived;
     }
-    public void sendChatMessage(WebSocketSession session, String conversationid, String chatMessage) {
+    public void sendChatMessage(String conversationid, String chatMessage) {
         Map<String, Object> jsonMap = new HashMap<String, Object>();
         jsonMap.put("action", "sendChatMessage");
         jsonMap.put("conversationid", conversationid);
+        jsonMap.put("agentid", agentid);
         jsonMap.put("chatMessage", chatMessage);
-        sendMessage(session, jsonMap);
+        sendMessage(webSocketSession, jsonMap);
     }
     public void registerAgentSession() {
         Map<String, Object> jsonMap = new HashMap<String, Object>();

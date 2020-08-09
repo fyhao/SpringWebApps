@@ -10,6 +10,7 @@ import com.fyhao.springwebapps.entity.Message;
 import com.fyhao.springwebapps.model.ContactRepository;
 import com.fyhao.springwebapps.model.ConversationRepository;
 import com.fyhao.springwebapps.model.MessageRepository;
+import com.fyhao.springwebapps.ws.AgentSocketHandler;
 import com.fyhao.springwebapps.ws.ChannelSocketHandler;
 
 import org.slf4j.Logger;
@@ -72,6 +73,13 @@ public class MessagingService {
         Conversation conversation = conv.get();
         chatService.processCustomerMessage(conversation, input);
         conversationRepository.save(conversation);
+        String state = conversation.findContext("state");
+        logger.info("MessagingService sendCustomerMessage state " + conversation_id + " " + input + " " + state);
+        if(state.equals("agent")) {
+            String agentName = conversation.findContext("agentName");
+            logger.info("MessagingService sendCustomerMessage to send agent " + agentName + " for " + input);
+            AgentSocketHandler.sendCustomerMessage(conversation.getId().toString(), agentName, input);
+        }
         return 0;
     }
     public int sendAgentMessage(String conversation_id, String agentName, String input) {
