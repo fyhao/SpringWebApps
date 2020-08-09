@@ -6,10 +6,8 @@ import org.slf4j.LoggerFactory;
 import com.fyhao.springwebapps.entity.UserAccount;
 import com.fyhao.springwebapps.model.UserAccountRepository;
 
-import org.apache.activemq.command.ActiveMQTopic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
