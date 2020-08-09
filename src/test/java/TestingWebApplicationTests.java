@@ -110,8 +110,58 @@ public class TestingWebApplicationTests {
         
     }
     
+    
     @Test
-	public void testwebsocketconnection() throws Exception {
+	public void testhotelbotusecase() throws Exception {
+        // conversationid4 used for full testing now
+        String conversationid4 = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
+        assertThat(getchannel(conversationid4)).contains("webchathotel");
+        assertThat(getcontext(conversationid4, "state")).contains("bot");
+        // conversationid4 talking to bot
+        sendmessage(conversationid4, "hello");
+        assertThat(getlastmessagecontent(conversationid4)).contains("This is abc hotel.");
+        assertThat(getlastmessagefromparty(conversationid4)).contains("bot");
+        assertThat(getlastmessagetoparty(conversationid4)).contains("fyhao1@gmail.com");
+        assertThat(getcontext(conversationid4, "botmenu")).contains("home");
+        sendmessage(conversationid4, "book hotel");
+        assertThat(getlastmessagecontent(conversationid4)).contains("When you want to book hotel?");
+        assertThat(getcontext(conversationid4, "botmenu")).contains("menubookhoteltime");
+        assertThat(getlastmessagefromparty(conversationid4)).contains("bot");
+        assertThat(getlastmessagetoparty(conversationid4)).contains("fyhao1@gmail.com");
+        sendmessage(conversationid4, "9:00am");
+        assertThat(getlastmessagecontent(conversationid4)).contains("Confirm to book hotel on 9:00am?");
+        sendmessage(conversationid4, "yes");
+        assertThat(getlastmessagecontent(conversationid4)).contains("Thank you for booking with us. What else we can help?");
+        assertThat(getcontext(conversationid4, "finalbookinginfo")).contains("book time: 9:00am");
+        // conversationid4 talking to bot book second time with negative confirmation
+        assertThat(getcontext(conversationid4, "botmenu")).contains("home");
+        sendmessage(conversationid4, "book hotel");
+        assertThat(getcontext(conversationid4, "finalbookinginfo")).isNullOrEmpty();
+        assertThat(getcontext(conversationid4, "botmenu")).contains("menubookhoteltime");
+        sendmessage(conversationid4, "10:00am");
+        assertThat(getlastmessagecontent(conversationid4)).contains("Confirm to book hotel on 10:00am?");
+        sendmessage(conversationid4, "no");
+        assertThat(getcontext(conversationid4, "botmenu")).contains("home");
+        assertThat(getcontext(conversationid4, "finalbookinginfo")).isNullOrEmpty();
+        // conversationid4 talking to bot but bot decided handover to agent
+        assertThat(getcontext(conversationid4, "state")).contains("bot");
+        sendmessage(conversationid4, "do you know about abcde?");
+        assertThat(getcontext(conversationid4, "state")).contains("agent");
+        // conversationid4 start to agent
+        sendagentmessage(conversationid4, "sjeffers", "hello i am sjeffers, how can i help you?");
+        assertThat(getlastmessagefromparty(conversationid4)).contains("sjeffers");
+        assertThat(getlastmessagetoparty(conversationid4)).contains("fyhao1@gmail.com");
+        sendmessage(conversationid4, "hi i have some issue");
+        assertThat(getlastmessagefromparty(conversationid4)).contains("fyhao1@gmail.com");
+        assertThat(getlastmessagetoparty(conversationid4)).contains("sjeffers");
+        // customer initiated bye
+        assertThat(getcontext(conversationid4, "state")).contains("agent");
+        sendmessage(conversationid4, "bye");
+        assertThat(getcontext(conversationid4, "state")).contains("end");
+    }
+    
+    @Test
+	public void testwebsocketconnectionforcustomer() throws Exception {
         CompletableFuture<String> futureConversationid = new CompletableFuture<>();
         CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
         List<String> testCaseCust = new ArrayList<String>();
@@ -140,7 +190,7 @@ public class TestingWebApplicationTests {
                     JsonParser springParser = JsonParserFactory.getJsonParser();
                     ObjectMapper objectMapper = new ObjectMapper();
                     Map<String, Object> jsonMap = springParser.parseMap(message.getPayload());
-                    if(jsonMap.get("action").equals("ready")) {
+                    if(jsonMap.get("action").equals("connectionready")) {
                         String conversationid = (String) jsonMap.get("conversationid");
                         sendChatMessage(session, conversationid, testCaseCust.get(c));
                     }
@@ -209,55 +259,69 @@ public class TestingWebApplicationTests {
         assertThat(futureConversationid.get(2, SECONDS)).contains(conversationid5);
         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }
+
     
     @Test
-	public void testhotelbotusecase() throws Exception {
-        // conversationid4 used for full testing now
-        String conversationid4 = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
-        assertThat(getchannel(conversationid4)).contains("webchathotel");
-        assertThat(getcontext(conversationid4, "state")).contains("bot");
-        // conversationid4 talking to bot
-        sendmessage(conversationid4, "hello");
-        assertThat(getlastmessagecontent(conversationid4)).contains("This is abc hotel.");
-        assertThat(getlastmessagefromparty(conversationid4)).contains("bot");
-        assertThat(getlastmessagetoparty(conversationid4)).contains("fyhao1@gmail.com");
-        assertThat(getcontext(conversationid4, "botmenu")).contains("home");
-        sendmessage(conversationid4, "book hotel");
-        assertThat(getlastmessagecontent(conversationid4)).contains("When you want to book hotel?");
-        assertThat(getcontext(conversationid4, "botmenu")).contains("menubookhoteltime");
-        assertThat(getlastmessagefromparty(conversationid4)).contains("bot");
-        assertThat(getlastmessagetoparty(conversationid4)).contains("fyhao1@gmail.com");
-        sendmessage(conversationid4, "9:00am");
-        assertThat(getlastmessagecontent(conversationid4)).contains("Confirm to book hotel on 9:00am?");
-        sendmessage(conversationid4, "yes");
-        assertThat(getlastmessagecontent(conversationid4)).contains("Thank you for booking with us. What else we can help?");
-        assertThat(getcontext(conversationid4, "finalbookinginfo")).contains("book time: 9:00am");
-        // conversationid4 talking to bot book second time with negative confirmation
-        assertThat(getcontext(conversationid4, "botmenu")).contains("home");
-        sendmessage(conversationid4, "book hotel");
-        assertThat(getcontext(conversationid4, "finalbookinginfo")).isNullOrEmpty();
-        assertThat(getcontext(conversationid4, "botmenu")).contains("menubookhoteltime");
-        sendmessage(conversationid4, "10:00am");
-        assertThat(getlastmessagecontent(conversationid4)).contains("Confirm to book hotel on 10:00am?");
-        sendmessage(conversationid4, "no");
-        assertThat(getcontext(conversationid4, "botmenu")).contains("home");
-        assertThat(getcontext(conversationid4, "finalbookinginfo")).isNullOrEmpty();
-        // conversationid4 talking to bot but bot decided handover to agent
-        assertThat(getcontext(conversationid4, "state")).contains("bot");
-        sendmessage(conversationid4, "do you know about abcde?");
-        assertThat(getcontext(conversationid4, "state")).contains("agent");
-        // conversationid4 start to agent
-        sendagentmessage(conversationid4, "sjeffers", "hello i am sjeffers, how can i help you?");
-        assertThat(getlastmessagefromparty(conversationid4)).contains("sjeffers");
-        assertThat(getlastmessagetoparty(conversationid4)).contains("fyhao1@gmail.com");
-        sendmessage(conversationid4, "hi i have some issue");
-        assertThat(getlastmessagefromparty(conversationid4)).contains("fyhao1@gmail.com");
-        assertThat(getlastmessagetoparty(conversationid4)).contains("sjeffers");
-        // customer initiated bye
-        assertThat(getcontext(conversationid4, "state")).contains("agent");
-        sendmessage(conversationid4, "bye");
-        assertThat(getcontext(conversationid4, "state")).contains("end");
+	public void testwebsocketconnectionforagent() throws Exception {
+        CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
+        
+        try {
+            WebSocketClient webSocketClient = new StandardWebSocketClient();
+ 
+            WebSocketSession webSocketSession = webSocketClient.doHandshake(new TextWebSocketHandler() {
+                int c = 0;
+                boolean isAfterSendAgent = false;
+                @Override
+                public void handleTextMessage(WebSocketSession session, TextMessage message) {
+                    JsonParser springParser = JsonParserFactory.getJsonParser();
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    Map<String, Object> jsonMap = springParser.parseMap(message.getPayload());
+                    if(jsonMap.get("action").equals("connectionready")) {
+                        futureTestCompletion.complete("completed");
+                    }
+                }
+ 
+                @Override
+                public void afterConnectionEstablished(WebSocketSession session) {
+                    //LOGGER.info("established connection - " + session);
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    Map<String,Object> jsonMap = new HashMap<String,Object>();
+                    jsonMap.put("action", "register");
+                    jsonMap.put("agentid", "sjeffers");
+                    jsonMap.put("serverport", port);
+                    sendMessage(session, jsonMap);
+                }
+                private void sendChatMessage(WebSocketSession session, String conversationid, String chatMessage) {
+                    Map<String,Object> jsonMap = new HashMap<String,Object>();
+                    jsonMap.put("action", "sendChatMessage");
+                    jsonMap.put("conversationid", conversationid);
+                    jsonMap.put("chatMessage", chatMessage);
+                    sendMessage(session, jsonMap);
+                }
+                private void sendMessage(WebSocketSession session, Map<String,Object> jsonMap) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        String message = objectMapper.writeValueAsString(jsonMap);
+                        session.sendMessage(new TextMessage(message));
+                    } catch (Exception ex) {
+
+                    }
+                }
+            }, new WebSocketHttpHeaders(), URI.create("ws://localhost:" + port + "/agent")).get();
+            
+            
+        } catch (Exception e) {
+            //LOGGER.error("Exception while accessing websockets", e);
+        }
+        // hold and wait
+        assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }
+
+    @Test
+	public void testagentprofileservice() throws Exception {
+        
+    }
+
     private String createconversation(String email) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=" + email,
                 String.class);

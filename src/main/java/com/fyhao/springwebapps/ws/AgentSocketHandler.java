@@ -21,10 +21,9 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-
 @Component
-public class ChannelSocketHandler extends TextWebSocketHandler {
-    static Logger logger = LoggerFactory.getLogger(ChannelSocketHandler.class);
+public class AgentSocketHandler extends TextWebSocketHandler {
+    static Logger logger = LoggerFactory.getLogger(AgentSocketHandler.class);
 
     public static List<WebSocketSession> sessions = new CopyOnWriteArrayList<WebSocketSession>();
     
@@ -32,38 +31,35 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
 			throws InterruptedException, IOException {
         JsonParser springParser = JsonParserFactory.getJsonParser();
         ObjectMapper objectMapper = new ObjectMapper();
-        logger.info("ChannelSocketHandler handleTextMessage: " + message.getPayload());
+        logger.info("AgentSocketHandler handleTextMessage: " + message.getPayload());
         Map<String, Object> jsonMap = springParser.parseMap(message.getPayload());
         if(jsonMap.get("action").equals("register")) {
-            String conversationid = (String)jsonMap.get("conversationid");
             Integer serverport = (Integer)jsonMap.get("serverport");
             Map<String,Object> response = new HashMap<String,Object>();
             response.put("action", "connectionready");
-            response.put("conversationid", conversationid);
-            session.getAttributes().put("conversationid", conversationid);
             session.getAttributes().put("serverport", serverport);
             String responseMessage = objectMapper.writeValueAsString(response);
             session.sendMessage(new TextMessage(responseMessage));
         }
         else if(jsonMap.get("action").equals("sendChatMessage")) {
-            logger.info("ChannelSocketHandler customer to system sendChatMessage");
+            logger.info("AgentSocketHandler customer to system sendChatMessage");
             String conversationid = (String)jsonMap.get("conversationid");
-            logger.info("ChannelSocketHandler conversationid " + conversationid);
+            logger.info("AgentSocketHandler conversationid " + conversationid);
             String chatMessage = (String)jsonMap.get("chatMessage");
             Integer serverport = (Integer)session.getAttributes().get("serverport");
-            logger.info("ChannelSocketHandler chatMessage " + chatMessage);
+            logger.info("AgentSocketHandler chatMessage " + chatMessage);
             sendCustomerMessage(conversationid, chatMessage, serverport);
         }
 	}
 
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        logger.info("ChannelSocketHandler afterConnectionEstablished");
+        logger.info("AgentSocketHandler afterConnectionEstablished");
         sessions.add(session);
 	}
 	
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-        logger.info("ChannelSocketHandler afterConnectionClosed");
+        logger.info("AgentSocketHandler afterConnectionClosed");
         for(WebSocketSession s : sessions) {
 			if(s.getId().equals(session.getId())) {
 				sessions.remove(s);
@@ -73,7 +69,7 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
     }
     
     public static void sendChatMessageToCustomer(String conversationid, String message) {
-        logger.info("ChannelSocketHandler.sendChatMessageToCustomer " + conversationid + " - " + message);
+        logger.info("AgentSocketHandler.sendChatMessageToCustomer " + conversationid + " - " + message);
         ObjectMapper objectMapper = new ObjectMapper();
         for(WebSocketSession session : sessions) {
             String id = (String)session.getAttributes().get("conversationid");
@@ -90,9 +86,10 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
 		}
     }
     public void sendCustomerMessage(String conversationid, String message, Integer port) {
-        logger.info("ChannelSocketHandler sendCustomerMessage " + conversationid + " - " + message);
+        logger.info("AgentSocketHandler sendCustomerMessage " + conversationid + " - " + message);
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=" + URLEncoder.encode(message),
                 String.class);
     }
 }
+    
