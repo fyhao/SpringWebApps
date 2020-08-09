@@ -13,7 +13,9 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
     
+    @Autowired
+    ChannelSocketHandler channelSocketHandler;
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-		registry.addHandler(new ChannelSocketHandler(), "/channel").setAllowedOrigins("*");
+		registry.addHandler(channelSocketHandler, "/channel").setAllowedOrigins("*");
 	}
 }

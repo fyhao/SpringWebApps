@@ -26,7 +26,6 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 public class ChannelSocketHandler extends TextWebSocketHandler {
     static Logger logger = LoggerFactory.getLogger(ChannelSocketHandler.class);
 
-    
     public static List<WebSocketSession> sessions = new CopyOnWriteArrayList<WebSocketSession>();
     
     public void handleTextMessage(WebSocketSession session, TextMessage message)
