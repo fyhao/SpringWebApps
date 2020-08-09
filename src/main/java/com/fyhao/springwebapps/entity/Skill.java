@@ -61,4 +61,12 @@ public class Skill implements Serializable {
         this.createdTime = createdTime;
     }
 
+    public Set<Agent> getAgents() {
+        return agents;
+    }
+
+    public void setAgents(Set<Agent> agents) {
+        this.agents = agents;
+    }
+
 }

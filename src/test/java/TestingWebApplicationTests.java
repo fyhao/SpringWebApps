@@ -7,6 +7,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketSession;
@@ -24,51 +28,60 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fyhao.springwebapps.*;
+import com.fyhao.springwebapps.dto.AgentProfileDto;
+
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
+
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = SpringWebMain.class)
 public class TestingWebApplicationTests {
 
-	@LocalServerPort
-	private int port;
+    @LocalServerPort
+    private int port;
 
-	@Autowired
+    @Autowired
     private TestRestTemplate restTemplate;
-    
+
     @Autowired
     TestController test;
+
     @Test
     public void contextLoads() {
-        
+
     }
-	@Test
-	public void greetingShouldReturnDefaultMessage() throws Exception {
-		assertThat(this.restTemplate.getForObject("http://localhost:" + port + "/test/",
-				String.class)).contains("Hello, World");
-    }
+
     @Test
-	public void testconversation() throws Exception {
-        String conversationid = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=fyhao1@gmail.com",
-                String.class);
+    public void greetingShouldReturnDefaultMessage() throws Exception {
+        assertThat(this.restTemplate.getForObject("http://localhost:" + port + "/test/", String.class))
+                .contains("Hello, World");
+    }
+
+    @Test
+    public void testconversation() throws Exception {
+        String conversationid = this.restTemplate.getForObject(
+                "http://localhost:" + port + "/webchat/createconversation?email=fyhao1@gmail.com", String.class);
         assertThat(getlastmessagefromparty(conversationid)).contains("system");
         assertThat(getlastmessagetoparty(conversationid)).contains("fyhao1@gmail.com");
-        String sendmessageresult = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=test1",
+        String sendmessageresult = this.restTemplate.getForObject(
+                "http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=test1",
                 String.class);
         assertThat(sendmessageresult).contains("0");
         assertThat(getlastmessagefromparty(conversationid)).contains("fyhao1@gmail.com");
         assertThat(getlastmessagetoparty(conversationid)).contains("bot");
-        //https://8080-ad1cca16-319c-41ea-88af-31d7c741202d.ws-us02.gitpod.io/webchat/getmessagecount?id=2
-        String messagecount = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getmessagecount?id=" + conversationid,
-                String.class);
+        // https://8080-ad1cca16-319c-41ea-88af-31d7c741202d.ws-us02.gitpod.io/webchat/getmessagecount?id=2
+        String messagecount = this.restTemplate.getForObject(
+                "http://localhost:" + port + "/webchat/getmessagecount?id=" + conversationid, String.class);
         assertThat(messagecount).contains("2");
-        sendmessageresult = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=test1",
+        sendmessageresult = this.restTemplate.getForObject(
+                "http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=test1",
                 String.class);
         assertThat(sendmessageresult).contains("0");
-        //https://8080-ad1cca16-319c-41ea-88af-31d7c741202d.ws-us02.gitpod.io/webchat/getmessagecount?id=2
-        messagecount = this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getmessagecount?id=" + conversationid,
-                String.class);
+        // https://8080-ad1cca16-319c-41ea-88af-31d7c741202d.ws-us02.gitpod.io/webchat/getmessagecount?id=2
+        messagecount = this.restTemplate.getForObject(
+                "http://localhost:" + port + "/webchat/getmessagecount?id=" + conversationid, String.class);
         assertThat(messagecount).contains("3");
         assertThat(getcontext(conversationid, "state")).contains("bot");
         sendmessage(conversationid, "transferagent");
@@ -107,12 +120,11 @@ public class TestingWebApplicationTests {
         sendmessage(conversationid2, "transferagentfail");
         assertThat(getcontext(conversationid2, "state")).doesNotContain("agent");
         assertThat(getlastmessagecontent(conversationid2)).contains("agent not available");
-        
+
     }
-    
-    
+
     @Test
-	public void testhotelbotusecase() throws Exception {
+    public void testhotelbotusecase() throws Exception {
         // conversationid4 used for full testing now
         String conversationid4 = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
         assertThat(getchannel(conversationid4)).contains("webchathotel");
@@ -131,7 +143,8 @@ public class TestingWebApplicationTests {
         sendmessage(conversationid4, "9:00am");
         assertThat(getlastmessagecontent(conversationid4)).contains("Confirm to book hotel on 9:00am?");
         sendmessage(conversationid4, "yes");
-        assertThat(getlastmessagecontent(conversationid4)).contains("Thank you for booking with us. What else we can help?");
+        assertThat(getlastmessagecontent(conversationid4))
+                .contains("Thank you for booking with us. What else we can help?");
         assertThat(getcontext(conversationid4, "finalbookinginfo")).contains("book time: 9:00am");
         // conversationid4 talking to bot book second time with negative confirmation
         assertThat(getcontext(conversationid4, "botmenu")).contains("home");
@@ -159,9 +172,9 @@ public class TestingWebApplicationTests {
         sendmessage(conversationid4, "bye");
         assertThat(getcontext(conversationid4, "state")).contains("end");
     }
-    
+
     @Test
-	public void testwebsocketconnectionforcustomer() throws Exception {
+    public void testwebsocketconnectionforcustomer() throws Exception {
         CompletableFuture<String> futureConversationid = new CompletableFuture<>();
         CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
         List<String> testCaseCust = new ArrayList<String>();
@@ -180,50 +193,49 @@ public class TestingWebApplicationTests {
         testCaseAns.add("hello i am sjeffers, how can i help you?");
         try {
             WebSocketClient webSocketClient = new StandardWebSocketClient();
- 
+
             WebSocketSession webSocketSession = webSocketClient.doHandshake(new TextWebSocketHandler() {
                 int c = 0;
                 boolean isAfterSendAgent = false;
+
                 @Override
                 public void handleTextMessage(WebSocketSession session, TextMessage message) {
-                    //LOGGER.info("received message - " + message.getPayload());
+                    // LOGGER.info("received message - " + message.getPayload());
                     JsonParser springParser = JsonParserFactory.getJsonParser();
                     ObjectMapper objectMapper = new ObjectMapper();
                     Map<String, Object> jsonMap = springParser.parseMap(message.getPayload());
-                    if(jsonMap.get("action").equals("connectionready")) {
+                    if (jsonMap.get("action").equals("connectionready")) {
                         String conversationid = (String) jsonMap.get("conversationid");
                         sendChatMessage(session, conversationid, testCaseCust.get(c));
-                    }
-                    else if(jsonMap.get("action").equals("chatMessageReceived")) {
+                    } else if (jsonMap.get("action").equals("chatMessageReceived")) {
                         String conversationid = (String) jsonMap.get("conversationid");
-                        String content = (String)jsonMap.get("content");
+                        String content = (String) jsonMap.get("content");
                         futureConversationid.complete(conversationid);
-                        if(!content.equals(testCaseAns.get(c))) {
+                        if (!content.equals(testCaseAns.get(c))) {
                             futureTestCompletion.complete("error");
                             return;
                         }
                         c++;
-                        if(isAfterSendAgent) {
+                        if (isAfterSendAgent) {
                             futureTestCompletion.complete("completed");
                             return;
                         }
-                        if(c >= testCaseCust.size()) {
-                            // test send agent message                            
+                        if (c >= testCaseCust.size()) {
+                            // test send agent message
                             sendagentmessage(conversationid5, "sjeffers", "hello i am sjeffers, how can i help you?");
                             isAfterSendAgent = true;
-                        }
-                        else {
+                        } else {
                             sendChatMessage(session, conversationid, testCaseCust.get(c));
                         }
                     }
                 }
- 
+
                 @Override
                 public void afterConnectionEstablished(WebSocketSession session) {
-                    //LOGGER.info("established connection - " + session);
+                    // LOGGER.info("established connection - " + session);
                     ObjectMapper objectMapper = new ObjectMapper();
-                    Map<String,Object> jsonMap = new HashMap<String,Object>();
-                    jsonMap.put("action","register");
+                    Map<String, Object> jsonMap = new HashMap<String, Object>();
+                    jsonMap.put("action", "register");
                     jsonMap.put("conversationid", conversationid5);
                     jsonMap.put("serverport", port);
                     try {
@@ -233,14 +245,16 @@ public class TestingWebApplicationTests {
 
                     }
                 }
+
                 private void sendChatMessage(WebSocketSession session, String conversationid, String chatMessage) {
-                    Map<String,Object> jsonMap = new HashMap<String,Object>();
+                    Map<String, Object> jsonMap = new HashMap<String, Object>();
                     jsonMap.put("action", "sendChatMessage");
                     jsonMap.put("conversationid", conversationid);
                     jsonMap.put("chatMessage", chatMessage);
                     sendMessage(session, jsonMap);
                 }
-                private void sendMessage(WebSocketSession session, Map<String,Object> jsonMap) {
+
+                private void sendMessage(WebSocketSession session, Map<String, Object> jsonMap) {
                     ObjectMapper objectMapper = new ObjectMapper();
                     try {
                         String message = objectMapper.writeValueAsString(jsonMap);
@@ -249,56 +263,58 @@ public class TestingWebApplicationTests {
 
                     }
                 }
-            }, new WebSocketHttpHeaders(), URI.create("ws://localhost:" + port + "/channel?conversationid=" + conversationid5)).get();
-            
-            
+            }, new WebSocketHttpHeaders(),
+                    URI.create("ws://localhost:" + port + "/channel?conversationid=" + conversationid5)).get();
+
         } catch (Exception e) {
-            //LOGGER.error("Exception while accessing websockets", e);
+            // LOGGER.error("Exception while accessing websockets", e);
         }
         // hold and wait
         assertThat(futureConversationid.get(2, SECONDS)).contains(conversationid5);
         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }
 
-    
     @Test
-	public void testwebsocketconnectionforagent() throws Exception {
+    public void testwebsocketconnectionforagent() throws Exception {
         CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
-        
+
         try {
             WebSocketClient webSocketClient = new StandardWebSocketClient();
- 
+
             WebSocketSession webSocketSession = webSocketClient.doHandshake(new TextWebSocketHandler() {
                 int c = 0;
                 boolean isAfterSendAgent = false;
+
                 @Override
                 public void handleTextMessage(WebSocketSession session, TextMessage message) {
                     JsonParser springParser = JsonParserFactory.getJsonParser();
                     ObjectMapper objectMapper = new ObjectMapper();
                     Map<String, Object> jsonMap = springParser.parseMap(message.getPayload());
-                    if(jsonMap.get("action").equals("connectionready")) {
+                    if (jsonMap.get("action").equals("connectionready")) {
                         futureTestCompletion.complete("completed");
                     }
                 }
- 
+
                 @Override
                 public void afterConnectionEstablished(WebSocketSession session) {
-                    //LOGGER.info("established connection - " + session);
+                    // LOGGER.info("established connection - " + session);
                     ObjectMapper objectMapper = new ObjectMapper();
-                    Map<String,Object> jsonMap = new HashMap<String,Object>();
+                    Map<String, Object> jsonMap = new HashMap<String, Object>();
                     jsonMap.put("action", "register");
                     jsonMap.put("agentid", "sjeffers");
                     jsonMap.put("serverport", port);
                     sendMessage(session, jsonMap);
                 }
+
                 private void sendChatMessage(WebSocketSession session, String conversationid, String chatMessage) {
-                    Map<String,Object> jsonMap = new HashMap<String,Object>();
+                    Map<String, Object> jsonMap = new HashMap<String, Object>();
                     jsonMap.put("action", "sendChatMessage");
                     jsonMap.put("conversationid", conversationid);
                     jsonMap.put("chatMessage", chatMessage);
                     sendMessage(session, jsonMap);
                 }
-                private void sendMessage(WebSocketSession session, Map<String,Object> jsonMap) {
+
+                private void sendMessage(WebSocketSession session, Map<String, Object> jsonMap) {
                     ObjectMapper objectMapper = new ObjectMapper();
                     try {
                         String message = objectMapper.writeValueAsString(jsonMap);
@@ -308,18 +324,40 @@ public class TestingWebApplicationTests {
                     }
                 }
             }, new WebSocketHttpHeaders(), URI.create("ws://localhost:" + port + "/agent")).get();
-            
-            
+
         } catch (Exception e) {
-            //LOGGER.error("Exception while accessing websockets", e);
+            // LOGGER.error("Exception while accessing websockets", e);
         }
         // hold and wait
         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }
 
     @Test
-	public void testagentprofileservice() throws Exception {
-        
+    public void testagentprofileservice() throws Exception {
+        assertThat(getagentcount()).contains("0");
+        createagentprofile("sjeffers");
+        assertThat(getagentcount()).contains("1");
+    }
+
+    private String createagentprofile(String agentName) {
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentName);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = this.restTemplate.postForEntity("http://localhost:" + port + "/agentprofile/createagentprofile", request,
+                String.class);
+        return resp.getBody();
+    }
+    private String getagentcount() {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/agentprofile/getagentcount",
+                String.class);
     }
 
     private String createconversation(String email) {

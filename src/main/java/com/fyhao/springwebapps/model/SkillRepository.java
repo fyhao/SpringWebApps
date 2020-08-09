@@ -8,4 +8,5 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface SkillRepository extends CrudRepository<Skill, UUID> {
     
+    public Skill findByName(String skill);
 }

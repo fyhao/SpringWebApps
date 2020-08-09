@@ -67,5 +67,13 @@ public class Agent implements Serializable {
         this.createdTime = createdTime;
     }
 
+    public Set<Skill> getAgentSkills() {
+        return agentSkills;
+    }
+
+    public void setAgentSkills(Set<Skill> agentSkills) {
+        this.agentSkills = agentSkills;
+    }
+
     
 }

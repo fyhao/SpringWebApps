@@ -29,6 +29,14 @@ public class AgentprofileController {
 
     @RequestMapping(method= RequestMethod.POST, value = "/createagentprofile", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public @ResponseBody String createagentprofile(@RequestBody AgentProfileDto agent) {
+        logger.info("AgentprofileController createagentprofile " + agent.getName());
+        agentProfileService.createAgentProfile(agent);
         return "0";
+    }
+
+    @RequestMapping("/getagentcount")
+	public @ResponseBody long getagentcount() {
+        logger.info("getagentcount");
+		return agentProfileService.getAgentCount();
     }
 }
