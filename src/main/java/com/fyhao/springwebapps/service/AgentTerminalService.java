@@ -95,4 +95,9 @@ public class AgentTerminalService {
         }
         return names;
     }
+    public AgentTerminal getMostAvailableAgent() {
+        List<AgentTerminal> terms = agentTerminalRepository.findByStatus(AgentTerminal.READY);
+        if(terms == null || terms.isEmpty()) return null;
+        return terms.get(0);
+    }
 }

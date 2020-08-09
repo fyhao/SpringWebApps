@@ -65,6 +65,11 @@ public class TestingWebApplicationTests {
 
     @Test
     public void testconversation() throws Exception {
+        createskillprofile("hotel");
+        createagentprofile("sjeffers");
+        assignagentskillaction("sjeffers", "hotel", AgentSkillDto.ASSIGNED_TO_AGENT);
+        registeragent("sjeffers");
+        setagentstatus("sjeffers", AgentTerminal.READY);
         String conversationid = this.restTemplate.getForObject(
                 "http://localhost:" + port + "/webchat/createconversation?email=fyhao1@gmail.com", String.class);
         assertThat(getlastmessagefromparty(conversationid)).contains("system");
@@ -121,6 +126,9 @@ public class TestingWebApplicationTests {
         assertThat(getconversationendtime(conversationid2)).isNullOrEmpty();
         assertThat(getcontext(conversationid, "state")).contains("end");
         assertThat(getcontext(conversationid2, "state")).doesNotContain("end");
+        // Before to test transferagentfail, we shall unregister agent first
+        setagentstatus("sjeffers", AgentTerminal.NOT_READY);
+        unregisteragent("sjeffers");
         sendmessage(conversationid2, "transferagentfail");
         assertThat(getcontext(conversationid2, "state")).doesNotContain("agent");
         assertThat(getlastmessagecontent(conversationid2)).contains("agent not available");
@@ -130,6 +138,12 @@ public class TestingWebApplicationTests {
     @Test
     public void testhotelbotusecase() throws Exception {
         // conversationid4 used for full testing now
+        // make an agent sjeffers ready to take chat task
+        createskillprofile("hotel");
+        createagentprofile("sjeffers");
+        assignagentskillaction("sjeffers", "hotel", AgentSkillDto.ASSIGNED_TO_AGENT);
+        registeragent("sjeffers");
+        setagentstatus("sjeffers", AgentTerminal.READY);
         String conversationid4 = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
         assertThat(getchannel(conversationid4)).contains("webchathotel");
         assertThat(getcontext(conversationid4, "state")).contains("bot");

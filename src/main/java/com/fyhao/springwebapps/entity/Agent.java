@@ -49,6 +49,9 @@ public class Agent implements Serializable {
     @JoinColumn(name = "agentterminal_id", referencedColumnName = "id")
     AgentTerminal agentTerminal;
 
+    @OneToMany(mappedBy = "agent")
+    private List<Task> tasks = new ArrayList<Task>();
+
     public UUID getId() {
         return id;
     }
@@ -88,6 +91,14 @@ public class Agent implements Serializable {
 	public void setAgentTerminal(AgentTerminal agentTerminal) {
 		this.agentTerminal = agentTerminal;
 	}
+
+    public List<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(List<Task> tasks) {
+        this.tasks = tasks;
+    }
 
     
 }
