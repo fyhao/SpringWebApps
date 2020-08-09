@@ -96,6 +96,14 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         jsonMap.put("newstatus", newstatus);
         sendCommandToAgent(agentid, jsonMap);
     }
+    public static void sendAgentIncomingTaskEvent(String agentid, String conversationid) {
+        logger.info("AgentSocketHandler.sendAgentIncomingTaskEvent " + agentid + " " + conversationid);
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "incomingTask");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("conversationid", conversationid);
+        sendCommandToAgent(agentid, jsonMap);
+    }
     public static void sendCommandToAgent(String agentid, Map<String,Object> jsonMap) {
         ObjectMapper objectMapper = new ObjectMapper();
         for(WebSocketSession session : sessions) {

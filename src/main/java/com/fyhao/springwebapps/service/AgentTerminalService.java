@@ -95,9 +95,18 @@ public class AgentTerminalService {
         }
         return names;
     }
-    public AgentTerminal getMostAvailableAgent() {
+    public AgentTerminal getMostAvailableAgent(String skillName) {
+        logger.info("AgentTerminalService.getMostAvailableAgent " + skillName);
         List<AgentTerminal> terms = agentTerminalRepository.findByStatus(AgentTerminal.READY);
         if(terms == null || terms.isEmpty()) return null;
-        return terms.get(0);
+        for(AgentTerminal term : terms) {
+            logger.info("AgentTerminalService Checking agent term " + term.getAgent().getName() + " if has skill " + skillName);
+            if(term.getAgent().hasSkill(skillName)) {
+                logger.info("AgentTerminalService found " + term.getAgent().getName());
+                return term;
+            }
+        }
+        logger.info("AgentTerminalService not found");
+        return null;
     }
 }

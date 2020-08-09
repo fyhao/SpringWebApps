@@ -452,11 +452,12 @@ public class TestingWebApplicationTests {
         createskillprofile("mandarin");
         assertThat(getskillcount()).contains("" + (Integer.parseInt(c) + 2));
         // create agents
-        assertThat(getagentcount()).contains("" + (Integer.parseInt(c) + 0));
+        String d = getagentcount();
+        assertThat(getagentcount()).contains("" + (Integer.parseInt(d) + 0));
         createagentprofile("sjeffers");
-        assertThat(getagentcount()).contains("" + (Integer.parseInt(c) + 1));
+        assertThat(getagentcount()).contains("" + (Integer.parseInt(d) + 1));
         createagentprofile("rbarrows");
-        assertThat(getagentcount()).contains("" + (Integer.parseInt(c) + 2));
+        assertThat(getagentcount()).contains("" + (Integer.parseInt(d) + 2));
         // assign skills to agent
         assertThat(getskillnamesofagent("sjeffers")).hasSize(0);
         assertThat(getskillnamesofagent("rbarrows")).hasSize(0);
@@ -517,10 +518,11 @@ public class TestingWebApplicationTests {
     @Test
     public void testsimplifiedwebsocketclient() throws Exception {
         // create skills
-        createskillprofile("skill2");
+        createskillprofile("hotel");
         // create agents
+        boolean hasError = false;
         createagentprofile("agent2");
-        assignagentskillaction("agent2", "skill2", AgentSkillDto.ASSIGNED_TO_AGENT);
+        assignagentskillaction("agent2", "hotel", AgentSkillDto.ASSIGNED_TO_AGENT);
         CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
         MyAgentClient agent = new MyAgentClient(this, "agent2");
         CompletableFuture<WebSocketSession> agentEstablished = agent.waitNextAgentEstablishedEvent();
@@ -529,10 +531,16 @@ public class TestingWebApplicationTests {
         agent.registerAgentSession();
         CompletableFuture<Map<String,Object>> incomingReceived = agent.waitNextIncomingTextMessage();
         Map<String,Object> jsonMap = incomingReceived.get(2, SECONDS);
+        boolean hasChangedReady = false;
         if (jsonMap.get("action").equals("connectionready")) {
             if(getactiveagentterminalnames().contains("agent2")) {
                 agent.setAgentStatus(AgentTerminal.READY);
+                hasChangedReady = true;
             }
+        }
+        if(!hasChangedReady) {
+            futureTestCompletion.complete("error");
+            hasError = true;
         }
         incomingReceived = agent.waitNextIncomingTextMessage();
         jsonMap = incomingReceived.get(2, SECONDS);
@@ -540,6 +548,7 @@ public class TestingWebApplicationTests {
             String newstatus = (String)jsonMap.get("newstatus");
             if(!newstatus.equals(AgentTerminal.READY)) {
                 futureTestCompletion.complete("error");
+                hasError = true;
             }
         }
         String conversationid = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
@@ -548,32 +557,45 @@ public class TestingWebApplicationTests {
         customer.start();
         assertThat(customerEstablished.get(2, SECONDS)).isNotNull();
         customer.registerCustomerSession();
-        incomingReceived = customer.waitNextIncomingTextMessage();
-        jsonMap = incomingReceived.get(2, SECONDS);
+        CompletableFuture<Map<String,Object>> customerIncomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
         if (jsonMap.get("action").equals("connectionready")) {
-            customer.sendChatMessage("testing");
+            customer.sendChatMessage("testing by testsimplified");
         }
-        incomingReceived = customer.waitNextIncomingTextMessage();
-        jsonMap = incomingReceived.get(2, SECONDS);
+        customerIncomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        incomingReceived = agent.waitNextIncomingTextMessage();
         if (jsonMap.get("action").equals("chatMessageReceived")) {
             String content = (String) jsonMap.get("content");
             if(!content.equals("This is abc hotel.")) {
                 futureTestCompletion.complete("error");
+                hasError = true;
             }
             else {
                 customer.sendChatMessage("do you know about abcde?");
             }
         }
-        incomingReceived = customer.waitNextIncomingTextMessage();
-        jsonMap = incomingReceived.get(2, SECONDS);
+        customerIncomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
         if (jsonMap.get("action").equals("chatMessageReceived")) {
             String content = (String) jsonMap.get("content");
             if(!content.equals("Sorry I am not understand. Will handover to agent.")) {
                 futureTestCompletion.complete("error");
+                hasError = true;
             }
-            else {
-                futureTestCompletion.complete("completed");
-            }
+        }
+        
+        jsonMap = incomingReceived.get(2, SECONDS);
+        if(jsonMap.get("action").equals("incomingTask")) { 
+            String agentConversationid = (String)jsonMap.get("conversationid");
+            
+        }
+        
+        if(hasError) {
+            futureTestCompletion.complete("error");
+        }
+        else {
+            futureTestCompletion.complete("completed");
         }
         // housekeeping cleanup, need to unregister agent to avoid affect other test case
         agent.setAgentStatus(AgentTerminal.NOT_READY);

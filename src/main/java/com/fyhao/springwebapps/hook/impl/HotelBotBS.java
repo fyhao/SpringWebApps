@@ -7,12 +7,15 @@ import com.fyhao.springwebapps.service.AgentAvailabilityService;
 import com.fyhao.springwebapps.service.MessagingService;
 import com.fyhao.springwebapps.service.TaskService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 @HookBS
 public class HotelBotBS implements BotServiceHook {
+    static Logger logger = LoggerFactory.getLogger(HotelBotBS.class);
     @Autowired
     MessagingService messagingService;
     @Autowired
@@ -26,6 +29,7 @@ public class HotelBotBS implements BotServiceHook {
         }
     }
     public void processHotelBot(Conversation conversation, String input) {
+        logger.info("HotelBotBS processHotelBot " + conversation.getId().toString() + " " + input);
         String botmenu = conversation.findContext("botmenu");
         if(botmenu == null) {
             botmenu = "home";
@@ -37,11 +41,14 @@ public class HotelBotBS implements BotServiceHook {
                 messagingService.sendBotMessage(conversation.getId().toString(), "When you want to book hotel?");
             }
             else if(input.equals("do you know about abcde?")) {
+                logger.info("HotelBotBS receive do you know?");
                 messagingService.sendBotMessage(conversation.getId().toString(), "Sorry I am not understand. Will handover to agent.");
                 String agentName = agentAvailabilityService.findAgent(conversation, "hotel");
+                logger.info("HotelBotBS agentavailabilityService found agent " + agentName);
                 if(agentName != null) {
                     conversation.saveContext("state", "agent");
                     conversation.saveContext("agentName", agentName);
+                    logger.info("HotelBotBS going to assign task to " + agentName);
                     taskService.assignTask(conversation, agentName);
                 }
             }
