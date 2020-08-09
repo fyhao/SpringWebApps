@@ -38,4 +38,16 @@ public class AgentTerminalController {
         logger.info("getagentterminalscount");
 		return agentTerminalService.getAgentTerminalsCount();
     }
+
+    @RequestMapping(method= RequestMethod.POST, value = "/setagentstatus", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public @ResponseBody String setagentstatus(@RequestBody AgentProfileDto dto) {
+        logger.info("AgentTerminalController setagentstatus " + dto.getName());
+        agentTerminalService.setAgentStatus(dto.getName(), dto.getStatus());
+        return "0";
+    }
+    @RequestMapping("/getagentstatus")
+    public @ResponseBody String getagentstatus(@RequestParam String agent) {
+        logger.info("AgentTerminalController getagentstatus " + agent);
+        return agentTerminalService.getAgentStatus(agent);
+    }
 }

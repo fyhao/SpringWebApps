@@ -35,6 +35,7 @@ import com.fyhao.springwebapps.*;
 import com.fyhao.springwebapps.dto.AgentProfileDto;
 import com.fyhao.springwebapps.dto.AgentSkillDto;
 import com.fyhao.springwebapps.dto.SkillDto;
+import com.fyhao.springwebapps.entity.AgentTerminal;
 
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -385,11 +386,36 @@ public class TestingWebApplicationTests {
         assertThat(getagentterminalscount()).contains("1");
         registeragent("rbarrows");
         assertThat(getagentterminalscount()).contains("2");
+        // setagentstatus
+        assertThat(getagentstatus("sjeffers")).contains(AgentTerminal.NOT_READY);
+        setagentstatus("sjeffers", AgentTerminal.READY);
+        assertThat(getagentstatus("sjeffers")).contains(AgentTerminal.READY);
         // unregister agent
         unregisteragent("sjeffers");
         assertThat(getagentterminalscount()).contains("1");
         unregisteragent("rbarrows");
         assertThat(getagentterminalscount()).contains("0");
+    }
+    private String setagentstatus(String agentName, String status) {
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentName);
+        dto.setStatus(status);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = this.restTemplate.postForEntity("http://localhost:" + port + "/agentterminal/setagentstatus", request,
+                String.class);
+        return resp.getBody();
+    }
+    private String getagentstatus(String agent) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/agentterminal/getagentstatus?agent=" + agent,
+                String.class);
     }
     private String registeragent(String agentName) {
         AgentProfileDto dto = new AgentProfileDto();

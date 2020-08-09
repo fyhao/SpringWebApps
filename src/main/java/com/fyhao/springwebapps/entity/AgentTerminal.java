@@ -29,6 +29,14 @@ public class AgentTerminal implements Serializable {
     @OneToOne(mappedBy = "agentTerminal")
     private Agent agent;
 
+    @Column(name="status")
+    private String status;
+
+    public final static String READY = "READY";
+    public final static String NOT_READY = "NOT_READY";
+    public final static String BUSY = "BUSY";
+    public final static String WORK = "WORK";
+
     public UUID getId() {
         return id;
     }
@@ -43,6 +51,14 @@ public class AgentTerminal implements Serializable {
 
     public void setAgent(Agent agent) {
         this.agent = agent;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
 }

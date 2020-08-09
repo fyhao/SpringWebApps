@@ -26,6 +26,7 @@ public class AgentTerminalService {
         }
         if(agent.getAgentTerminal() == null) {
             AgentTerminal agentTerminal = new AgentTerminal();
+            agentTerminal.setStatus(AgentTerminal.NOT_READY);
             agent.setAgentTerminal(agentTerminal);
             agentTerminal.setAgent(agent);
             agentTerminalRepository.save(agentTerminal);
@@ -50,5 +51,28 @@ public class AgentTerminalService {
 
     public long getAgentTerminalsCount() {
         return agentTerminalRepository.count();
+    }
+    
+    public int setAgentStatus(String agentName, String status) {
+        Agent agent = agentRepository.findByName(agentName);
+        if(agent == null) {
+            return 101;
+        }
+        if(agent.getAgentTerminal() != null) {
+            agent.getAgentTerminal().setStatus(status);
+            agentTerminalRepository.save(agent.getAgentTerminal());
+        }
+        return 0;
+    }
+
+    public String getAgentStatus(String agentName) {
+        Agent agent = agentRepository.findByName(agentName);
+        if(agent == null) {
+            return null;
+        }
+        if(agent.getAgentTerminal() != null) {
+            return agent.getAgentTerminal().getStatus();
+        }
+        return null;
     }
 }
