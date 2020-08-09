@@ -97,4 +97,7 @@ public class AgentProfileService {
     public long getAgentCount() {
         return agentRepository.count();
     }
+    public long getSkillCount() {
+        return skillRepository.count();
+    }
 }

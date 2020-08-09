@@ -1,6 +1,7 @@
 package com.fyhao.springwebapps.rest;
 
 import com.fyhao.springwebapps.dto.AgentProfileDto;
+import com.fyhao.springwebapps.dto.SkillDto;
 import com.fyhao.springwebapps.entity.Agent;
 import com.fyhao.springwebapps.service.AgentProfileService;
 
@@ -34,9 +35,21 @@ public class AgentprofileController {
         return "0";
     }
 
+    @RequestMapping(method= RequestMethod.POST, value = "/createskillprofile", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public @ResponseBody String createskillprofile(@RequestBody SkillDto skill) {
+        logger.info("AgentprofileController createskillprofile " + skill.getName());
+        agentProfileService.createSkillProfile(skill);
+        return "0";
+    }
+
     @RequestMapping("/getagentcount")
 	public @ResponseBody long getagentcount() {
         logger.info("getagentcount");
 		return agentProfileService.getAgentCount();
+    }
+    @RequestMapping("/getskillcount")
+	public @ResponseBody long getskillcount() {
+        logger.info("getskillcount");
+		return agentProfileService.getSkillCount();
     }
 }

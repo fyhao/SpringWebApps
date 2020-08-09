@@ -32,6 +32,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fyhao.springwebapps.*;
 import com.fyhao.springwebapps.dto.AgentProfileDto;
+import com.fyhao.springwebapps.dto.SkillDto;
 
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -334,6 +335,9 @@ public class TestingWebApplicationTests {
 
     @Test
     public void testagentprofileservice() throws Exception {
+        assertThat(getskillcount()).contains("0");
+        createskillprofile("english");
+        assertThat(getskillcount()).contains("1");
         assertThat(getagentcount()).contains("0");
         createagentprofile("sjeffers");
         assertThat(getagentcount()).contains("1");
@@ -355,8 +359,28 @@ public class TestingWebApplicationTests {
                 String.class);
         return resp.getBody();
     }
+    private String createskillprofile(String skillName) {
+        SkillDto dto = new SkillDto();
+        dto.setName(skillName);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = this.restTemplate.postForEntity("http://localhost:" + port + "/agentprofile/createskillprofile", request,
+                String.class);
+        return resp.getBody();
+    }
     private String getagentcount() {
         return this.restTemplate.getForObject("http://localhost:" + port + "/agentprofile/getagentcount",
+                String.class);
+    }
+    private String getskillcount() {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/agentprofile/getskillcount",
                 String.class);
     }
 
