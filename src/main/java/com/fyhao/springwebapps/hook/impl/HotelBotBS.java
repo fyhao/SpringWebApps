@@ -36,7 +36,7 @@ public class HotelBotBS implements BotServiceHook {
             else if(input.equals("do you know about abcde?")) {
                 messagingService.sendBotMessage(conversation.getId().toString(), "Sorry I am not understand. Will handover to agent.");
                 conversation.saveContext("hint", "1");
-                String agentName = agentAvailabilityService.findAgent(conversation);
+                String agentName = agentAvailabilityService.findAgent(conversation, "hotel");
                 if(agentName != null) {
                     conversation.saveContext("state", "agent");
                     conversation.saveContext("agentName", agentName);

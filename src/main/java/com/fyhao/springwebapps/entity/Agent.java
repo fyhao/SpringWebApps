@@ -100,5 +100,13 @@ public class Agent implements Serializable {
         this.tasks = tasks;
     }
 
-    
+    public boolean hasSkill(String skillName) {
+        if(getAgentSkills() == null || getAgentSkills().isEmpty()) return false;
+        for(Skill skill : getAgentSkills()) {
+            if(skill.getName().equals(skillName)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -23,7 +23,7 @@ public class TransferAgentCC implements ChatCustomerHook {
         if(input.equals("transferagent")) {
             isTransferAgent = true;
             conversation.saveContext("hint", "1");
-            String agentName = agentAvailabilityService.findAgent(conversation);
+            String agentName = agentAvailabilityService.findAgent(conversation, "hotel");
             if(agentName != null) {
                 conversation.saveContext("state", "agent");
                 conversation.saveContext("agentName", agentName);
@@ -33,7 +33,7 @@ public class TransferAgentCC implements ChatCustomerHook {
         else if(input.equals("transferagentfail")) {
             isTransferAgent = true;
             conversation.saveContext("hint", "0");
-            String agentName = agentAvailabilityService.findAgent(conversation);
+            String agentName = agentAvailabilityService.findAgent(conversation, "hotel");
             if(agentName != null) {
                 conversation.saveContext("state", "agent");
                 conversation.saveContext("agentName", agentName);
