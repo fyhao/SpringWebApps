@@ -7,6 +7,7 @@ import com.fyhao.springwebapps.entity.Agent;
 import com.fyhao.springwebapps.entity.AgentTerminal;
 import com.fyhao.springwebapps.model.AgentRepository;
 import com.fyhao.springwebapps.model.AgentTerminalRepository;
+import com.fyhao.springwebapps.ws.AgentSocketHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,13 +58,16 @@ public class AgentTerminalService {
     }
 
     public int setAgentStatus(String agentName, String status) {
+        logger.info("AgentTerminalService setAgentStatus " + agentName + " " + status);
         Agent agent = agentRepository.findByName(agentName);
         if(agent == null) {
             return 101;
         }
         if(agent.getAgentTerminal() != null) {
+            String oldstatus = agent.getAgentTerminal().getStatus();
             agent.getAgentTerminal().setStatus(status);
             agentTerminalRepository.save(agent.getAgentTerminal());
+            AgentSocketHandler.sendAgentStatusChangedEvent(agentName, oldstatus, status);
         }
         return 0;
     }

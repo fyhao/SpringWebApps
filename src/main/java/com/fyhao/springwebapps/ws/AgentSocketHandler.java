@@ -46,17 +46,15 @@ public class AgentSocketHandler extends TextWebSocketHandler {
             Map<String,Object> response = new HashMap<String,Object>();
             response.put("action", "connectionready");
             session.getAttributes().put("serverport", serverport);
+            session.getAttributes().put("agentid", agentid);
             String responseMessage = objectMapper.writeValueAsString(response);
             session.sendMessage(new TextMessage(responseMessage));
         }
-        else if(jsonMap.get("action").equals("sendChatMessage")) {
-            logger.info("AgentSocketHandler customer to system sendChatMessage");
-            String conversationid = (String)jsonMap.get("conversationid");
-            logger.info("AgentSocketHandler conversationid " + conversationid);
-            String chatMessage = (String)jsonMap.get("chatMessage");
+        else if(jsonMap.get("action").equals("setAgentStatus")) {
             Integer serverport = (Integer)session.getAttributes().get("serverport");
-            logger.info("AgentSocketHandler chatMessage " + chatMessage);
-            sendCustomerMessage(conversationid, chatMessage, serverport);
+            String agentid = (String)jsonMap.get("agentid");
+            String status = (String)jsonMap.get("status");
+            setagentstatus(agentid, status, serverport);
         }
 	}
 
@@ -75,24 +73,29 @@ public class AgentSocketHandler extends TextWebSocketHandler {
 			}
 		}
     }
-    
-    public static void sendChatMessageToCustomer(String conversationid, String message) {
-        logger.info("AgentSocketHandler.sendChatMessageToCustomer " + conversationid + " - " + message);
+    public static void sendAgentStatusChangedEvent(String agentid, String oldstatus, String newstatus) {
+        logger.info("AgentSocketHandler.sendAgentStatusChangedEvent " + agentid + " " + oldstatus + " " + newstatus);
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "agentStatusChanged");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("oldstatus", oldstatus);
+        jsonMap.put("newstatus", newstatus);
+        sendCommandToAgent(agentid, jsonMap);
+    }
+    public static void sendCommandToAgent(String agentid, Map<String,Object> jsonMap) {
         ObjectMapper objectMapper = new ObjectMapper();
         for(WebSocketSession session : sessions) {
-            String id = (String)session.getAttributes().get("conversationid");
-            if(id.equals(conversationid)) {
-                Map<String,Object> response = new HashMap<String,Object>();
-                response.put("action", "chatMessageReceived");
-                response.put("conversationid", conversationid);
-                response.put("content", message);
+            String sa = (String)session.getAttributes().get("agentid");
+            if(sa.equals(agentid)) {
                 try {
-                    String responseMessage = objectMapper.writeValueAsString(response);
+                    String responseMessage = objectMapper.writeValueAsString(jsonMap);
+                    logger.info("AgentSocketHandler.sendCommandToAgent " + agentid + " - " + responseMessage);
                     session.sendMessage(new TextMessage(responseMessage));
                 } catch (Exception ex) {}
             }
-		}
+        }
     }
+    
     public void sendCustomerMessage(String conversationid, String message, Integer port) {
         logger.info("AgentSocketHandler sendCustomerMessage " + conversationid + " - " + message);
         RestTemplate restTemplate = new RestTemplate();
@@ -132,6 +135,24 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         }
         HttpEntity<String> request = new HttpEntity<String>(message, headers);
         ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/agentterminal/unregisteragent", request,
+                String.class);
+        return resp.getBody();
+    }
+    private String setagentstatus(String agentName, String status, Integer port) {
+        RestTemplate restTemplate = new RestTemplate();
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentName);
+        dto.setStatus(status);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/agentterminal/setagentstatus", request,
                 String.class);
         return resp.getBody();
     }

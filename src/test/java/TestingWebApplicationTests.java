@@ -291,7 +291,7 @@ public class TestingWebApplicationTests {
 
             WebSocketSession webSocketSession = webSocketClient.doHandshake(new TextWebSocketHandler() {
                 int c = 0;
-                boolean isAfterSendAgent = false;
+                int testedScenario = 0;
 
                 @Override
                 public void handleTextMessage(WebSocketSession session, TextMessage message) {
@@ -300,12 +300,33 @@ public class TestingWebApplicationTests {
                     Map<String, Object> jsonMap = springParser.parseMap(message.getPayload());
                     if (jsonMap.get("action").equals("connectionready")) {
                         if(getactiveagentterminalnames().contains("agent1")) {
-                            futureTestCompletion.complete("completed");
+                            setAgentStatus(session, "agent1", AgentTerminal.READY);
                             return;
                         }
                         else {
                             futureTestCompletion.complete("error");
                             return;
+                        }
+                    }
+                    else if(jsonMap.get("action").equals("agentStatusChanged")) {
+                        String agentid = (String)jsonMap.get("agentid");
+                        String oldstatus = (String)jsonMap.get("oldstatus");
+                        String newstatus = (String)jsonMap.get("newstatus");
+                        if(testedScenario == 0) {
+                            if(!agentid.equals("agent1")) {
+                                futureTestCompletion.complete("error agentStatusChanged agentid as " + agentid + " instead of " + "agent1");
+                                return;
+                            }
+                            if(!oldstatus.equals(AgentTerminal.NOT_READY)) {
+                                futureTestCompletion.complete("error agentStatusChanged oldstatus as " + oldstatus + " instead of " + AgentTerminal.NOT_READY);
+                                return;
+                            }
+                            if(!newstatus.equals(AgentTerminal.READY)) {
+                                futureTestCompletion.complete("error agentStatusChanged newstatus as " + newstatus + " instead of " + AgentTerminal.READY);
+                                return;
+                            }
+                            futureTestCompletion.complete("completed");
+                            testedScenario++;
                         }
                     }
                 }
@@ -331,6 +352,14 @@ public class TestingWebApplicationTests {
                     jsonMap.put("action", "sendChatMessage");
                     jsonMap.put("conversationid", conversationid);
                     jsonMap.put("chatMessage", chatMessage);
+                    sendMessage(session, jsonMap);
+                }
+
+                private void setAgentStatus(WebSocketSession session, String agentid, String status) {
+                    Map<String, Object> jsonMap = new HashMap<String, Object>();
+                    jsonMap.put("action", "setAgentStatus");
+                    jsonMap.put("agentid", agentid);
+                    jsonMap.put("status", status);
                     sendMessage(session, jsonMap);
                 }
 
