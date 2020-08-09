@@ -71,7 +71,26 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
 			}
 		}
     }
-    
+    public static void sendAgentJoinedEvent(String conversationid) {
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "agentJoined");
+        jsonMap.put("conversationid", conversationid);
+        sendCommandToCustomer(conversationid, jsonMap);
+    }
+    public static void sendCommandToCustomer(String conversationid, Map<String,Object> jsonMap) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        for(WebSocketSession session : sessions) {
+            if(session.getAttributes() != null) {
+                String sa = (String)session.getAttributes().get("conversationid");
+                if(sa != null && sa.equals(conversationid)) {
+                    try {
+                        String responseMessage = objectMapper.writeValueAsString(jsonMap);
+                        session.sendMessage(new TextMessage(responseMessage));
+                    } catch (Exception ex) {}
+                }
+            }
+        }
+    }
     public static void sendChatMessageToCustomer(String conversationid, String message) {
         logger.info("ChannelSocketHandler.sendChatMessageToCustomer " + conversationid + " - " + message);
         ObjectMapper objectMapper = new ObjectMapper();

@@ -584,13 +584,24 @@ public class TestingWebApplicationTests {
                 hasError = true;
             }
         }
-        
+        else {
+            hasError = true;
+        }
         jsonMap = incomingReceived.get(2, SECONDS);
         if(jsonMap.get("action").equals("incomingTask")) { 
             String agentConversationid = (String)jsonMap.get("conversationid");
-            
         }
-        
+        else {
+            hasError = true;
+        }
+        customerIncomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        if (jsonMap.get("action").equals("agentJoined")) {
+
+        }
+        else {
+            hasError = true;
+        }
         if(hasError) {
             futureTestCompletion.complete("error");
         }

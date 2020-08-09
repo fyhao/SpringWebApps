@@ -9,6 +9,7 @@ import com.fyhao.springwebapps.model.TaskRepository;
 import com.fyhao.springwebapps.model.AgentRepository;
 import com.fyhao.springwebapps.util.Util;
 import com.fyhao.springwebapps.ws.AgentSocketHandler;
+import com.fyhao.springwebapps.ws.ChannelSocketHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ public class TaskService {
         task.setAgent(agent);
         taskRepository.save(task);
         AgentSocketHandler.sendAgentIncomingTaskEvent(agentid, conversation.getId().toString());
+        ChannelSocketHandler.sendAgentJoinedEvent(conversation.getId().toString());
         return 0;
     }
 
