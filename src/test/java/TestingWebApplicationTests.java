@@ -368,6 +368,13 @@ public class TestingWebApplicationTests {
         assertThat(getskillnamesofagent("sjeffers")).contains("mandarin");
         assertThat(getskillnamesofagent("sjeffers")).doesNotContain("english");
         assertThat(getskillnamesofagent("sjeffers")).hasSize(1);
+        // assign agent to skill
+        assertThat(getskillnamesofagent("rbarrows")).hasSize(0);
+        assertThat(getskillnamesofagent("rbarrows")).doesNotContain("english");
+        assignagentskillaction("rbarrows", "english", AgentSkillDto.ASSIGNED_TO_SKILL);
+        assertThat(getskillnamesofagent("rbarrows")).contains("english");
+        assertThat(getskillnamesofagent("sjeffers")).hasSize(1);
+        assertThat(getskillnamesofagent("rbarrows")).hasSize(1);
     }
 
     private String createagentprofile(String agentName) {

@@ -67,6 +67,12 @@ public class AgentProfileService {
     }
 
     public int assignAgentSkillAction(AgentSkillDto agentSkillDto) {
+        if(agentSkillDto.getAction().equals(AgentSkillDto.ASSIGNED_TO_SKILL)) {
+            agentSkillDto.setAction(AgentSkillDto.ASSIGNED_TO_AGENT);
+        }
+        else if(agentSkillDto.getAction().equals(AgentSkillDto.REMOVED_FROM_SKILL)) {
+            agentSkillDto.setAction(AgentSkillDto.REMOVED_FROM_AGENT);
+        }
         Agent agent = agentRepository.findByName(agentSkillDto.getAgent());
         if (agent == null) {
             return 101;
@@ -80,21 +86,13 @@ public class AgentProfileService {
             if (!agent.getAgentSkills().contains(skill)) {
                 agent.getAgentSkills().add(skill);
             }
+            agentRepository.save(agent);
         } else if (action.equals(AgentSkillDto.REMOVED_FROM_AGENT)) {
             if (agent.getAgentSkills().contains(skill)) {
                 agent.getAgentSkills().remove(skill);
             }
-        } else if (action.equals(AgentSkillDto.ASSIGNED_TO_SKILL)) {
-            if (!skill.getAgents().contains(agent)) {
-                skill.getAgents().add(agent);
-            }
-        } else if (action.equals(AgentSkillDto.REMOVED_FROM_SKILL)) {
-            if (skill.getAgents().contains(agent)) {
-                skill.getAgents().remove(agent);
-            }
+            agentRepository.save(agent);
         }
-        agentRepository.save(agent);
-        skillRepository.save(skill);
         return 0;
     }
     public long getAgentCount() {
