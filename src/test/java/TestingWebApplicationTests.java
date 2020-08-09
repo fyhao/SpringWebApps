@@ -308,6 +308,22 @@ public class TestingWebApplicationTests {
                             return;
                         }
                     }
+                    else if(jsonMap.get("action").equals("agentUnregistered")) {
+                        String status = (String)jsonMap.get("status");
+                        String msg = (String)jsonMap.get("msg");
+                        if(testedScenario == 1) {
+                            if(status.equals("0") && msg.equals("Failed as agent is not in not ready state")) {
+                                testedScenario++;
+                                setAgentStatus(session, "agent1", AgentTerminal.NOT_READY);
+                            }
+                        }
+                        else if(testedScenario == 2) {
+                            if(status.equals("1") && msg.equals("SUCCESS")) {
+                                testedScenario++;
+                                futureTestCompletion.complete("completed");
+                            }
+                        }
+                    }
                     else if(jsonMap.get("action").equals("agentStatusChanged")) {
                         String agentid = (String)jsonMap.get("agentid");
                         String oldstatus = (String)jsonMap.get("oldstatus");
@@ -325,8 +341,24 @@ public class TestingWebApplicationTests {
                                 futureTestCompletion.complete("error agentStatusChanged newstatus as " + newstatus + " instead of " + AgentTerminal.READY);
                                 return;
                             }
-                            futureTestCompletion.complete("completed");
                             testedScenario++;
+                            // test unregister agent when agent still not in not ready mode
+                            unregisterAgentSesssion(session, agentid);
+                        }
+                        else if(testedScenario == 2) {
+                            if(!agentid.equals("agent1")) {
+                                futureTestCompletion.complete("error agentStatusChanged agentid as " + agentid + " instead of " + "agent1");
+                                return;
+                            }
+                            if(!oldstatus.equals(AgentTerminal.READY)) {
+                                futureTestCompletion.complete("error agentStatusChanged oldstatus as " + oldstatus + " instead of " + AgentTerminal.READY);
+                                return;
+                            }
+                            if(!newstatus.equals(AgentTerminal.NOT_READY)) {
+                                futureTestCompletion.complete("error agentStatusChanged newstatus as " + newstatus + " instead of " + AgentTerminal.NOT_READY);
+                                return;
+                            }
+                            unregisterAgentSesssion(session, agentid);
                         }
                     }
                 }
@@ -354,7 +386,12 @@ public class TestingWebApplicationTests {
                     jsonMap.put("chatMessage", chatMessage);
                     sendMessage(session, jsonMap);
                 }
-
+                private void unregisterAgentSesssion(WebSocketSession session, String agentid) {
+                    Map<String, Object> jsonMap = new HashMap<String, Object>();
+                    jsonMap.put("action", "unregister");
+                    jsonMap.put("agentid", agentid);
+                    sendMessage(session, jsonMap);
+                }
                 private void setAgentStatus(WebSocketSession session, String agentid, String status) {
                     Map<String, Object> jsonMap = new HashMap<String, Object>();
                     jsonMap.put("action", "setAgentStatus");

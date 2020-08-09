@@ -50,6 +50,11 @@ public class AgentSocketHandler extends TextWebSocketHandler {
             String responseMessage = objectMapper.writeValueAsString(response);
             session.sendMessage(new TextMessage(responseMessage));
         }
+        else if(jsonMap.get("action").equals("unregister")) {
+            Integer serverport = (Integer)session.getAttributes().get("serverport");
+            String agentid = (String)jsonMap.get("agentid");
+            unregisteragent(agentid, serverport);
+        }
         else if(jsonMap.get("action").equals("setAgentStatus")) {
             Integer serverport = (Integer)session.getAttributes().get("serverport");
             String agentid = (String)jsonMap.get("agentid");
@@ -72,6 +77,15 @@ public class AgentSocketHandler extends TextWebSocketHandler {
 				break;
 			}
 		}
+    }
+    public static void sendAgentUnregisteredEvent(String agentid, boolean status, String msg) {
+        logger.info("AgentSocketHandler.sendAgentUnregisteredEvent " + agentid + " " + status + " " + msg);
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "agentUnregistered");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("status", status ? "1" : "0");
+        jsonMap.put("msg", msg);
+        sendCommandToAgent(agentid, jsonMap);
     }
     public static void sendAgentStatusChangedEvent(String agentid, String oldstatus, String newstatus) {
         logger.info("AgentSocketHandler.sendAgentStatusChangedEvent " + agentid + " " + oldstatus + " " + newstatus);
