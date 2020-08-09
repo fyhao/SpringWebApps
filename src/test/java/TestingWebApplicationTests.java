@@ -93,9 +93,13 @@ public class TestingWebApplicationTests {
                 "http://localhost:" + port + "/webchat/getmessagecount?id=" + conversationid, String.class);
         assertThat(messagecount).contains("3");
         assertThat(getcontext(conversationid, "state")).contains("bot");
+        // Before transfer agent, sjeffers active task should be zero
+        assertThat(getagenttaskscount("sjeffers")).contains("0");
         sendmessage(conversationid, "transferagent");
         assertThat(getlastmessagecontent(conversationid)).contains("you are chatting with our agent");
         assertThat(getcontext(conversationid, "state")).contains("agent");
+        // After transfer agent, sjeffers active task should be 1
+        assertThat(getagenttaskscount("sjeffers")).contains("1");
         assertThat(getchannel(conversationid)).contains("webchat");
         assertThat(getcontactscount()).contains("1");
         String conversationid2 = createconversation("fyhao1@gmail.com");
@@ -140,10 +144,10 @@ public class TestingWebApplicationTests {
         // conversationid4 used for full testing now
         // make an agent sjeffers ready to take chat task
         createskillprofile("hotel");
-        createagentprofile("sjeffers");
-        assignagentskillaction("sjeffers", "hotel", AgentSkillDto.ASSIGNED_TO_AGENT);
-        registeragent("sjeffers");
-        setagentstatus("sjeffers", AgentTerminal.READY);
+        createagentprofile("sjeffers1");
+        assignagentskillaction("sjeffers1", "hotel", AgentSkillDto.ASSIGNED_TO_AGENT);
+        registeragent("sjeffers1");
+        setagentstatus("sjeffers1", AgentTerminal.READY);
         String conversationid4 = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
         assertThat(getchannel(conversationid4)).contains("webchathotel");
         assertThat(getcontext(conversationid4, "state")).contains("bot");
@@ -176,15 +180,18 @@ public class TestingWebApplicationTests {
         assertThat(getcontext(conversationid4, "finalbookinginfo")).isNullOrEmpty();
         // conversationid4 talking to bot but bot decided handover to agent
         assertThat(getcontext(conversationid4, "state")).contains("bot");
+        // Before transfer agent, sjeffers active task should be zero
+        assertThat(getagenttaskscount("sjeffers1")).contains("0");
         sendmessage(conversationid4, "do you know about abcde?");
         assertThat(getcontext(conversationid4, "state")).contains("agent");
         // conversationid4 start to agent
-        sendagentmessage(conversationid4, "sjeffers", "hello i am sjeffers, how can i help you?");
-        assertThat(getlastmessagefromparty(conversationid4)).contains("sjeffers");
+        assertThat(getagenttaskscount("sjeffers1")).contains("1");
+        sendagentmessage(conversationid4, "sjeffers1", "hello i am sjeffers, how can i help you?");
+        assertThat(getlastmessagefromparty(conversationid4)).contains("sjeffers1");
         assertThat(getlastmessagetoparty(conversationid4)).contains("fyhao1@gmail.com");
         sendmessage(conversationid4, "hi i have some issue");
         assertThat(getlastmessagefromparty(conversationid4)).contains("fyhao1@gmail.com");
-        assertThat(getlastmessagetoparty(conversationid4)).contains("sjeffers");
+        assertThat(getlastmessagetoparty(conversationid4)).contains("sjeffers1");
         // customer initiated bye
         assertThat(getcontext(conversationid4, "state")).contains("agent");
         sendmessage(conversationid4, "bye");
@@ -533,6 +540,10 @@ public class TestingWebApplicationTests {
     }
     private String getagentstatus(String agent) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/agentterminal/getagentstatus?agent=" + agent,
+                String.class);
+    }
+    private String getagenttaskscount(String agent) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/task/getagenttaskscount?agentid=" + agent,
                 String.class);
     }
     private String registeragent(String agentName) {

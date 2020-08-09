@@ -46,6 +46,10 @@ public class Task implements Serializable {
     @Column(name="updatedTime")
     Timestamp updatedTime;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "conversation_id", referencedColumnName = "id")
+    Conversation conversation;
+
     public UUID getId() {
         return id;
     }
@@ -85,5 +89,13 @@ public class Task implements Serializable {
 	public void setUpdatedTime(Timestamp updatedTime) {
 		this.updatedTime = updatedTime;
 	}
+
+    public Conversation getConversation() {
+        return conversation;
+    }
+
+    public void setConversation(Conversation conversation) {
+        this.conversation = conversation;
+    }
 
 }

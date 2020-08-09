@@ -4,6 +4,7 @@ import com.fyhao.springwebapps.entity.Conversation;
 import com.fyhao.springwebapps.hook.ChatCustomerHook;
 import com.fyhao.springwebapps.hook.HookCC;
 import com.fyhao.springwebapps.service.AgentAvailabilityService;
+import com.fyhao.springwebapps.service.TaskService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,27 +17,20 @@ public class TransferAgentCC implements ChatCustomerHook {
     static Logger logger = LoggerFactory.getLogger(TransferAgentCC.class);
     @Autowired
     AgentAvailabilityService agentAvailabilityService;
+    @Autowired
+    TaskService taskService;
     @Override
     public void preChatProcessCustomerMessage(Conversation conversation, String input) {
         boolean hasFoundAgent = conversation.findContextBool("hasFoundAgent");
         boolean isTransferAgent = conversation.findContextBool("isTransferAgent");
-        if(input.equals("transferagent")) {
+        if(input.contains("transferagent")) {
             isTransferAgent = true;
-            conversation.saveContext("hint", "1");
             String agentName = agentAvailabilityService.findAgent(conversation, "hotel");
             if(agentName != null) {
                 conversation.saveContext("state", "agent");
                 conversation.saveContext("agentName", agentName);
+                taskService.assignTask(conversation, agentName);
                 hasFoundAgent = true;
-            }
-        }
-        else if(input.equals("transferagentfail")) {
-            isTransferAgent = true;
-            conversation.saveContext("hint", "0");
-            String agentName = agentAvailabilityService.findAgent(conversation, "hotel");
-            if(agentName != null) {
-                conversation.saveContext("state", "agent");
-                conversation.saveContext("agentName", agentName);
             }
         }
         conversation.saveContextBool("hasFoundAgent", hasFoundAgent);

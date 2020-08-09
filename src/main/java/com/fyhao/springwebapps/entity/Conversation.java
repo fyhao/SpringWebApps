@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 @Entity
 public class Conversation implements Serializable {
@@ -48,6 +48,10 @@ public class Conversation implements Serializable {
     
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "conversation")
     private List<Context> contexts = new ArrayList<Context>();
+
+    @OneToOne(mappedBy = "conversation")
+    private Task task;
+
     public UUID getId() {
         return id;
     }
@@ -186,5 +190,13 @@ public class Conversation implements Serializable {
         message.setToparty(this.getContact().getEmail());
         message.setConversation(this);
         getMessages().add(message);
+    }
+
+    public Task getTask() {
+        return task;
+    }
+
+    public void setTask(Task task) {
+        this.task = task;
     }
 }

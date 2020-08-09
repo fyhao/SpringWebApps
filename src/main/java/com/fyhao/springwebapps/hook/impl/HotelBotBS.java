@@ -5,6 +5,7 @@ import com.fyhao.springwebapps.hook.BotServiceHook;
 import com.fyhao.springwebapps.hook.HookBS;
 import com.fyhao.springwebapps.service.AgentAvailabilityService;
 import com.fyhao.springwebapps.service.MessagingService;
+import com.fyhao.springwebapps.service.TaskService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,8 @@ public class HotelBotBS implements BotServiceHook {
     MessagingService messagingService;
     @Autowired
     AgentAvailabilityService agentAvailabilityService;
+    @Autowired
+    TaskService taskService;
     @Override
     public void processCustomerMessage(Conversation conversation, String input) {
         if(conversation.getChannel().equals("webchathotel")) {
@@ -35,11 +38,11 @@ public class HotelBotBS implements BotServiceHook {
             }
             else if(input.equals("do you know about abcde?")) {
                 messagingService.sendBotMessage(conversation.getId().toString(), "Sorry I am not understand. Will handover to agent.");
-                conversation.saveContext("hint", "1");
                 String agentName = agentAvailabilityService.findAgent(conversation, "hotel");
                 if(agentName != null) {
                     conversation.saveContext("state", "agent");
                     conversation.saveContext("agentName", agentName);
+                    taskService.assignTask(conversation, agentName);
                 }
             }
             else {
