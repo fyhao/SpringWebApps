@@ -42,6 +42,10 @@ public class AgentTerminalService {
         }
         if(agent.getAgentTerminal() != null) {
             AgentTerminal terminal = agent.getAgentTerminal();
+            // #54 agent unregister rule, must be not ready then can unregister
+            if(!terminal.getStatus().equals(AgentTerminal.NOT_READY)) {
+                return 102;
+            }
             agent.setAgentTerminal(null);
             agentRepository.save(agent);
             agentTerminalRepository.delete(terminal);

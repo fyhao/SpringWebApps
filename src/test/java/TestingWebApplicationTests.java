@@ -390,6 +390,11 @@ public class TestingWebApplicationTests {
         assertThat(getagentstatus("sjeffers")).contains(AgentTerminal.NOT_READY);
         setagentstatus("sjeffers", AgentTerminal.READY);
         assertThat(getagentstatus("sjeffers")).contains(AgentTerminal.READY);
+        // unregister agent when agent still not in not ready mode should failed
+        unregisteragent("sjeffers");
+        assertThat(getagentterminalscount()).contains("2");
+        setagentstatus("sjeffers", AgentTerminal.NOT_READY);
+        assertThat(getagentstatus("sjeffers")).contains(AgentTerminal.READY);
         // unregister agent
         unregisteragent("sjeffers");
         assertThat(getagentterminalscount()).contains("1");
