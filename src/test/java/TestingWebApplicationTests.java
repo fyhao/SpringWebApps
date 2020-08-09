@@ -337,14 +337,36 @@ public class TestingWebApplicationTests {
 
     @Test
     public void testagentprofileservice() throws Exception {
+        // create skills
         assertThat(getskillcount()).contains("0");
         createskillprofile("english");
         assertThat(getskillcount()).contains("1");
+        createskillprofile("mandarin");
+        assertThat(getskillcount()).contains("2");
+        // create agents
         assertThat(getagentcount()).contains("0");
         createagentprofile("sjeffers");
         assertThat(getagentcount()).contains("1");
+        createagentprofile("rbarrows");
+        assertThat(getagentcount()).contains("2");
+        // assign skills to agent
         assertThat(getskillnamesofagent("sjeffers")).hasSize(0);
+        assertThat(getskillnamesofagent("rbarrows")).hasSize(0);
         assignagentskillaction("sjeffers", "english", AgentSkillDto.ASSIGNED_TO_AGENT);
+        assertThat(getskillnamesofagent("sjeffers")).hasSize(1);
+        assertThat(getskillnamesofagent("rbarrows")).hasSize(0);
+        assignagentskillaction("sjeffers", "english", AgentSkillDto.ASSIGNED_TO_AGENT);
+        assertThat(getskillnamesofagent("sjeffers")).hasSize(1);
+        assertThat(getskillnamesofagent("rbarrows")).hasSize(0);
+        assignagentskillaction("sjeffers", "mandarin", AgentSkillDto.ASSIGNED_TO_AGENT);
+        assertThat(getskillnamesofagent("sjeffers")).hasSize(2);
+        assertThat(getskillnamesofagent("rbarrows")).hasSize(0);
+        // remove skills from agent
+        assertThat(getskillnamesofagent("sjeffers")).contains("english");
+        assertThat(getskillnamesofagent("sjeffers")).contains("mandarin");
+        assignagentskillaction("sjeffers", "english", AgentSkillDto.REMOVED_FROM_AGENT);
+        assertThat(getskillnamesofagent("sjeffers")).contains("mandarin");
+        assertThat(getskillnamesofagent("sjeffers")).doesNotContain("english");
         assertThat(getskillnamesofagent("sjeffers")).hasSize(1);
     }
 
