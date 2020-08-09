@@ -538,10 +538,44 @@ public class TestingWebApplicationTests {
         jsonMap = incomingReceived.get(2, SECONDS);
         if(jsonMap.get("action").equals("agentStatusChanged")) { 
             String newstatus = (String)jsonMap.get("newstatus");
-            if(newstatus.equals(AgentTerminal.READY)) {
+            if(!newstatus.equals(AgentTerminal.READY)) {
+                futureTestCompletion.complete("error");
+            }
+        }
+        String conversationid = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
+        MyCustomerClient customer = new MyCustomerClient(this, conversationid);
+        CompletableFuture<WebSocketSession> customerEstablished = customer.waitNextCustomerEstablishedEvent();
+        customer.start();
+        assertThat(customerEstablished.get(2, SECONDS)).isNotNull();
+        customer.registerCustomerSession();
+        incomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        if (jsonMap.get("action").equals("connectionready")) {
+            customer.sendChatMessage("testing");
+        }
+        incomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        if (jsonMap.get("action").equals("chatMessageReceived")) {
+            String content = (String) jsonMap.get("content");
+            if(!content.equals("This is abc hotel.")) {
+                futureTestCompletion.complete("error");
+            }
+            else {
+                customer.sendChatMessage("do you know about abcde?");
+            }
+        }
+        incomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        if (jsonMap.get("action").equals("chatMessageReceived")) {
+            String content = (String) jsonMap.get("content");
+            if(!content.equals("Sorry I am not understand. Will handover to agent.")) {
+                futureTestCompletion.complete("error");
+            }
+            else {
                 futureTestCompletion.complete("completed");
             }
         }
+        // housekeeping cleanup, need to unregister agent to avoid affect other test case
         agent.setAgentStatus(AgentTerminal.NOT_READY);
         agent.unregisterAgentSesssion();
         // hold and wait
