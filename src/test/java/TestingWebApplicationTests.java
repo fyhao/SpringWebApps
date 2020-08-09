@@ -44,7 +44,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public class TestingWebApplicationTests {
 
     @LocalServerPort
-    private int port;
+    int port;
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -441,21 +441,22 @@ public class TestingWebApplicationTests {
         unregisteragent("sjeffers");
         unregisteragent("rbarrows");
     }
-
+    
     @Test
     public void testagentprofileservice() throws Exception {
         // create skills
-        assertThat(getskillcount()).contains("0");
+        String c = getskillcount();
+        assertThat(getskillcount()).contains(getskillcount());
         createskillprofile("english");
-        assertThat(getskillcount()).contains("1");
+        assertThat(getskillcount()).contains("" + (Integer.parseInt(c) + 1));
         createskillprofile("mandarin");
-        assertThat(getskillcount()).contains("2");
+        assertThat(getskillcount()).contains("" + (Integer.parseInt(c) + 2));
         // create agents
-        assertThat(getagentcount()).contains("0");
+        assertThat(getagentcount()).contains("" + (Integer.parseInt(c) + 0));
         createagentprofile("sjeffers");
-        assertThat(getagentcount()).contains("1");
+        assertThat(getagentcount()).contains("" + (Integer.parseInt(c) + 1));
         createagentprofile("rbarrows");
-        assertThat(getagentcount()).contains("2");
+        assertThat(getagentcount()).contains("" + (Integer.parseInt(c) + 2));
         // assign skills to agent
         assertThat(getskillnamesofagent("sjeffers")).hasSize(0);
         assertThat(getskillnamesofagent("rbarrows")).hasSize(0);
@@ -487,14 +488,16 @@ public class TestingWebApplicationTests {
         assertThat(getskillnamesofagent("rbarrows")).hasSize(0);
         assertThat(getskillnamesofagent("rbarrows")).doesNotContain("english");
         // register agent
-        assertThat(getactiveagentterminalnames()).hasSize(0);
-        assertThat(getagentterminalscount()).contains("0");
+        long currentActiveSize = getactiveagentterminalnames().size();
+        assertThat(getactiveagentterminalnames()).hasSize((int)currentActiveSize);
+        String currentTermCount = getagentterminalscount();
+        assertThat(getagentterminalscount()).contains(currentTermCount);
         registeragent("sjeffers");
-        assertThat(getagentterminalscount()).contains("1");
-        assertThat(getactiveagentterminalnames()).hasSize(1);
+        assertThat(getagentterminalscount()).contains("" + (Integer.parseInt(currentTermCount) + 1));
+        assertThat(getactiveagentterminalnames()).hasSize((int)currentActiveSize + 1);
         assertThat(getactiveagentterminalnames()).contains("sjeffers");
         registeragent("rbarrows");
-        assertThat(getagentterminalscount()).contains("2");
+        assertThat(getagentterminalscount()).contains("" + (Integer.parseInt(currentTermCount) + 2));
         assertThat(getactiveagentterminalnames()).contains("rbarrows");
         // setagentstatus
         assertThat(getagentstatus("sjeffers")).contains(AgentTerminal.NOT_READY);
@@ -502,14 +505,47 @@ public class TestingWebApplicationTests {
         assertThat(getagentstatus("sjeffers")).contains(AgentTerminal.READY);
         // unregister agent when agent still not in not ready mode should failed
         unregisteragent("sjeffers");
-        assertThat(getagentterminalscount()).contains("2");
+        assertThat(getagentterminalscount()).contains("" + (Integer.parseInt(currentTermCount) + 2));
         setagentstatus("sjeffers", AgentTerminal.NOT_READY);
         assertThat(getagentstatus("sjeffers")).contains(AgentTerminal.READY);
         // unregister agent
         unregisteragent("sjeffers");
-        assertThat(getagentterminalscount()).contains("1");
+        assertThat(getagentterminalscount()).contains("" + (Integer.parseInt(currentTermCount) + 1));
         unregisteragent("rbarrows");
-        assertThat(getagentterminalscount()).contains("0");
+        assertThat(getagentterminalscount()).contains("" + (Integer.parseInt(currentTermCount) + 0));
+    }
+    @Test
+    public void testsimplifiedwebsocketclient() throws Exception {
+        // create skills
+        createskillprofile("skill2");
+        // create agents
+        createagentprofile("agent2");
+        assignagentskillaction("agent2", "skill2", AgentSkillDto.ASSIGNED_TO_AGENT);
+        CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
+        MyAgentClient agent = new MyAgentClient(this, "agent2");
+        CompletableFuture<WebSocketSession> agentEstablished = agent.waitNextAgentEstablishedEvent();
+        agent.start();
+        assertThat(agentEstablished.get(2, SECONDS)).isNotNull();
+        agent.registerAgentSession();
+        CompletableFuture<Map<String,Object>> incomingReceived = agent.waitNextIncomingTextMessage();
+        Map<String,Object> jsonMap = incomingReceived.get(2, SECONDS);
+        if (jsonMap.get("action").equals("connectionready")) {
+            if(getactiveagentterminalnames().contains("agent2")) {
+                agent.setAgentStatus(AgentTerminal.READY);
+            }
+        }
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        if(jsonMap.get("action").equals("agentStatusChanged")) { 
+            String newstatus = (String)jsonMap.get("newstatus");
+            if(newstatus.equals(AgentTerminal.READY)) {
+                futureTestCompletion.complete("completed");
+            }
+        }
+        agent.setAgentStatus(AgentTerminal.NOT_READY);
+        agent.unregisterAgentSesssion();
+        // hold and wait
+        assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }
     private List<String> getactiveagentterminalnames() {
         String resp = this.restTemplate.getForObject("http://localhost:" + port + "/agentterminal/getactiveagentterminalnames",

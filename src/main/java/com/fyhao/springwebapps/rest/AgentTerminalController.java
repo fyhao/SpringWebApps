@@ -54,7 +54,8 @@ public class AgentTerminalController {
     }
     @RequestMapping("/getactiveagentterminalnames")
 	public @ResponseBody List<String> getactiveagentterminalnames() {
-        logger.info("getactiveagentterminalnames");
-		return agentTerminalService.getActiveAgentTerminalNames();
+        List<String> list = agentTerminalService.getActiveAgentTerminalNames();
+        logger.info("getactiveagentterminalnames " + list);
+        return list;
     }
 }

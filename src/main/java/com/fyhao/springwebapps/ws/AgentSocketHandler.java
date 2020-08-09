@@ -99,13 +99,15 @@ public class AgentSocketHandler extends TextWebSocketHandler {
     public static void sendCommandToAgent(String agentid, Map<String,Object> jsonMap) {
         ObjectMapper objectMapper = new ObjectMapper();
         for(WebSocketSession session : sessions) {
-            String sa = (String)session.getAttributes().get("agentid");
-            if(sa.equals(agentid)) {
-                try {
-                    String responseMessage = objectMapper.writeValueAsString(jsonMap);
-                    logger.info("AgentSocketHandler.sendCommandToAgent " + agentid + " - " + responseMessage);
-                    session.sendMessage(new TextMessage(responseMessage));
-                } catch (Exception ex) {}
+            if(session.getAttributes() != null) {
+                String sa = (String)session.getAttributes().get("agentid");
+                if(sa != null && sa.equals(agentid)) {
+                    try {
+                        String responseMessage = objectMapper.writeValueAsString(jsonMap);
+                        logger.info("AgentSocketHandler.sendCommandToAgent " + agentid + " - " + responseMessage);
+                        session.sendMessage(new TextMessage(responseMessage));
+                    } catch (Exception ex) {}
+                }
             }
         }
     }
