@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fyhao.springwebapps.dto.AgentProfileDto;
 import com.fyhao.springwebapps.service.MessagingService;
 
 import org.slf4j.Logger;
@@ -15,6 +17,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.socket.CloseStatus;
@@ -35,6 +41,8 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         Map<String, Object> jsonMap = springParser.parseMap(message.getPayload());
         if(jsonMap.get("action").equals("register")) {
             Integer serverport = (Integer)jsonMap.get("serverport");
+            String agentid = (String)jsonMap.get("agentid");
+            registeragent(agentid, serverport);
             Map<String,Object> response = new HashMap<String,Object>();
             response.put("action", "connectionready");
             session.getAttributes().put("serverport", serverport);
@@ -90,6 +98,42 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=" + URLEncoder.encode(message),
                 String.class);
+    }
+
+
+    public String registeragent(String agentName, Integer port) {
+        RestTemplate restTemplate = new RestTemplate();
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentName);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/agentterminal/registeragent", request,
+                String.class);
+        return resp.getBody();
+    }
+    public String unregisteragent(String agentName, Integer port) {
+        RestTemplate restTemplate = new RestTemplate();
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentName);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/agentterminal/unregisteragent", request,
+                String.class);
+        return resp.getBody();
     }
 }
     

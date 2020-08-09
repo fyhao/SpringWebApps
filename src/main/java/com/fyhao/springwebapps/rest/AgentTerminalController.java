@@ -1,5 +1,7 @@
 package com.fyhao.springwebapps.rest;
 
+import java.util.List;
+
 import com.fyhao.springwebapps.dto.AgentProfileDto;
 import com.fyhao.springwebapps.service.AgentTerminalService;
 
@@ -49,5 +51,10 @@ public class AgentTerminalController {
     public @ResponseBody String getagentstatus(@RequestParam String agent) {
         logger.info("AgentTerminalController getagentstatus " + agent);
         return agentTerminalService.getAgentStatus(agent);
+    }
+    @RequestMapping("/getactiveagentterminalnames")
+	public @ResponseBody List<String> getactiveagentterminalnames() {
+        logger.info("getactiveagentterminalnames");
+		return agentTerminalService.getActiveAgentTerminalNames();
     }
 }

@@ -280,8 +280,12 @@ public class TestingWebApplicationTests {
 
     @Test
     public void testwebsocketconnectionforagent() throws Exception {
+        // create skills
+        createskillprofile("english");
+        createskillprofile("mandarin");
+        // create agents
+        createagentprofile("agent1");
         CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
-
         try {
             WebSocketClient webSocketClient = new StandardWebSocketClient();
 
@@ -295,17 +299,29 @@ public class TestingWebApplicationTests {
                     ObjectMapper objectMapper = new ObjectMapper();
                     Map<String, Object> jsonMap = springParser.parseMap(message.getPayload());
                     if (jsonMap.get("action").equals("connectionready")) {
-                        futureTestCompletion.complete("completed");
+                        if(getactiveagentterminalnames().contains("agent1")) {
+                            futureTestCompletion.complete("completed");
+                            return;
+                        }
+                        else {
+                            futureTestCompletion.complete("error");
+                            return;
+                        }
                     }
                 }
 
                 @Override
                 public void afterConnectionEstablished(WebSocketSession session) {
                     // LOGGER.info("established connection - " + session);
+                    
+                    if(getactiveagentterminalnames().contains("agent1")) {
+                        futureTestCompletion.complete("error");
+                        return;
+                    }
                     ObjectMapper objectMapper = new ObjectMapper();
                     Map<String, Object> jsonMap = new HashMap<String, Object>();
                     jsonMap.put("action", "register");
-                    jsonMap.put("agentid", "sjeffers");
+                    jsonMap.put("agentid", "agent1");
                     jsonMap.put("serverport", port);
                     sendMessage(session, jsonMap);
                 }
@@ -334,6 +350,9 @@ public class TestingWebApplicationTests {
         }
         // hold and wait
         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
+        // unregister agent
+        unregisteragent("sjeffers");
+        unregisteragent("rbarrows");
     }
 
     @Test
@@ -381,11 +400,15 @@ public class TestingWebApplicationTests {
         assertThat(getskillnamesofagent("rbarrows")).hasSize(0);
         assertThat(getskillnamesofagent("rbarrows")).doesNotContain("english");
         // register agent
+        assertThat(getactiveagentterminalnames()).hasSize(0);
         assertThat(getagentterminalscount()).contains("0");
         registeragent("sjeffers");
         assertThat(getagentterminalscount()).contains("1");
+        assertThat(getactiveagentterminalnames()).hasSize(1);
+        assertThat(getactiveagentterminalnames()).contains("sjeffers");
         registeragent("rbarrows");
         assertThat(getagentterminalscount()).contains("2");
+        assertThat(getactiveagentterminalnames()).contains("rbarrows");
         // setagentstatus
         assertThat(getagentstatus("sjeffers")).contains(AgentTerminal.NOT_READY);
         setagentstatus("sjeffers", AgentTerminal.READY);
@@ -400,6 +423,16 @@ public class TestingWebApplicationTests {
         assertThat(getagentterminalscount()).contains("1");
         unregisteragent("rbarrows");
         assertThat(getagentterminalscount()).contains("0");
+    }
+    private List<String> getactiveagentterminalnames() {
+        String resp = this.restTemplate.getForObject("http://localhost:" + port + "/agentterminal/getactiveagentterminalnames",
+                String.class);
+        JsonParser springParser = JsonParserFactory.getJsonParser();
+        List<Object> list = springParser.parseList(resp);
+        List<String> strList = list.stream()
+                           .map( Object::toString )
+                           .collect( Collectors.toList() );
+        return strList;
     }
     private String setagentstatus(String agentName, String status) {
         AgentProfileDto dto = new AgentProfileDto();

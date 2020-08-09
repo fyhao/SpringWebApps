@@ -37,13 +37,21 @@ public class AgentProfileService {
     }
 
     public void createAgentProfile(AgentProfileDto agentDto) {
-        Agent agent = modelMapper().map(agentDto, Agent.class);
+        Agent agent = agentRepository.findByName(agentDto.getName());
+        if (agent != null) {
+            return;
+        }
+        agent = modelMapper().map(agentDto, Agent.class);
         agent.setName(agent.getName().isEmpty() ? "Unnamed" : agent.getName());
         agentRepository.save(agent);
     }
 
     public void createSkillProfile(SkillDto skillDto) {
-        Skill skill = modelMapper().map(skillDto, Skill.class);
+        Skill skill = skillRepository.findByName(skillDto.getName());
+        if (skill != null) {
+            return;
+        }
+        skill = modelMapper().map(skillDto, Skill.class);
         skill.setName(skill.getName().isEmpty() ? "Unnamed" : skill.getName());
         skillRepository.save(skill);
     }

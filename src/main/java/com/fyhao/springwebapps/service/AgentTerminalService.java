@@ -1,5 +1,8 @@
 package com.fyhao.springwebapps.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fyhao.springwebapps.entity.Agent;
 import com.fyhao.springwebapps.entity.AgentTerminal;
 import com.fyhao.springwebapps.model.AgentRepository;
@@ -53,10 +56,6 @@ public class AgentTerminalService {
         return 0;
     }
 
-    public long getAgentTerminalsCount() {
-        return agentTerminalRepository.count();
-    }
-    
     public int setAgentStatus(String agentName, String status) {
         Agent agent = agentRepository.findByName(agentName);
         if(agent == null) {
@@ -78,5 +77,16 @@ public class AgentTerminalService {
             return agent.getAgentTerminal().getStatus();
         }
         return null;
+    }
+    public long getAgentTerminalsCount() {
+        return agentTerminalRepository.count();
+    }
+    public List<String> getActiveAgentTerminalNames() {
+        List<String> names = new ArrayList<String>();
+        for(AgentTerminal term : agentTerminalRepository.findAll()) {
+            Agent agent = term.getAgent();
+            names.add(agent.getName());
+        }
+        return names;
     }
 }
