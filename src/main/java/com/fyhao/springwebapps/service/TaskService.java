@@ -29,7 +29,13 @@ public class TaskService {
         if(agent == null) {
             return 101;
         }
-        // TODO check concurrent task here
+        // #64 double check concurrent task here
+        int activeTaskCount = agent.getActiveTaskCount();
+        int maxConcurrentTask = agent.getMaxConcurrentTask();
+        if(activeTaskCount >= maxConcurrentTask) {
+        	return 102;
+        }
+        
         Task task = new Task();
         task.setStatus("Open");
         task.setCreatedTime(Util.getSQLTimestamp(new Date()));
