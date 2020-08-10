@@ -779,20 +779,20 @@ public class TestingWebApplicationTests {
         	futureTestCompletion.complete("error41 " + jsonMap.get("action"));
         }
         // #70 check multi tasks correct conversationid send to agent
-        customer.sendChatMessage("customer1 send to agent");
         incomingReceived = agent.waitNextIncomingTextMessage();
+        customer.sendChatMessage("customer1 send to agent");
         jsonMap = incomingReceived.get(2, SECONDS);
         // chatMessageReceived for agent
         String agentConversationid = (String) jsonMap.get("conversationid");
         //futureTestCompletion.complete("content " + agentConversationid + "::" + conversationid);
-        customer2.sendChatMessage("customer2 send to agent");
         incomingReceived = agent.waitNextIncomingTextMessage();
+        customer2.sendChatMessage("customer2 send to agent");
         jsonMap = incomingReceived.get(2, SECONDS);
         // chatMessageReceived for agent
         String agentConversationid2 = (String) jsonMap.get("conversationid");
         //futureTestCompletion.complete("content " + agentConversationid2 + "::" + conversationid2);
-        customer3.sendChatMessage("customer3 send to agent");
         incomingReceived = agent.waitNextIncomingTextMessage();
+        customer3.sendChatMessage("customer3 send to agent");
         jsonMap = incomingReceived.get(2, SECONDS);
         // chatMessageReceived for agent 
         String agentConversationid3 = (String) jsonMap.get("conversationid");
@@ -803,6 +803,7 @@ public class TestingWebApplicationTests {
         assertThat(agentConversationid).doesNotContain(conversationid2);
         assertThat(agentConversationid).doesNotContain(conversationid3);
         assertThat(agentConversationid2).doesNotContain(conversationid3);
+        
         // Check agent tasks
         assertThat(getagentactivetaskscount("agent3")).contains("3");
         assertThat(agent.taskidList.size()).isEqualTo(3);
@@ -813,6 +814,7 @@ public class TestingWebApplicationTests {
         if(jsonMap.get("action").equals("taskClosed")) {	
         }
         assertThat(getagentactivetaskscount("agent3")).contains("2");
+        
         futureTestCompletion.complete("completed");
         // housekeeping
         
