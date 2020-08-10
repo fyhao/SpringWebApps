@@ -120,6 +120,10 @@ public class Agent implements Serializable {
 	public void setMaxConcurrentTask(int maxConcurrentTask) {
 		this.maxConcurrentTask = maxConcurrentTask;
 	}
-    
+    public int getActiveTaskCount() {
+    	return (int)getTasks().stream()
+    			.filter(t -> t.status.equals("Open"))
+    			.count();
+    }
     
 }

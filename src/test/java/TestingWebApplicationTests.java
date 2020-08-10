@@ -101,9 +101,9 @@ public class TestingWebApplicationTests {
         // After transfer agent, sjeffers active task should be 1
         assertThat(getagenttaskscount("sjeffers")).contains("1");
         assertThat(getchannel(conversationid)).contains("webchat");
-        assertThat(getcontactscount()).contains("1");
+        assertThat(getcontactscount()).contains("4");
         String conversationid2 = createconversation("fyhao1@gmail.com");
-        assertThat(getcontactscount()).contains("1");
+        assertThat(getcontactscount()).contains("4");
         assertThat(getchannel(conversationid2)).contains("webchat");
         assertThat(getmessagecount(conversationid)).contains("5");
         assertThat(getmessagecount(conversationid2)).contains("1");
@@ -114,7 +114,7 @@ public class TestingWebApplicationTests {
         assertThat(getmessagecount(conversationid)).contains("6");
         assertThat(getmessagecount(conversationid2)).contains("2");
         String conversationid3 = createconversation("fyhao2@gmail.com");
-        assertThat(getcontactscount()).contains("2");
+        assertThat(getcontactscount()).contains("4");
         assertThat(getchannel(conversationid2)).contains("webchat");
         assertThat(getmessagecount(conversationid)).contains("6");
         assertThat(getmessagecount(conversationid2)).contains("2");
@@ -214,7 +214,7 @@ public class TestingWebApplicationTests {
         testCaseCust.add("yes");
         testCaseAns.add("Thank you for booking with us. What else we can help?");
         testCaseCust.add("do you know about abcde?");
-        testCaseAns.add("Sorry I am not understand. Will handover to agent.");
+        testCaseAns.add("Sorry I am not understand. But agent not available.");
         testCaseAns.add("hello i am sjeffers, how can i help you?");
         try {
             WebSocketClient webSocketClient = new StandardWebSocketClient();
@@ -650,6 +650,138 @@ public class TestingWebApplicationTests {
             futureTestCompletion.complete("completed");
         }
         // housekeeping cleanup, need to unregister agent to avoid affect other test case
+        agent.setAgentStatus(AgentTerminal.NOT_READY);
+        agent.unregisterAgentSesssion();
+        // hold and wait
+        assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
+    }
+    @Test
+    public void testmaxconcurrenttask() throws Exception {
+    	// create skills
+        createskillprofile("hotel");
+        // create agents
+        boolean hasError = false;
+        
+        // create agent
+        createagentprofile("agent3");
+        assignagentskillaction("agent3", "hotel", AgentSkillDto.ASSIGNED_TO_AGENT);
+        CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
+        MyAgentClient agent = new MyAgentClient(this, "agent3");
+        CompletableFuture<WebSocketSession> agentEstablished = agent.waitNextAgentEstablishedEvent();
+        agent.start();
+        assertThat(agentEstablished.get(2, SECONDS)).isNotNull();
+        agent.registerAgentSession();
+        CompletableFuture<Map<String,Object>> incomingReceived = agent.waitNextIncomingTextMessage();
+        Map<String,Object> jsonMap = incomingReceived.get(2, SECONDS);
+        agent.setAgentStatus(AgentTerminal.READY);
+        
+        // create customer
+        String conversationid = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
+        MyCustomerClient customer = new MyCustomerClient(this, conversationid);
+        CompletableFuture<WebSocketSession> customerEstablished = customer.waitNextCustomerEstablishedEvent();
+        customer.start();
+        assertThat(customerEstablished.get(2, SECONDS)).isNotNull();
+        customer.registerCustomerSession();
+        
+        CompletableFuture<Map<String,Object>> customerIncomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        customer.sendChatMessage("do you know about abcde?");
+        customerIncomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        if (jsonMap.get("action").equals("chatMessageReceived")) {
+            String content = (String) jsonMap.get("content");
+            if(!content.equals("Sorry I am not understand. Will handover to agent.")) {
+                futureTestCompletion.complete("error1 " + content);
+                hasError = true;
+            }
+        }
+        else {
+        	futureTestCompletion.complete("error11 " + jsonMap.get("action"));
+        }
+        
+        // create customer 2
+        String conversationid2 = createconversationwithchannel("fyhao2@gmail.com", "webchathotel");
+        MyCustomerClient customer2 = new MyCustomerClient(this, conversationid2);
+        CompletableFuture<WebSocketSession> customerEstablished2 = customer2.waitNextCustomerEstablishedEvent();
+        customer2.start();
+        assertThat(customerEstablished2.get(2, SECONDS)).isNotNull();
+        customer2.registerCustomerSession();
+        // wait 1st time for connectionready
+        customerIncomingReceived = customer2.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        // send message
+        customer2.sendChatMessage("do you know about abcde?");
+        
+        // then wait 2nd time for chatMessageReceived
+        customerIncomingReceived = customer2.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        if (jsonMap.get("action").equals("chatMessageReceived")) {
+            String content = (String) jsonMap.get("content");
+            if(!content.equals("Sorry I am not understand. Will handover to agent.")) {
+                futureTestCompletion.complete("error2 " + content);
+                hasError = true;
+            }
+        }
+        else {
+        	futureTestCompletion.complete("error21 " + jsonMap.get("action"));
+        }
+        // create customer 3
+        String conversationid3 = createconversationwithchannel("fyhao3@gmail.com", "webchathotel");
+        MyCustomerClient customer3 = new MyCustomerClient(this, conversationid3);
+        CompletableFuture<WebSocketSession> customerEstablished3= customer3.waitNextCustomerEstablishedEvent();
+        customer3.start();
+        assertThat(customerEstablished3.get(2, SECONDS)).isNotNull();
+        customer3.registerCustomerSession();
+        // wait 1st time for connectionready
+        customerIncomingReceived = customer3.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        // send message
+        customer3.sendChatMessage("do you know about abcde?");
+        
+        // then wait 2nd time for chatMessageReceived
+        customerIncomingReceived = customer3.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        if (jsonMap.get("action").equals("chatMessageReceived")) {
+            String content = (String) jsonMap.get("content");
+            if(!content.equals("Sorry I am not understand. Will handover to agent.")) {
+                futureTestCompletion.complete("error3 " + content);
+                hasError = true;
+            }
+        }
+        else {
+        	futureTestCompletion.complete("error31 " + jsonMap.get("action"));
+        }
+        // create customer 4 and expect max concurrent task reached
+        String conversationid4 = createconversationwithchannel("fyhao4@gmail.com", "webchathotel");
+        MyCustomerClient customer4 = new MyCustomerClient(this, conversationid4);
+        CompletableFuture<WebSocketSession> customerEstablished4 = customer4.waitNextCustomerEstablishedEvent();
+        customer4.start();
+        assertThat(customerEstablished4.get(2, SECONDS)).isNotNull();
+        customer4.registerCustomerSession();
+        // wait 1st time for connectionready
+        customerIncomingReceived = customer4.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        // send message
+        customer4.sendChatMessage("do you know about abcde?");
+        
+        // then wait 2nd time for chatMessageReceived
+        customerIncomingReceived = customer4.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        if (jsonMap.get("action").equals("chatMessageReceived")) {
+            String content = (String) jsonMap.get("content");
+            if(!content.equals("Sorry I am not understand. But agent not available.")) {
+                futureTestCompletion.complete("error4 " + content);
+                hasError = true;
+            }
+        }
+        else {
+        	futureTestCompletion.complete("error41 " + jsonMap.get("action"));
+        }
+        
+        
+        // housekeeping
+        futureTestCompletion.complete("completed");
         agent.setAgentStatus(AgentTerminal.NOT_READY);
         agent.unregisterAgentSesssion();
         // hold and wait

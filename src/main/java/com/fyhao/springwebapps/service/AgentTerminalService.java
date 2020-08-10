@@ -101,10 +101,16 @@ public class AgentTerminalService {
         if(terms == null || terms.isEmpty()) return null;
         for(AgentTerminal term : terms) {
             logger.info("AgentTerminalService Checking agent term " + term.getAgent().getName() + " if has skill " + skillName);
-            if(term.getAgent().hasSkill(skillName)) {
-                logger.info("AgentTerminalService found " + term.getAgent().getName());
-                return term;
+            if(!term.getAgent().hasSkill(skillName)) {
+                continue;
             }
+            int activeTaskCount = term.getAgent().getActiveTaskCount();
+            int maxConcurrentTask = term.getAgent().getMaxConcurrentTask();
+            if(activeTaskCount >= maxConcurrentTask) {
+            	continue;
+            }
+            logger.info("AgentTerminalService found " + term.getAgent().getName());
+            return term;
         }
         logger.info("AgentTerminalService not found");
         return null;
