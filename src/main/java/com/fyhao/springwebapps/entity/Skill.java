@@ -4,16 +4,19 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 
 @Entity
-public class Contact implements Serializable {
+public class Skill implements Serializable {
+     
 
     /**
      *
@@ -28,17 +31,11 @@ public class Contact implements Serializable {
     @Column(name="name")
     private String name;
 
-    @Column(name="email")
-    private String email;
-
-    @Column(name="mobileno")
-    private String mobileno;
-    
     @Column(name="createdTime")
     private Timestamp createdTime;
 
-    @OneToMany(mappedBy = "contact")
-    private List<Conversation> items = new ArrayList<Conversation>();
+    @ManyToMany
+    Set<Agent> agents;
 
     public UUID getId() {
         return id;
@@ -56,22 +53,6 @@ public class Contact implements Serializable {
         this.name = name;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getMobileno() {
-        return mobileno;
-    }
-
-    public void setMobileno(String mobileno) {
-        this.mobileno = mobileno;
-    }
-
     public Timestamp getCreatedTime() {
         return createdTime;
     }
@@ -80,13 +61,12 @@ public class Contact implements Serializable {
         this.createdTime = createdTime;
     }
 
-    public List<Conversation> getItems() {
-        return items;
+    public Set<Agent> getAgents() {
+        return agents;
     }
 
-    public void setItems(List<Conversation> items) {
-        this.items = items;
+    public void setAgents(Set<Agent> agents) {
+        this.agents = agents;
     }
 
-    
 }

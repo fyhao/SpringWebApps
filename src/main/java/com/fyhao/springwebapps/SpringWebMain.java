@@ -1,6 +1,5 @@
 package com.fyhao.springwebapps;
 
-import javax.jms.ConnectionFactory;
 import javax.sql.DataSource;
 
 import org.apache.catalina.Context;
@@ -16,11 +15,6 @@ import org.springframework.boot.web.embedded.tomcat.TomcatWebServer;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
-import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
-import org.springframework.jms.config.JmsListenerContainerFactory;
-import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
-import org.springframework.jms.support.converter.MessageConverter;
-import org.springframework.jms.support.converter.MessageType;
 
 
 @SpringBootApplication

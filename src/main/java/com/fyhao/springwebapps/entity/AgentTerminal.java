@@ -1,33 +1,41 @@
 package com.fyhao.springwebapps.entity;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-
+import javax.persistence.OneToOne;
 @Entity
-public class UserAccount implements Serializable {
+public class AgentTerminal implements Serializable {
+     
+
     /**
      *
      */
     private static final long serialVersionUID = 1L;
-
+    
     @Id
 	@GeneratedValue
 	@Column(name="id")
-	UUID id;
-
-    @Column(name="username")
-    private String username;
-
-    @Column(name="email")
-    private String email;
+    UUID id;
+    
+    @OneToOne(mappedBy = "agentTerminal")
+    private Agent agent;
 
     @Column(name="status")
     private String status;
+
+    public final static String READY = "READY";
+    public final static String NOT_READY = "NOT_READY";
+    public final static String BUSY = "BUSY";
+    public final static String WORK = "WORK";
 
     public UUID getId() {
         return id;
@@ -37,20 +45,12 @@ public class UserAccount implements Serializable {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public Agent getAgent() {
+        return agent;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+    public void setAgent(Agent agent) {
+        this.agent = agent;
     }
 
     public String getStatus() {
@@ -61,8 +61,4 @@ public class UserAccount implements Serializable {
         this.status = status;
     }
 
-    public UserAccount() {
-    }
-
-    
 }

@@ -2,6 +2,7 @@ package com.fyhao.springwebapps.entity;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,8 +17,9 @@ public class Message implements Serializable {
      */
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue
-    private Long id;
+	@GeneratedValue
+	@Column(name="id")
+	UUID id;
 
     @Column(name="createdTime")
     Timestamp createdTime;
@@ -35,13 +37,13 @@ public class Message implements Serializable {
     @JoinColumn(name = "conversation_id")
     private Conversation conversation;
 
-	public Long getId() {
-		return id;
-	}
+	public UUID getId() {
+        return id;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
 	public Conversation getConversation() {
 		return conversation;

@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 @Entity
 public class Conversation implements Serializable {
@@ -23,8 +26,9 @@ public class Conversation implements Serializable {
      */
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue
-    private Long id;
+	@GeneratedValue
+	@Column(name="id")
+	UUID id;
 
     @Column(name="startTime")
     Timestamp startTime;
@@ -39,16 +43,20 @@ public class Conversation implements Serializable {
     @JoinColumn(name = "contact_id")
     Contact contact;
 
-    @OneToMany(mappedBy = "conversation")
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "conversation")
     private List<Message> messages = new ArrayList<Message>();
     
-    @OneToMany(mappedBy = "conversation")
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "conversation")
     private List<Context> contexts = new ArrayList<Context>();
-    public Long getId() {
+
+    @OneToOne(mappedBy = "conversation")
+    private Task task;
+
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -100,22 +108,44 @@ public class Conversation implements Serializable {
     public void setMessages(List<Message> messages) {
         this.messages = messages;
     }
-
-    public String findContext(String key) {
+    public Context findContextObject(String key) {
         List<Context> contexts = getContexts();
         if(contexts == null || contexts.isEmpty()) return null;
         Optional<Context> o = contexts.stream().filter(context -> context.key.equals(key)).findFirst();
         if(!o.isEmpty()) {
             Context context = o.get();
-            return context.getValue();
+            return context;
         }
         return null;
     }
-    public void addContext(String key, String value) {
-        Context context = new Context();
-        context.setKey(key);
-        context.setValue(value);
-        getContexts().add(context);
+    public String findContext(String key) {
+        Context obj = findContextObject(key);
+        return obj != null ? obj.getValue() : null;
+    }
+    public void saveContext(String key, String value) {
+        Context context = findContextObject(key);
+        if(context == null) {
+            context = new Context();
+            context.setKey(key);
+            context.setValue(value);
+            context.setConversation(this);
+            getContexts().add(context);
+        }
+        else {
+            context.setValue(value);
+            context.setConversation(this);
+        }
+    }
+    public boolean findContextBool(String key) {
+        String value = findContext(key);
+        if(value != null && value.equals("true")) {
+            return true;
+        }
+        return false;
+    }
+    public void saveContextBool(String key, boolean value) {
+        String str = value ? "true" : "false";
+        saveContext(key, str);
     }
 
     public void addMessageWithInput(String input) {
@@ -124,8 +154,49 @@ public class Conversation implements Serializable {
         message.setCreatedTime(new java.sql.Timestamp(new Date().getTime()));
         message.setFromparty(this.getContact().getEmail());
         String state = findContext("state");
-        message.setToparty(state);
+        if(state.equals("agent")) {
+            String agentName = findContext("agentName");
+            message.setToparty(agentName);
+        }
+        else if(state.equals("bot")) {
+            message.setToparty("bot");
+        }
         message.setConversation(this);
         getMessages().add(message);
+    }
+    public void addSystemMessageWithInput(String input) {
+        Message message = new Message();
+        message.setContent(input);
+        message.setCreatedTime(new java.sql.Timestamp(new Date().getTime()));
+        message.setFromparty("system");
+        message.setToparty(this.getContact().getEmail());
+        message.setConversation(this);
+        getMessages().add(message);
+    }
+    public void addAgentMessageWithInput(String agentName, String input) {
+        Message message = new Message();
+        message.setContent(input);
+        message.setCreatedTime(new java.sql.Timestamp(new Date().getTime()));
+        message.setFromparty(agentName);
+        message.setToparty(this.getContact().getEmail());
+        message.setConversation(this);
+        getMessages().add(message);
+    }
+    public void addBotMessageWithInput(String input) {
+        Message message = new Message();
+        message.setContent(input);
+        message.setCreatedTime(new java.sql.Timestamp(new Date().getTime()));
+        message.setFromparty("bot");
+        message.setToparty(this.getContact().getEmail());
+        message.setConversation(this);
+        getMessages().add(message);
+    }
+
+    public Task getTask() {
+        return task;
+    }
+
+    public void setTask(Task task) {
+        this.task = task;
     }
 }
