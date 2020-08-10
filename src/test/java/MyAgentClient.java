@@ -1,9 +1,9 @@
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
@@ -14,6 +14,8 @@ import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class MyAgentClient {
     WebSocketClient webSocketClient;
     WebSocketSession webSocketSession;
@@ -22,6 +24,8 @@ public class MyAgentClient {
     String agentid;
     CompletableFuture<WebSocketSession> agentEstablished;
     CompletableFuture<Map<String, Object>> incomingJsonMapReceived;
+    public List<String> taskidList = new ArrayList<String>();
+    
     public MyAgentClient(TestingWebApplicationTests that, String agentid) {
         port = that.port;
         this.that = that;
@@ -41,6 +45,10 @@ public class MyAgentClient {
                     if(incomingJsonMapReceived != null) {
                         incomingJsonMapReceived.complete(jsonMap);
                         incomingJsonMapReceived = null;
+                    }
+                    if(jsonMap.get("action").equals("incomingTask")) {
+                    	String taskid = (String)jsonMap.get("taskid");
+                    	taskidList.add(taskid);
                     }
                 }
 
@@ -91,6 +99,13 @@ public class MyAgentClient {
         jsonMap.put("action", "setAgentStatus");
         jsonMap.put("agentid", agentid);
         jsonMap.put("status", status);
+        sendMessage(webSocketSession, jsonMap);
+    }
+    public void closeTask(String taskid) {
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "closeTask");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("taskid", taskid);
         sendMessage(webSocketSession, jsonMap);
     }
 

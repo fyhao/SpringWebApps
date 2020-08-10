@@ -803,7 +803,16 @@ public class TestingWebApplicationTests {
         assertThat(agentConversationid).doesNotContain(conversationid2);
         assertThat(agentConversationid).doesNotContain(conversationid3);
         assertThat(agentConversationid2).doesNotContain(conversationid3);
-        
+        // Check agent tasks
+        assertThat(getagentactivetaskscount("agent3")).contains("3");
+        assertThat(agent.taskidList.size()).isEqualTo(3);
+        // TODO Check to close agent task
+        agent.closeTask(agent.taskidList.get(0));
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        if(jsonMap.get("action").equals("taskClosed")) {	
+        }
+        assertThat(getagentactivetaskscount("agent3")).contains("2");
         futureTestCompletion.complete("completed");
         // housekeeping
         
@@ -845,6 +854,10 @@ public class TestingWebApplicationTests {
     }
     private String getagenttaskscount(String agent) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/task/getagenttaskscount?agentid=" + agent,
+                String.class);
+    }
+    private String getagentactivetaskscount(String agent) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/task/getagentactivetaskscount?agentid=" + agent,
                 String.class);
     }
     private String registeragent(String agentName) {

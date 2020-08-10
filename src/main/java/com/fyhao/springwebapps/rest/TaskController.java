@@ -25,9 +25,22 @@ public class TaskController {
     @Autowired
     TaskService taskService;
     
+    @RequestMapping(method= RequestMethod.POST, value = "/closetask", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public @ResponseBody String closetask(@RequestBody AgentProfileDto dto) {
+        logger.info("TaskController closetask " + dto.getName() + " " + dto.getTaskid());
+        taskService.closeTask(dto.getName(), dto.getTaskid());
+        return "0";
+    }
+    
     @RequestMapping("/getagenttaskscount")
 	public @ResponseBody long getagenttaskscount(String agentid) {
         logger.info("getagenttaskscount " + agentid);
 		return taskService.getAgentTasksCount(agentid);
     }
+    @RequestMapping("/getagentactivetaskscount")
+	public @ResponseBody long getagentactivetaskscount(String agentid) {
+        logger.info("getagentactivetaskscount " + agentid);
+		return taskService.getAgentActiveTasksCount(agentid);
+    }
+    
 }

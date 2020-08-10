@@ -1,6 +1,8 @@
 package com.fyhao.springwebapps.service;
 
 import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
 
 import com.fyhao.springwebapps.entity.Agent;
 import com.fyhao.springwebapps.entity.Conversation;
@@ -42,8 +44,26 @@ public class TaskService {
         task.setConversation(conversation);
         task.setAgent(agent);
         taskRepository.save(task);
-        AgentSocketHandler.sendAgentIncomingTaskEvent(agentid, conversation.getId().toString());
+        AgentSocketHandler.sendAgentIncomingTaskEvent(agentid, conversation.getId().toString(), task.getId().toString());
         ChannelSocketHandler.sendAgentJoinedEvent(conversation.getId().toString());
+        return 0;
+    }
+    public int closeTask(String agentid, String taskid) {
+    	logger.info("TaskService closeTask " + agentid + " " + taskid);
+        Agent agent = agentRepository.findByName(agentid);
+        if(agent == null) {
+            return 101;
+        }
+        Optional<Task> taskobj = taskRepository.findById(UUID.fromString(taskid));
+        if(taskobj.isEmpty()) {
+        	return 102;
+        }
+        Task task = taskobj.get();
+        // TODO Check if conversation ended, if not ended, cannot close task
+        task.setStatus("Closed");
+        taskRepository.save(task);
+        AgentSocketHandler.sendAgentTaskClosedEvent(agentid, taskid);
+    	logger.info("TaskService closeTask success " + agentid + " " + taskid);
         return 0;
     }
 
@@ -53,5 +73,12 @@ public class TaskService {
             return -1;
         }
         return agent.getTasks().size();
+    }
+    public int getAgentActiveTasksCount(String agentid) {
+    	Agent agent = agentRepository.findByName(agentid);
+    	if(agent == null) {
+            return -1;
+        }
+    	return agent.getActiveTaskCount();
     }
 }

@@ -71,6 +71,13 @@ public class AgentSocketHandler extends TextWebSocketHandler {
             String agentid = (String)jsonMap.get("agentid");
             sendAgentMessage(conversationid, agentid, chatMessage, serverport);
         }
+        else if(jsonMap.get("action").equals("closeTask")) {
+        	logger.info("AgentSocketHandler agent to system closeTask");
+        	String agentid = (String)jsonMap.get("agentid");
+        	String taskid = (String)jsonMap.get("taskid");
+        	Integer serverport = (Integer)session.getAttributes().get("serverport");
+        	closetask(agentid, taskid, serverport);
+        }
 	}
 
 	@Override
@@ -106,12 +113,21 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         jsonMap.put("newstatus", newstatus);
         sendCommandToAgent(agentid, jsonMap);
     }
-    public static void sendAgentIncomingTaskEvent(String agentid, String conversationid) {
-        logger.info("AgentSocketHandler.sendAgentIncomingTaskEvent " + agentid + " " + conversationid);
+    public static void sendAgentIncomingTaskEvent(String agentid, String conversationid, String taskid) {
+        logger.info("AgentSocketHandler.sendAgentIncomingTaskEvent " + agentid + " " + conversationid + " " + taskid);
         Map<String, Object> jsonMap = new HashMap<String, Object>();
         jsonMap.put("action", "incomingTask");
         jsonMap.put("agentid", agentid);
         jsonMap.put("conversationid", conversationid);
+        jsonMap.put("taskid", taskid);
+        sendCommandToAgent(agentid, jsonMap);
+    }
+    public static void sendAgentTaskClosedEvent(String agentid, String taskid) {
+    	logger.info("AgentSocketHandler.sendAgentTaskClosedEvent " + agentid + " " + taskid);
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "taskClosed");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("taskid", taskid);
         sendCommandToAgent(agentid, jsonMap);
     }
     public static void sendCommandToAgent(String agentid, Map<String,Object> jsonMap) {
@@ -197,5 +213,25 @@ public class AgentSocketHandler extends TextWebSocketHandler {
                 String.class);
         return resp.getBody();
     }
+    ///closetask(agentid, taskid, serverport);
+    private String closetask(String agentid, String taskid, Integer port) {
+        RestTemplate restTemplate = new RestTemplate();
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentid);
+        dto.setTaskid(taskid);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/task/closetask", request,
+                String.class);
+        return resp.getBody();
+    }
+    
 }
     
