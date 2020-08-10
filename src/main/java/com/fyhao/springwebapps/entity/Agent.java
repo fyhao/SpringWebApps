@@ -51,6 +51,9 @@ public class Agent implements Serializable {
 
     @OneToMany(mappedBy = "agent")
     private List<Task> tasks = new ArrayList<Task>();
+    
+    @Column(name="maxConcurrentTask",columnDefinition = "integer default 3")
+    private int maxConcurrentTask = 3;
 
     public UUID getId() {
         return id;
@@ -109,4 +112,14 @@ public class Agent implements Serializable {
         }
         return false;
     }
+
+	public int getMaxConcurrentTask() {
+		return maxConcurrentTask;
+	}
+
+	public void setMaxConcurrentTask(int maxConcurrentTask) {
+		this.maxConcurrentTask = maxConcurrentTask;
+	}
+    
+    
 }

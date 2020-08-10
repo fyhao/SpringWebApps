@@ -122,4 +122,21 @@ public class AgentProfileService {
         }
         return list;
     }
+    public int getMaxConcurrentTaskOfAgent(String agentName) {
+    	Agent agent = agentRepository.findByName(agentName);
+        if (agent == null) {
+            return -1;
+        }
+        return agent.getMaxConcurrentTask();
+    }
+    public int setMaxConcurrentTaskOfAgent(String agentName, int m) {
+    	Agent agent = agentRepository.findByName(agentName);
+        if (agent == null) {
+            return -1;
+        }
+        agent.setMaxConcurrentTask(m);
+        agentRepository.save(agent);
+        return 0;
+    }
+    
 }

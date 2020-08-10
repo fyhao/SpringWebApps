@@ -66,4 +66,14 @@ public class AgentprofileController {
         logger.info("getskillcount");
 		return agentProfileService.getSkillCount();
     }
+    @RequestMapping("/getmaxconcurrenttaskofagent")
+	public @ResponseBody long getmaxconcurrenttaskofagent(@RequestParam String agentname) {
+        logger.info("getmaxconcurrenttaskofagent");
+		return agentProfileService.getMaxConcurrentTaskOfAgent(agentname);
+    }
+    @RequestMapping("/setmaxconcurrenttaskofagent")
+	public @ResponseBody long setmaxconcurrenttaskofagent(@RequestParam String agentname, @RequestParam int maxconcurrenttask) {
+        logger.info("setmaxconcurrenttaskofagent");
+		return agentProfileService.setMaxConcurrentTaskOfAgent(agentname, maxconcurrenttask);
+    }
 }

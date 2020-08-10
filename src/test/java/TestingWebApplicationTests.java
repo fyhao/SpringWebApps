@@ -514,6 +514,12 @@ public class TestingWebApplicationTests {
         assertThat(getagentterminalscount()).contains("" + (Integer.parseInt(currentTermCount) + 1));
         unregisteragent("rbarrows");
         assertThat(getagentterminalscount()).contains("" + (Integer.parseInt(currentTermCount) + 0));
+        // check max concurrenttask of agent
+        assertThat(getmaxconcurrenttaskofagent("sjeffers")).contains("3");
+        assertThat(getmaxconcurrenttaskofagent("rbarrows")).contains("3");
+        setmaxconcurrenttaskofagent("sjeffers",4);
+        assertThat(getmaxconcurrenttaskofagent("sjeffers")).contains("4");
+        assertThat(getmaxconcurrenttaskofagent("rbarrows")).contains("3");
     }
     @Test
     public void testsimplifiedwebsocketclient() throws Exception {
@@ -788,7 +794,14 @@ public class TestingWebApplicationTests {
         return this.restTemplate.getForObject("http://localhost:" + port + "/agentprofile/getskillcount",
                 String.class);
     }
-
+    private String getmaxconcurrenttaskofagent(String agent) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/agentprofile/getmaxconcurrenttaskofagent?agentname=" + agent,
+                String.class);
+    }
+    private String setmaxconcurrenttaskofagent(String agent, int maxconcurrenttask) {
+        return this.restTemplate.getForObject("http://localhost:" + port + "/agentprofile/setmaxconcurrenttaskofagent?agentname=" + agent + "&maxconcurrenttask=" + maxconcurrenttask,
+                String.class);
+    }
     private String createconversation(String email) {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=" + email,
                 String.class);
