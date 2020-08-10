@@ -778,10 +778,35 @@ public class TestingWebApplicationTests {
         else {
         	futureTestCompletion.complete("error41 " + jsonMap.get("action"));
         }
+        // #70 check multi tasks correct conversationid send to agent
+        customer.sendChatMessage("customer1 send to agent");
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        // chatMessageReceived for agent
+        String agentConversationid = (String) jsonMap.get("conversationid");
+        //futureTestCompletion.complete("content " + agentConversationid + "::" + conversationid);
+        customer2.sendChatMessage("customer2 send to agent");
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        // chatMessageReceived for agent
+        String agentConversationid2 = (String) jsonMap.get("conversationid");
+        //futureTestCompletion.complete("content " + agentConversationid2 + "::" + conversationid2);
+        customer3.sendChatMessage("customer3 send to agent");
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        // chatMessageReceived for agent 
+        String agentConversationid3 = (String) jsonMap.get("conversationid");
+        //futureTestCompletion.complete("content " + agentConversationid3 + "::" + conversationid3);
+        assertThat(agentConversationid).contains(conversationid);
+        assertThat(agentConversationid2).contains(conversationid2);
+        assertThat(agentConversationid3).contains(conversationid3);
+        assertThat(agentConversationid).doesNotContain(conversationid2);
+        assertThat(agentConversationid).doesNotContain(conversationid3);
+        assertThat(agentConversationid2).doesNotContain(conversationid3);
         
-        
-        // housekeeping
         futureTestCompletion.complete("completed");
+        // housekeeping
+        
         agent.setAgentStatus(AgentTerminal.NOT_READY);
         agent.unregisterAgentSesssion();
         // hold and wait
