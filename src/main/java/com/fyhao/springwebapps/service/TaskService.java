@@ -127,11 +127,15 @@ public class TaskService {
         	return 102;
         }
         Task task = taskobj.get();
+         // during transfer to skill, set current agent state as busy first, so that skill hunt will not find him
+        String oldstatus = agentTerminalService.getAgentStatus(agentid);
+        agentTerminalService.setAgentStatus(agentid, AgentTerminal.BUSY);
         AgentTerminal term = agentTerminalService.getMostAvailableAgent(targetSkill);
         if(term == null) {
             logger.info("TaskService requestTransferToSkill 103 " + taskid);
             return 103;
         }
+        agentTerminalService.setAgentStatus(agentid, oldstatus);
         Conversation conversation = task.getConversation();
         if(conversation == null) { 
             logger.info("TaskService requestTransferToSkill 104 " + taskid);

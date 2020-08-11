@@ -917,6 +917,18 @@ public class TestingWebApplicationTests {
         assertThat(getagentactivetaskscount(agent.agentid)).contains("0");
         assertThat(getagentactivetaskscount(agent2.agentid)).contains("1");
 
+        // agent2 transfer again back to agent, via skill, and at the same time, agent2 still in ready mode
+        agent.setAgentStatus(AgentTerminal.READY);
+        agent2.setAgentStatus(AgentTerminal.READY);
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        agent2.requestTransferToSkill("hotel", agent2.taskidList.get(0));
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        assertThat((String)jsonMap.get("action")).contains("incomingTask");
+        assertThat(getagentactivetaskscount(agent.agentid)).contains("1");
+        assertThat(getagentactivetaskscount(agent2.agentid)).contains("0");
+
         futureTestCompletion.complete("completed");
         // housekeeping
         
