@@ -79,7 +79,18 @@ public class MyCustomerClient {
         jsonMap.put("serverport", port);
         sendMessage(webSocketSession, jsonMap);
     }
-    
+    public void startTyping() {
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "startTyping");
+        jsonMap.put("conversationid", conversationid);
+        sendMessage(webSocketSession, jsonMap);
+    }
+    public void stopTyping() {
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "stopTyping");
+        jsonMap.put("conversationid", conversationid);
+        sendMessage(webSocketSession, jsonMap);
+    }
     
     public void sendMessage(WebSocketSession session, Map<String, Object> jsonMap) {
         ObjectMapper objectMapper = new ObjectMapper();

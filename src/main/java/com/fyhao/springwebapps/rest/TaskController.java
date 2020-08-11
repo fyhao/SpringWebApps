@@ -43,6 +43,18 @@ public class TaskController {
         taskService.requestTransferToSkill(dto.getName(), dto.getTaskid(), dto.getTargetskill());
         return "0";
     }
+    @RequestMapping(method= RequestMethod.POST, value = "/agentstarttyping", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public @ResponseBody String agentstarttyping(@RequestBody AgentProfileDto dto) {
+        logger.info("TaskController starttyping " + dto.getName() + " " + dto.getConversationid());
+        taskService.agentStartTyping(dto.getName(), dto.getConversationid());
+        return "0";
+    }
+    @RequestMapping(method= RequestMethod.POST, value = "/agentstoptyping", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public @ResponseBody String agentstoptyping(@RequestBody AgentProfileDto dto) {
+        logger.info("TaskController stoptyping " + dto.getName() + " " + dto.getConversationid());
+        taskService.agentStopTyping(dto.getName(), dto.getConversationid());
+        return "0";
+    }
     @RequestMapping("/getagenttaskscount")
 	public @ResponseBody long getagenttaskscount(String agentid) {
         logger.info("getagenttaskscount " + agentid);

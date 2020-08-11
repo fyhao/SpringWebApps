@@ -78,6 +78,22 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
         jsonMap.put("conversationid", conversationid);
         sendCommandToCustomer(conversationid, jsonMap);
     }
+    public static void sendAgentStartedTypingEvent(String agentid, String conversationid) {
+        logger.info("ChannelSocketHandler sendAgentStartedTypingEvent " + conversationid);
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "agentStartedTyping");
+        jsonMap.put("conversationid", conversationid);
+        jsonMap.put("agentid", agentid);
+        sendCommandToCustomer(conversationid, jsonMap);
+    }
+    public static void sendAgentStoppedTypingEvent(String agentid, String conversationid) {
+        logger.info("ChannelSocketHandler sendAgentStartedTypingEvent " + conversationid);
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "agentStoppedTyping");
+        jsonMap.put("conversationid", conversationid);
+        jsonMap.put("agentid", agentid);
+        sendCommandToCustomer(conversationid, jsonMap);
+    }
     public static void sendCommandToCustomer(String conversationid, Map<String,Object> jsonMap) {
         ObjectMapper objectMapper = new ObjectMapper();
         for(WebSocketSession session : sessions) {

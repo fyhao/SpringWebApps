@@ -125,7 +125,20 @@ public class MyAgentClient {
         jsonMap.put("taskid", taskid);
         sendMessage(webSocketSession, jsonMap);
     }
-
+    public void startTyping(String conversationid) {
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "startTyping");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("conversationid", conversationid);
+        sendMessage(webSocketSession, jsonMap);
+    }
+    public void stopTyping(String conversationid) {
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "stopTyping");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("conversationid", conversationid);
+        sendMessage(webSocketSession, jsonMap);
+    }
     public void sendMessage(WebSocketSession session, Map<String, Object> jsonMap) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {

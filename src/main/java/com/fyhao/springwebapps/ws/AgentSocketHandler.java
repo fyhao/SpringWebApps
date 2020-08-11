@@ -94,6 +94,20 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         	Integer serverport = (Integer)session.getAttributes().get("serverport");
         	requestTransferToSkill(agentid, targetSkill, taskid, serverport);
         }
+        else if(jsonMap.get("action").equals("startTyping")) {
+        	logger.info("AgentSocketHandler agent to system startTyping");
+        	String agentid = (String)jsonMap.get("agentid");
+        	String conversationid = (String)jsonMap.get("conversationid");
+        	Integer serverport = (Integer)session.getAttributes().get("serverport");
+        	startTyping(agentid, conversationid, serverport);
+        }
+        else if(jsonMap.get("action").equals("stopTyping")) {
+        	logger.info("AgentSocketHandler agent to system stopTyping");
+        	String agentid = (String)jsonMap.get("agentid");
+        	String conversationid = (String)jsonMap.get("conversationid");
+        	Integer serverport = (Integer)session.getAttributes().get("serverport");
+        	stopTyping(agentid, conversationid, serverport);
+        }
 	}
 
 	@Override
@@ -283,6 +297,43 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         }
         HttpEntity<String> request = new HttpEntity<String>(message, headers);
         ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/task/requesttransfertoskill", request,
+                String.class);
+        return resp.getBody();
+    }
+    //startTyping(agentid, conversationid, serverport);
+    private String startTyping(String agentid, String conversationid, Integer port) {
+        RestTemplate restTemplate = new RestTemplate();
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentid);
+        dto.setConversationid(conversationid);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/task/agentstarttyping", request,
+                String.class);
+        return resp.getBody();
+    }
+    private String stopTyping(String agentid, String conversationid, Integer port) {
+        RestTemplate restTemplate = new RestTemplate();
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentid);
+        dto.setConversationid(conversationid);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/task/agentstoptyping", request,
                 String.class);
         return resp.getBody();
     }

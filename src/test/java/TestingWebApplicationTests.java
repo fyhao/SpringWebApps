@@ -929,6 +929,15 @@ public class TestingWebApplicationTests {
         assertThat(getagentactivetaskscount(agent.agentid)).contains("1");
         assertThat(getagentactivetaskscount(agent2.agentid)).contains("0");
 
+        // agent start typing to customer
+        agent.startTyping(conversationid);
+        customerIncomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        assertThat((String)jsonMap.get("action")).contains("agentStartedTyping");
+        agent.stopTyping(conversationid);
+        customerIncomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        assertThat((String)jsonMap.get("action")).contains("agentStoppedTyping");
         futureTestCompletion.complete("completed");
         // housekeeping
         

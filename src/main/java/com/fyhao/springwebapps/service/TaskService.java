@@ -151,6 +151,14 @@ public class TaskService {
         ChannelSocketHandler.sendAgentJoinedEvent(conversation.getId().toString());
         return 0;
     }
+    public int agentStartTyping(String agentid, String conversationid) {
+        ChannelSocketHandler.sendAgentStartedTypingEvent(agentid, conversationid);
+        return 0;
+    }
+    public int agentStopTyping(String agentid, String conversationid) {
+        ChannelSocketHandler.sendAgentStoppedTypingEvent(agentid, conversationid);
+        return 0;
+    }
     public int getAgentTasksCount(String agentid) {
         Agent agent = agentRepository.findByName(agentid);
         if(agent == null) {
