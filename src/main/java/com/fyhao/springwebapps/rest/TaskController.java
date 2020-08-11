@@ -31,6 +31,12 @@ public class TaskController {
         taskService.closeTask(dto.getName(), dto.getTaskid());
         return "0";
     }
+    @RequestMapping(method= RequestMethod.POST, value = "/requesttransfertoagent", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public @ResponseBody String requesttransfertoagent(@RequestBody AgentProfileDto dto) {
+        logger.info("TaskController requesttransfertoagent " + dto.getName() + " " + dto.getTaskid() + " " + dto.getTargetagentid());
+        taskService.requestTransferToAgent(dto.getName(), dto.getTaskid(), dto.getTargetagentid());
+        return "0";
+    }
     
     @RequestMapping("/getagenttaskscount")
 	public @ResponseBody long getagenttaskscount(String agentid) {

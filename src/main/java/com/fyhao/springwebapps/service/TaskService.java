@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.fyhao.springwebapps.entity.Agent;
+import com.fyhao.springwebapps.entity.AgentTerminal;
 import com.fyhao.springwebapps.entity.Conversation;
 import com.fyhao.springwebapps.entity.Task;
 import com.fyhao.springwebapps.model.TaskRepository;
@@ -64,6 +65,51 @@ public class TaskService {
         taskRepository.save(task);
         AgentSocketHandler.sendAgentTaskClosedEvent(agentid, taskid);
     	logger.info("TaskService closeTask success " + agentid + " " + taskid);
+        return 0;
+    }
+    public int requestTransferToAgent(String agentid, String taskid, String targetAgentid) {
+        logger.info("TaskService requestTransferToAgent " + agentid + " " + taskid + " " + targetAgentid);
+        if(agentid.equals(targetAgentid)) {
+            logger.info("TaskService requestTransferToAgent 104 " + taskid);
+            return 104;
+        }
+        Agent agent = agentRepository.findByName(agentid);
+        if(agent == null) {
+            logger.info("TaskService requestTransferToAgent 101 " + taskid);
+            return 101;
+        }
+        Optional<Task> taskobj = taskRepository.findById(UUID.fromString(taskid));
+        if(taskobj.isEmpty()) {
+            logger.info("TaskService requestTransferToAgent 102 " + taskid);
+        	return 102;
+        }
+        Task task = taskobj.get();
+        Agent agent2 = agentRepository.findByName(targetAgentid);
+        if(agent2 == null) {
+            logger.info("TaskService requestTransferToAgent 103 " + taskid);
+            return 103;
+        }
+        if(agent2.getAgentTerminal() == null) { // not registered / not logged in
+            logger.info("TaskService requestTransferToAgent 105 " + taskid);
+            return 105;
+        }
+        if(!agent2.getAgentTerminal().getStatus().equals(AgentTerminal.READY)) { // not ready
+            logger.info("TaskService requestTransferToAgent 106 " + taskid);
+            return 106;
+        }
+        if(agent2.getActiveTaskCount() >= agent2.getMaxConcurrentTask()) { // reached max concurrent task
+            logger.info("TaskService requestTransferToAgent 107 " + taskid);
+            return 107;
+        }
+        Conversation conversation = task.getConversation();
+        if(conversation == null) { 
+            logger.info("TaskService requestTransferToAgent 108 " + taskid);
+            return 108;
+        }
+        task.setAgent(agent2);
+        taskRepository.save(task);
+        AgentSocketHandler.sendAgentIncomingTaskEvent(targetAgentid, conversation.getId().toString(), task.getId().toString());
+        ChannelSocketHandler.sendAgentJoinedEvent(conversation.getId().toString());
         return 0;
     }
 

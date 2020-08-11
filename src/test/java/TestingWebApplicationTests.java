@@ -807,7 +807,7 @@ public class TestingWebApplicationTests {
         // Check agent tasks
         assertThat(getagentactivetaskscount("agent3")).contains("3");
         assertThat(agent.taskidList.size()).isEqualTo(3);
-        // TODO Check to close agent task
+        
         agent.closeTask(agent.taskidList.get(0));
         incomingReceived = agent.waitNextIncomingTextMessage();
         jsonMap = incomingReceived.get(2, SECONDS);
@@ -820,6 +820,96 @@ public class TestingWebApplicationTests {
         
         agent.setAgentStatus(AgentTerminal.NOT_READY);
         agent.unregisterAgentSesssion();
+        // hold and wait
+        assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
+    }
+     @Test
+    public void testtransfertasktoanotheragent() throws Exception {
+    	// create skills
+        createskillprofile("hotel");
+        // create agents
+        boolean hasError = false;
+        
+        // create agent
+        createagentprofile("agent4");
+        createagentprofile("agent5");
+        assignagentskillaction("agent4", "hotel", AgentSkillDto.ASSIGNED_TO_AGENT);
+        assignagentskillaction("agent5", "hotel", AgentSkillDto.ASSIGNED_TO_AGENT);
+        CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
+        MyAgentClient agent = new MyAgentClient(this, "agent4");
+        MyAgentClient agent2 = new MyAgentClient(this, "agent5");
+        CompletableFuture<WebSocketSession> agentEstablished = agent.waitNextAgentEstablishedEvent();
+        CompletableFuture<WebSocketSession> agentEstablished2 = agent2.waitNextAgentEstablishedEvent();
+        agent.start();
+        agent2.start();
+        assertThat(agentEstablished.get(2, SECONDS)).isNotNull();
+        assertThat(agentEstablished2.get(2, SECONDS)).isNotNull();
+        agent.registerAgentSession();
+        agent2.registerAgentSession();
+        CompletableFuture<Map<String,Object>> incomingReceived = agent.waitNextIncomingTextMessage();
+        CompletableFuture<Map<String,Object>> incomingReceived2 = agent2.waitNextIncomingTextMessage();
+        Map<String,Object> jsonMap = incomingReceived.get(2, SECONDS);
+        jsonMap = incomingReceived2.get(2, SECONDS);
+        agent2.setAgentStatus(AgentTerminal.READY);
+        agent.setAgentStatus(AgentTerminal.NOT_READY);
+
+        // create customer
+        String conversationid = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
+        MyCustomerClient customer = new MyCustomerClient(this, conversationid);
+        CompletableFuture<WebSocketSession> customerEstablished = customer.waitNextCustomerEstablishedEvent();
+        customer.start();
+        assertThat(customerEstablished.get(2, SECONDS)).isNotNull();
+        customer.registerCustomerSession();
+        
+        CompletableFuture<Map<String,Object>> customerIncomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        incomingReceived2 = agent2.waitNextIncomingTextMessage();
+        customer.sendChatMessage("do you know about abcde?");
+        customerIncomingReceived = customer.waitNextIncomingTextMessage();
+        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        if (jsonMap.get("action").equals("chatMessageReceived")) {
+            String content = (String) jsonMap.get("content");
+            if(!content.equals("Sorry I am not understand. Will handover to agent.")) {
+                futureTestCompletion.complete("error1 " + content);
+                hasError = true;
+            }
+        }
+        else {
+        	futureTestCompletion.complete("error11 " + jsonMap.get("action"));
+        }
+        
+        // #70 check multi tasks correct conversationid send to agent
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        incomingReceived2 = agent2.waitNextIncomingTextMessage();
+        customer.sendChatMessage("customer1 send to agent5");
+        jsonMap = incomingReceived2.get(2, SECONDS);
+        // chatMessageReceived for agent
+        String agentConversationid = (String) jsonMap.get("conversationid");
+        
+        // Check agent tasks
+        assertThat(agent.taskidList.size()).isEqualTo(0);
+        assertThat(agent2.taskidList.size()).isEqualTo(1);
+        assertThat(getagentactivetaskscount(agent.agentid)).contains("0");
+        assertThat(getagentactivetaskscount(agent2.agentid)).contains("1");
+        
+        // agent2 request transfer to agent
+        agent.setAgentStatus(AgentTerminal.READY);
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        agent2.requestTransferToAgent(agent, agent2.taskidList.get(0));
+        jsonMap = incomingReceived.get(2, SECONDS);
+        assertThat((String)jsonMap.get("action")).contains("incomingTask");
+        assertThat(getagentactivetaskscount(agent.agentid)).contains("1");
+        assertThat(getagentactivetaskscount(agent2.agentid)).contains("0");
+        futureTestCompletion.complete("completed");
+        // housekeeping
+        
+        agent.setAgentStatus(AgentTerminal.NOT_READY);
+        agent2.setAgentStatus(AgentTerminal.NOT_READY);
+        agent.unregisterAgentSesssion();
+        agent2.unregisterAgentSesssion();
         // hold and wait
         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }

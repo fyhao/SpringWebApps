@@ -21,7 +21,7 @@ public class MyAgentClient {
     WebSocketSession webSocketSession;
     int port;
     TestingWebApplicationTests that;
-    String agentid;
+    public String agentid;
     CompletableFuture<WebSocketSession> agentEstablished;
     CompletableFuture<Map<String, Object>> incomingJsonMapReceived;
     public List<String> taskidList = new ArrayList<String>();
@@ -105,6 +105,15 @@ public class MyAgentClient {
         Map<String, Object> jsonMap = new HashMap<String, Object>();
         jsonMap.put("action", "closeTask");
         jsonMap.put("agentid", agentid);
+        jsonMap.put("taskid", taskid);
+        sendMessage(webSocketSession, jsonMap);
+    }
+    public void requestTransferToAgent(MyAgentClient agent2, String taskid) {
+        String targetAgentid = agent2.agentid;
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "requestTransferToAgent");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("targetAgentid", targetAgentid);
         jsonMap.put("taskid", taskid);
         sendMessage(webSocketSession, jsonMap);
     }

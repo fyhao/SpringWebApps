@@ -78,6 +78,14 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         	Integer serverport = (Integer)session.getAttributes().get("serverport");
         	closetask(agentid, taskid, serverport);
         }
+        else if(jsonMap.get("action").equals("requestTransferToAgent")) {
+        	logger.info("AgentSocketHandler agent to system requestTransferToAgent");
+        	String agentid = (String)jsonMap.get("agentid");
+        	String targetAgentid = (String)jsonMap.get("targetAgentid");
+        	String taskid = (String)jsonMap.get("taskid");
+        	Integer serverport = (Integer)session.getAttributes().get("serverport");
+        	requestTransferToAgent(agentid, targetAgentid, taskid, serverport);
+        }
 	}
 
 	@Override
@@ -232,6 +240,24 @@ public class AgentSocketHandler extends TextWebSocketHandler {
                 String.class);
         return resp.getBody();
     }
-    
+    private String requestTransferToAgent(String agentid, String targetAgentid, String taskid, Integer port) {
+        RestTemplate restTemplate = new RestTemplate();
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentid);
+        dto.setTaskid(taskid);
+        dto.setTargetagentid(targetAgentid);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/task/requesttransfertoagent", request,
+                String.class);
+        return resp.getBody();
+    }
 }
     
