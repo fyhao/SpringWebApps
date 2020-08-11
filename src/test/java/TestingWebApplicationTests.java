@@ -903,6 +903,20 @@ public class TestingWebApplicationTests {
         assertThat((String)jsonMap.get("action")).contains("incomingTask");
         assertThat(getagentactivetaskscount(agent.agentid)).contains("1");
         assertThat(getagentactivetaskscount(agent2.agentid)).contains("0");
+
+
+        // agent transfer again back to agent2, but via skill now
+        agent.setAgentStatus(AgentTerminal.NOT_READY);
+        agent2.setAgentStatus(AgentTerminal.READY);
+        incomingReceived2 = agent2.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived2.get(2, SECONDS);
+        agent.requestTransferToSkill("hotel", agent.taskidList.get(0));
+        incomingReceived2 = agent2.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived2.get(2, SECONDS);
+        assertThat((String)jsonMap.get("action")).contains("incomingTask");
+        assertThat(getagentactivetaskscount(agent.agentid)).contains("0");
+        assertThat(getagentactivetaskscount(agent2.agentid)).contains("1");
+
         futureTestCompletion.complete("completed");
         // housekeeping
         

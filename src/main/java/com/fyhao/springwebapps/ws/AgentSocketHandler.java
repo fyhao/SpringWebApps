@@ -86,6 +86,14 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         	Integer serverport = (Integer)session.getAttributes().get("serverport");
         	requestTransferToAgent(agentid, targetAgentid, taskid, serverport);
         }
+        else if(jsonMap.get("action").equals("requestTransferToSkill")) {
+        	logger.info("AgentSocketHandler agent to system requestTransferToSkill");
+        	String agentid = (String)jsonMap.get("agentid");
+        	String targetSkill = (String)jsonMap.get("targetSkill");
+        	String taskid = (String)jsonMap.get("taskid");
+        	Integer serverport = (Integer)session.getAttributes().get("serverport");
+        	requestTransferToSkill(agentid, targetSkill, taskid, serverport);
+        }
 	}
 
 	@Override
@@ -256,6 +264,25 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         }
         HttpEntity<String> request = new HttpEntity<String>(message, headers);
         ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/task/requesttransfertoagent", request,
+                String.class);
+        return resp.getBody();
+    }
+    private String requestTransferToSkill(String agentid, String targetSkill, String taskid, Integer port) {
+        RestTemplate restTemplate = new RestTemplate();
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentid);
+        dto.setTaskid(taskid);
+        dto.setTargetskill(targetSkill);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/task/requesttransfertoskill", request,
                 String.class);
         return resp.getBody();
     }

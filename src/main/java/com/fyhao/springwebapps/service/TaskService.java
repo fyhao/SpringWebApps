@@ -26,6 +26,8 @@ public class TaskService {
     TaskRepository taskRepository;
     @Autowired
     AgentRepository agentRepository;
+    @Autowired
+    AgentTerminalService agentTerminalService;
     public int assignTask(Conversation conversation, String agentid) {
         logger.info("TaskService assignTask " + conversation.getId().toString() + " " + agentid);
         Agent agent = agentRepository.findByName(agentid);
@@ -112,7 +114,35 @@ public class TaskService {
         ChannelSocketHandler.sendAgentJoinedEvent(conversation.getId().toString());
         return 0;
     }
-
+    public int requestTransferToSkill(String agentid, String taskid, String targetSkill) {
+        logger.info("TaskService requestTransferToSkill " + agentid + " " + taskid + " " + targetSkill);
+        Agent agent = agentRepository.findByName(agentid);
+        if(agent == null) {
+            logger.info("TaskService requestTransferToSkill 101 " + taskid);
+            return 101;
+        }
+        Optional<Task> taskobj = taskRepository.findById(UUID.fromString(taskid));
+        if(taskobj.isEmpty()) {
+            logger.info("TaskService requestTransferToSkill 102 " + taskid);
+        	return 102;
+        }
+        Task task = taskobj.get();
+        AgentTerminal term = agentTerminalService.getMostAvailableAgent(targetSkill);
+        if(term == null) {
+            logger.info("TaskService requestTransferToSkill 103 " + taskid);
+            return 103;
+        }
+        Conversation conversation = task.getConversation();
+        if(conversation == null) { 
+            logger.info("TaskService requestTransferToSkill 104 " + taskid);
+            return 104;
+        }
+        task.setAgent(term.getAgent());
+        taskRepository.save(task);
+        AgentSocketHandler.sendAgentIncomingTaskEvent(term.getAgent().getName(), conversation.getId().toString(), task.getId().toString());
+        ChannelSocketHandler.sendAgentJoinedEvent(conversation.getId().toString());
+        return 0;
+    }
     public int getAgentTasksCount(String agentid) {
         Agent agent = agentRepository.findByName(agentid);
         if(agent == null) {

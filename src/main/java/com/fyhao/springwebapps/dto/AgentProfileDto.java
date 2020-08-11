@@ -7,6 +7,7 @@ public class AgentProfileDto implements Serializable {
     String status;
     String taskid;
     String targetagentid;
+    String targetskill;
 
     public String getName() {
         return name;
@@ -39,6 +40,14 @@ public class AgentProfileDto implements Serializable {
 	public void setTargetagentid(String targetagentid) {
 		this.targetagentid = targetagentid;
 	}
+
+    public String getTargetskill() {
+        return targetskill;
+    }
+
+    public void setTargetskill(String targetskill) {
+        this.targetskill = targetskill;
+    }
 
     
 }

@@ -117,6 +117,14 @@ public class MyAgentClient {
         jsonMap.put("taskid", taskid);
         sendMessage(webSocketSession, jsonMap);
     }
+    public void requestTransferToSkill(String skill, String taskid) {
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "requestTransferToSkill");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("targetSkill", skill);
+        jsonMap.put("taskid", taskid);
+        sendMessage(webSocketSession, jsonMap);
+    }
 
     public void sendMessage(WebSocketSession session, Map<String, Object> jsonMap) {
         ObjectMapper objectMapper = new ObjectMapper();

@@ -37,7 +37,12 @@ public class TaskController {
         taskService.requestTransferToAgent(dto.getName(), dto.getTaskid(), dto.getTargetagentid());
         return "0";
     }
-    
+    @RequestMapping(method= RequestMethod.POST, value = "/requesttransfertoskill", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public @ResponseBody String requesttransfertoskill(@RequestBody AgentProfileDto dto) {
+        logger.info("TaskController requesttransfertoskill " + dto.getName() + " " + dto.getTaskid() + " " + dto.getTargetskill());
+        taskService.requestTransferToSkill(dto.getName(), dto.getTaskid(), dto.getTargetskill());
+        return "0";
+    }
     @RequestMapping("/getagenttaskscount")
 	public @ResponseBody long getagenttaskscount(String agentid) {
         logger.info("getagenttaskscount " + agentid);
