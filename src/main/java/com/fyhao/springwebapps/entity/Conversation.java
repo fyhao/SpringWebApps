@@ -18,6 +18,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import com.fyhao.springwebapps.util.Util;
+
 @Entity
 public class Conversation implements Serializable {
 
@@ -190,6 +192,11 @@ public class Conversation implements Serializable {
         message.setToparty(this.getContact().getEmail());
         message.setConversation(this);
         getMessages().add(message);
+    }
+
+    public void endConversation() {
+        saveContext("state", "end");
+        setEndTime(Util.getSQLTimestamp(new Date()));
     }
 
     public Task getTask() {

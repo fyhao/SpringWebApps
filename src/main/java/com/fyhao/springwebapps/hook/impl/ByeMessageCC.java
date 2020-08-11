@@ -18,8 +18,7 @@ public class ByeMessageCC implements ChatCustomerHook {
     @Override
     public void preChatProcessCustomerMessage(Conversation conversation, String input) {
         if(input.equals("bye")) {
-            conversation.saveContext("state", "end");
-            conversation.setEndTime(Util.getSQLTimestamp(new Date()));
+            conversation.endConversation();
         }
     }
 

@@ -10,6 +10,7 @@ import com.fyhao.springwebapps.entity.Conversation;
 import com.fyhao.springwebapps.entity.Task;
 import com.fyhao.springwebapps.model.TaskRepository;
 import com.fyhao.springwebapps.model.AgentRepository;
+import com.fyhao.springwebapps.model.ConversationRepository;
 import com.fyhao.springwebapps.util.Util;
 import com.fyhao.springwebapps.ws.AgentSocketHandler;
 import com.fyhao.springwebapps.ws.ChannelSocketHandler;
@@ -28,6 +29,8 @@ public class TaskService {
     AgentRepository agentRepository;
     @Autowired
     AgentTerminalService agentTerminalService;
+    @Autowired
+    ConversationRepository conversationRepository;
     public int assignTask(Conversation conversation, String agentid) {
         logger.info("TaskService assignTask " + conversation.getId().toString() + " " + agentid);
         Agent agent = agentRepository.findByName(agentid);
@@ -62,7 +65,8 @@ public class TaskService {
         	return 102;
         }
         Task task = taskobj.get();
-        // TODO Check if conversation ended, if not ended, cannot close task
+        task.getConversation().endConversation();
+        conversationRepository.save(task.getConversation());
         task.setStatus("Closed");
         taskRepository.save(task);
         AgentSocketHandler.sendAgentTaskClosedEvent(agentid, taskid);
