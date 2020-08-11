@@ -48,6 +48,18 @@ public class WebchatController {
         messagingService.sendAgentMessage(id, agentname, input);
 		return "0";
     }
+    @RequestMapping("/sendcustomerstarttyping")
+	public @ResponseBody String sendcustomerstarttyping(@RequestParam String id) {
+        logger.info("sendmessage");
+        messagingService.sendCustomerStartTyping(id);
+		return "0";
+    }
+    @RequestMapping("/sendcustomerstoptyping")
+	public @ResponseBody String sendcustomerstoptyping(@RequestParam String id) {
+        logger.info("sendmessage");
+        messagingService.sendCustomerStopTyping(id);
+		return "0";
+    }
     @RequestMapping("/getmessagecount")
 	public @ResponseBody int getmessagecount(@RequestParam String id) {
         logger.info("getmessagecount");

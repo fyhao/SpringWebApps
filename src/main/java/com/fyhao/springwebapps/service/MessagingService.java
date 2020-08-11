@@ -104,6 +104,26 @@ public class MessagingService {
         ChannelSocketHandler.sendChatMessageToCustomer(conversation.getId().toString(), input);
         return 0;
     }
+    public int sendCustomerStartTyping(String conversation_id) {
+        Optional<Conversation> conv = conversationRepository.findById(UUID.fromString(conversation_id));
+        if(conv.isEmpty()) {
+            return 100;
+        }
+        Conversation conversation = conv.get();
+        String agentid = conversation.getTask().getAgent().getName();
+        AgentSocketHandler.sendCustomerStartedTypingEvent(agentid, conversation_id);
+        return 0;
+    }
+    public int sendCustomerStopTyping(String conversation_id) {
+        Optional<Conversation> conv = conversationRepository.findById(UUID.fromString(conversation_id));
+        if(conv.isEmpty()) {
+            return 100;
+        }
+        Conversation conversation = conv.get();
+        String agentid = conversation.getTask().getAgent().getName();
+        AgentSocketHandler.sendCustomerStoppedTypingEvent(agentid, conversation_id);
+        return 0;
+    }
     public int getMessageCount(String conversation_id) {
         Optional<Conversation> conversation = conversationRepository.findById(UUID.fromString(conversation_id));
         if(conversation.isEmpty()) {

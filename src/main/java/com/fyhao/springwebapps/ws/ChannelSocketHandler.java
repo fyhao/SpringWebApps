@@ -54,6 +54,20 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
             logger.info("ChannelSocketHandler chatMessage " + chatMessage);
             sendCustomerMessage(conversationid, chatMessage, serverport);
         }
+        else if(jsonMap.get("action").equals("startTyping")) {
+            logger.info("ChannelSocketHandler customer to system startTyping");
+            String conversationid = (String)jsonMap.get("conversationid");
+            logger.info("ChannelSocketHandler conversationid " + conversationid);
+            Integer serverport = (Integer)session.getAttributes().get("serverport");
+            sendCustomerStartTyping(conversationid, serverport);
+        }
+        else if(jsonMap.get("action").equals("stopTyping")) {
+            logger.info("ChannelSocketHandler customer to stopTyping startTyping");
+            String conversationid = (String)jsonMap.get("conversationid");
+            logger.info("ChannelSocketHandler conversationid " + conversationid);
+            Integer serverport = (Integer)session.getAttributes().get("serverport");
+            sendCustomerStopTyping(conversationid, serverport);
+        }
 	}
 
 	@Override
@@ -129,6 +143,19 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
         logger.info("ChannelSocketHandler sendCustomerMessage " + conversationid + " - " + message);
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=" + URLEncoder.encode(message),
+                String.class);
+    }
+    //sendCustomerStartTyping
+    public void sendCustomerStartTyping(String conversationid, Integer port) {
+        logger.info("ChannelSocketHandler sendCustomerStartTyping " + conversationid );
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getForObject("http://localhost:" + port + "/webchat/sendcustomerstarttyping?id=" + conversationid,
+                String.class);
+    }
+    public void sendCustomerStopTyping(String conversationid, Integer port) {
+        logger.info("ChannelSocketHandler sendCustomerStopTyping " + conversationid );
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getForObject("http://localhost:" + port + "/webchat/sendcustomerstoptyping?id=" + conversationid,
                 String.class);
     }
 }

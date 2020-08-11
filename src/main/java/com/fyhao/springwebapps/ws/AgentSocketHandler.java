@@ -160,6 +160,23 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         jsonMap.put("taskid", taskid);
         sendCommandToAgent(agentid, jsonMap);
     }
+    //sendCustomerStartedTypingEvent
+    public static void sendCustomerStartedTypingEvent(String agentid, String conversationid) {
+        logger.info("AgentSocketHandler.sendCustomerStartedTypingEvent " + agentid + " " + conversationid);
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "customerStartedTyping");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("conversationid", conversationid);
+        sendCommandToAgent(agentid, jsonMap);
+    }
+    public static void sendCustomerStoppedTypingEvent(String agentid, String conversationid) {
+        logger.info("AgentSocketHandler.sendCustomerStoppedTypingEvent " + agentid + " " + conversationid);
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "customerStoppedTyping");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("conversationid", conversationid);
+        sendCommandToAgent(agentid, jsonMap);
+    }
     public static void sendCommandToAgent(String agentid, Map<String,Object> jsonMap) {
         ObjectMapper objectMapper = new ObjectMapper();
         for(WebSocketSession session : sessions) {

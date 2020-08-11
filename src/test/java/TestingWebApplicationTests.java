@@ -938,6 +938,17 @@ public class TestingWebApplicationTests {
         customerIncomingReceived = customer.waitNextIncomingTextMessage();
         jsonMap = customerIncomingReceived.get(2, SECONDS);
         assertThat((String)jsonMap.get("action")).contains("agentStoppedTyping");
+
+        // customer start typing to agent
+        customer.startTyping();
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        assertThat((String)jsonMap.get("action")).contains("customerStartedTyping");
+        customer.stopTyping();
+        incomingReceived = agent.waitNextIncomingTextMessage();
+        jsonMap = incomingReceived.get(2, SECONDS);
+        assertThat((String)jsonMap.get("action")).contains("customerStoppedTyping");
+
         futureTestCompletion.complete("completed");
         // housekeeping
         
