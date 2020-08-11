@@ -604,7 +604,7 @@ public class TestingWebApplicationTests {
         customerIncomingReceived = customer.waitNextIncomingTextMessage();
         jsonMap = customerIncomingReceived.get(2, SECONDS);
         if (jsonMap.get("action").equals("agentJoined")) {
-
+            String joinedAgentid = (String)jsonMap.get("agentid");
         }
         else {
             hasError = true;

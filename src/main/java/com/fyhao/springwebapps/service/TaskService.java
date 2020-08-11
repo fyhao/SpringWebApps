@@ -51,7 +51,7 @@ public class TaskService {
         task.setAgent(agent);
         taskRepository.save(task);
         AgentSocketHandler.sendAgentIncomingTaskEvent(agentid, conversation.getId().toString(), task.getId().toString());
-        ChannelSocketHandler.sendAgentJoinedEvent(conversation.getId().toString());
+        ChannelSocketHandler.sendAgentJoinedEvent(agentid, conversation.getId().toString());
         return 0;
     }
     public int closeTask(String agentid, String taskid) {
@@ -115,7 +115,7 @@ public class TaskService {
         task.setAgent(agent2);
         taskRepository.save(task);
         AgentSocketHandler.sendAgentIncomingTaskEvent(targetAgentid, conversation.getId().toString(), task.getId().toString());
-        ChannelSocketHandler.sendAgentJoinedEvent(conversation.getId().toString());
+        ChannelSocketHandler.sendAgentJoinedEvent(targetAgentid, conversation.getId().toString());
         return 0;
     }
     public int requestTransferToSkill(String agentid, String taskid, String targetSkill) {
@@ -148,7 +148,7 @@ public class TaskService {
         task.setAgent(term.getAgent());
         taskRepository.save(task);
         AgentSocketHandler.sendAgentIncomingTaskEvent(term.getAgent().getName(), conversation.getId().toString(), task.getId().toString());
-        ChannelSocketHandler.sendAgentJoinedEvent(conversation.getId().toString());
+        ChannelSocketHandler.sendAgentJoinedEvent(term.getAgent().getName(), conversation.getId().toString());
         return 0;
     }
     public int agentStartTyping(String agentid, String conversationid) {
