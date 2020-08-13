@@ -41,6 +41,7 @@ public class MainView extends VerticalLayout implements RouterLayout {
         menu.add(new RouterLink("Home", HomeView.class));
         menu.add(new RouterLink("Contact", ContactView.class));
         menu.add(new RouterLink("Agent Profile", AgentProfileView.class));
+        menu.add(new RouterLink("Manage Skill", ManageSkillView.class));
         add(menu);
     }
 }

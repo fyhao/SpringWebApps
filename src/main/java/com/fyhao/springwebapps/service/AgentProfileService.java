@@ -141,4 +141,7 @@ public class AgentProfileService {
     public Iterable<Agent> getAllAgents() {
         return agentRepository.findAll();
     }
+    public Iterable<Skill> getAllSkills() {
+        return skillRepository.findAll();
+    }
 }
