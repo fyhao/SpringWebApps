@@ -138,5 +138,7 @@ public class AgentProfileService {
         agentRepository.save(agent);
         return 0;
     }
-    
+    public Iterable<Agent> getAllAgents() {
+        return agentRepository.findAll();
+    }
 }
