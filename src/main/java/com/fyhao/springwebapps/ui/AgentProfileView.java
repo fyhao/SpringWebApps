@@ -158,6 +158,7 @@ public class AgentProfileView extends Div {
         }
         manageSkillDiv.add(createLineLabel("To assign skill: "));
         for(Skill skill : agentProfileService.getAllSkills()) {
+        	if(agentSkills.contains(skill.getName())) continue;
             Div div = createLineLabel(skill.getName());
             Button assignBtn = new Button();
             assignBtn.setText("Assign");
