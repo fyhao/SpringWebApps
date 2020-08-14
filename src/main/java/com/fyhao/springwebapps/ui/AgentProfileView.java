@@ -20,6 +20,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
@@ -34,7 +36,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 @Route(value = "ui/agentprofile", layout = MainView.class)
-public class AgentProfileView extends Div {
+public class AgentProfileView extends Div  implements AfterNavigationObserver  {
 
     AgentProfileService agentProfileService;
     /**
@@ -50,6 +52,7 @@ public class AgentProfileView extends Div {
     public AgentProfileView(AgentProfileService agentProfileService) {
         this.agentProfileService = agentProfileService;
         refreshList();
+        add(UIUtil.createLineLabel("Agent Profile"));
         addButton.setText("Add");
         addButton.addClickListener(e -> {
             showForm("add");
@@ -59,6 +62,10 @@ public class AgentProfileView extends Div {
         add(listView);
         add(manageSkillDiv);
     }
+    @Override
+	public void afterNavigation(AfterNavigationEvent event) {
+		refreshList();
+	}
     Map<String, TextField> inputMap = new HashMap<String, TextField>();
 
     void showForm(String action) {
@@ -137,12 +144,12 @@ public class AgentProfileView extends Div {
         formDiv.setVisible(false);
         manageSkillDiv.setVisible(true);
         manageSkillDiv.removeAll();
-        manageSkillDiv.add(createLineLabel("Manage skill for " + agentName));
-        manageSkillDiv.add(createLineLabel("Current list of skills:"));
+        manageSkillDiv.add(UIUtil.createLineLabel("Manage skill for " + agentName));
+        manageSkillDiv.add(UIUtil.createLineLabel("Current list of skills:"));
         
         List<String> agentSkills = getskillnamesofagent(agentName);    
         for(String a : agentSkills) {
-            Div div = createLineLabel(a);
+            Div div = UIUtil.createLineLabel(a);
             Button unassignBtn = new Button();
             unassignBtn.setText("Unassign");
             div.add(unassignBtn);
@@ -156,10 +163,10 @@ public class AgentProfileView extends Div {
             });
             manageSkillDiv.add(div);
         }
-        manageSkillDiv.add(createLineLabel("To assign skill: "));
+        manageSkillDiv.add(UIUtil.createLineLabel("To assign skill: "));
         for(Skill skill : agentProfileService.getAllSkills()) {
         	if(agentSkills.contains(skill.getName())) continue;
-            Div div = createLineLabel(skill.getName());
+            Div div = UIUtil.createLineLabel(skill.getName());
             Button assignBtn = new Button();
             assignBtn.setText("Assign");
             div.add(assignBtn);
@@ -174,12 +181,6 @@ public class AgentProfileView extends Div {
             manageSkillDiv.add(div);
         }
         
-    }
-    Div createLineLabel(String text) {
-        Div div = new Div();
-        Label label = new Label(text);
-        div.add(label);
-        return div;
     }
 
     private List<String> getskillnamesofagent(String agent) {

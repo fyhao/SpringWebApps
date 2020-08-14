@@ -1,23 +1,18 @@
 package com.fyhao.springwebapps.ui;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.tabs.Tab;
-import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterLink;
 
-
-public class MainView extends VerticalLayout implements RouterLayout {
+@Push
+public class MainView extends Composite<Div> implements RouterLayout {
 
 	/**
 	 *
@@ -33,15 +28,33 @@ public class MainView extends VerticalLayout implements RouterLayout {
         Label label = new Label();
         label.getStyle().set("font-size", "36px");
         label.setText("Header");
-        add(label);
+        getContent().add(label);
     }
 
+    Div content = new Div();
     void createMenu() {
-        Div menu = new Div();
-        menu.add(new RouterLink("Home", HomeView.class));
-        menu.add(new RouterLink("Contact", ContactView.class));
-        menu.add(new RouterLink("Agent Profile", AgentProfileView.class));
-        menu.add(new RouterLink("Manage Skill", ManageSkillView.class));
-        add(menu);
+    	HorizontalLayout container = new HorizontalLayout();
+    	VerticalLayout menu = new VerticalLayout();
+        menu.add(createRouterLink("Home", HomeView.class));
+        menu.add(createRouterLink("Contact", ContactView.class));
+        menu.add(createRouterLink("Agent Profile", AgentProfileView.class));
+        menu.add(createRouterLink("Manage Skill", ManageSkillView.class));
+        menu.add(createRouterLink("Agent Chat", AgentChatView.class));
+        menu.setWidth("20%");
+        content.setWidth("80%");
+        container.add(menu);
+        container.add(content);
+        getContent().add(container);
+    }
+    
+    RouterLink createRouterLink(String title, Class<? extends Component> clazz) {
+    	RouterLink link = new RouterLink(title, clazz);
+    	link.getStyle().set("margin", "5px");
+    	return link;
+    }
+    
+    public void showRouterLayoutContent(HasElement hasElement) {
+    	content.removeAll();
+    	content.getElement().appendChild(hasElement.getElement());
     }
 }

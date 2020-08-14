@@ -16,6 +16,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
@@ -23,7 +25,7 @@ import com.vaadin.flow.router.RouterLayout;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Route(value = "ui/manageskill", layout = MainView.class)
-public class ManageSkillView extends Div {
+public class ManageSkillView extends Div implements AfterNavigationObserver {
 
     AgentProfileService agentProfileService;
     /**
@@ -38,6 +40,7 @@ public class ManageSkillView extends Div {
     public ManageSkillView(AgentProfileService agentProfileService) {
         this.agentProfileService = agentProfileService;
         refreshList();
+        add(UIUtil.createLineLabel("Manage Skill"));
         addButton.setText("Add");
         addButton.addClickListener(e -> {
             showForm("add");
@@ -45,7 +48,12 @@ public class ManageSkillView extends Div {
         add(addButton);
         add(formDiv);
         add(listView);
+        
     }
+    @Override
+	public void afterNavigation(AfterNavigationEvent event) {
+		refreshList();
+	}
     Map<String, TextField> inputMap = new HashMap<String, TextField>();
 
     void showForm(String action) {
@@ -109,4 +117,5 @@ public class ManageSkillView extends Div {
             listView.add(itemDiv);
         }
     }
+	
 }
