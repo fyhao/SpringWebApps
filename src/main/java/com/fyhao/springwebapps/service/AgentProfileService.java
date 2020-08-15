@@ -91,7 +91,7 @@ public class AgentProfileService {
         }
         String action = agentSkillDto.getAction();
         if (action.equals(AgentSkillDto.ASSIGNED_TO_AGENT)) {
-            if (!agent.getAgentSkills().contains(skill)) {
+        	if (!agent.getAgentSkills().contains(skill)) {
                 agent.getAgentSkills().add(skill);
             }
             agentRepository.save(agent);
