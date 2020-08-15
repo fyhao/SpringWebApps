@@ -43,7 +43,7 @@ public class CustomerChatView extends Div  implements AfterNavigationObserver{
 		emailTF.setValue("test@test.com");
 		v.add(emailTF);
 		TextField channelTF = new TextField();
-		channelTF.setValue("webchathotel");
+		channelTF.setValue("webchathotelqueue");
 		v.add(channelTF);
 		Button connectBtn = new Button("Connect with chat care");
 		v.add(connectBtn);

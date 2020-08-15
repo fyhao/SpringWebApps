@@ -24,7 +24,7 @@ public class HotelBotBS implements BotServiceHook {
     TaskService taskService;
     @Override
     public void processCustomerMessage(Conversation conversation, String input) {
-        if(conversation.getChannel().equals("webchathotel")) {
+        if(conversation.getChannel().startsWith("webchathotel")) {
             processHotelBot(conversation, input);
         }
     }
@@ -42,7 +42,13 @@ public class HotelBotBS implements BotServiceHook {
             }
             else if(input.equals("do you know about abcde?")) {
                 logger.info("HotelBotBS receive do you know?");
-                String agentName = agentAvailabilityService.findAgent(conversation, "hotel");
+                String agentName = null;
+                if(conversation.getChannel().equals("webchathotel")) {
+                	agentName = agentAvailabilityService.findAgent(conversation, "hotel");
+                }
+                else {
+                	agentName = agentAvailabilityService.queueSkill(conversation, "hotel");
+                }
                 logger.info("HotelBotBS agentavailabilityService found agent " + agentName);
                 if(agentName != null) {
                     conversation.saveContext("state", "agent");
