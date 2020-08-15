@@ -7,14 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fyhao.springwebapps.dto.AgentProfileDto;
-import com.fyhao.springwebapps.service.MessagingService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.http.HttpEntity;
@@ -27,6 +21,11 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fyhao.springwebapps.dto.AgentProfileDto;
+import com.fyhao.springwebapps.dto.ContextDto;
 @Component
 public class AgentSocketHandler extends TextWebSocketHandler {
     static Logger logger = LoggerFactory.getLogger(AgentSocketHandler.class);
@@ -143,13 +142,14 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         jsonMap.put("newstatus", newstatus);
         sendCommandToAgent(agentid, jsonMap);
     }
-    public static void sendAgentIncomingTaskEvent(String agentid, String conversationid, String taskid) {
+    public static void sendAgentIncomingTaskEvent(String agentid, String conversationid, String taskid, Map<String,Object> listOfContexts) {
         logger.info("AgentSocketHandler.sendAgentIncomingTaskEvent " + agentid + " " + conversationid + " " + taskid);
         Map<String, Object> jsonMap = new HashMap<String, Object>();
         jsonMap.put("action", "incomingTask");
         jsonMap.put("agentid", agentid);
         jsonMap.put("conversationid", conversationid);
         jsonMap.put("taskid", taskid);
+        jsonMap.put("context", listOfContexts);
         sendCommandToAgent(agentid, jsonMap);
     }
     public static void sendAgentTaskClosedEvent(String agentid, String taskid) {

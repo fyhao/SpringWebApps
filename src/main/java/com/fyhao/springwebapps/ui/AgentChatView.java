@@ -24,6 +24,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.AfterNavigationEvent;
@@ -46,6 +47,7 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
 	VerticalLayout v = new VerticalLayout();
 	Label statusLabel = new Label();
 	Label lastAction = new Label();
+	HorizontalLayout contextBox = new HorizontalLayout();
 	void showChatView() {
 		TextField agentnameTF = new TextField();
 		v.add(agentnameTF);
@@ -54,6 +56,7 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
 		v.add(setAgentNameBtn);
 		v.add(statusLabel);
 		v.add(lastAction);
+		v.add(contextBox);
 		setAgentNameBtn.addClickListener(e -> {
 			String va = agentnameTF.getValue();
 			agentid = va;
@@ -101,6 +104,8 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
 			        }
 			        else if(jsonMap.get("action").equals("incomingTask")) { 
 			            String a = (String)jsonMap.get("conversationid");
+			            Map<String,Object> context = (Map<String, Object>)jsonMap.get("context");
+			            updateContextVariable(context);
 			            conversationids.add(a);
 			        }
 			        else if(action.equals("chatMessageReceived")) {
@@ -230,6 +235,16 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
     		while(chatBox.getComponentCount() > 10) {
     			chatBox.remove(chatBox.getComponentAt(0));
     		}
+    	});
+    }
+    void updateContextVariable(Map<String, Object> contexts) {
+    	System.out.println("incoming task updatecontextvariable " + contexts.size());
+    	UI ui = contextBox.getUI().get();
+    	ui.access( () -> {
+    		contextBox.removeAll();
+			for(Map.Entry<String, Object> entry:contexts.entrySet()) {
+        		contextBox.add(new Label(entry.getKey() + " = " + entry.getValue()));
+        	}
     	});
     }
 }
