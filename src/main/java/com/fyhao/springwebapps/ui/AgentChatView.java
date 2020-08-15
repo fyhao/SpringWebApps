@@ -1,16 +1,14 @@
 package com.fyhao.springwebapps.ui;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketSession;
@@ -18,9 +16,7 @@ import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fyhao.springwebapps.dto.AgentProfileDto;
 import com.fyhao.springwebapps.entity.AgentTerminal;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
@@ -53,6 +49,7 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
 	void showChatView() {
 		TextField agentnameTF = new TextField();
 		v.add(agentnameTF);
+		agentnameTF.setValue("agent1");
 		Button setAgentNameBtn = new Button("Connect with this Agent Name");
 		v.add(setAgentNameBtn);
 		v.add(statusLabel);
@@ -63,6 +60,7 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
 			connectWS();
 		});
 		renderStatusButton();
+		renderChatBox();
 		add(v);
 	}
 	Registration broadcasterRegistration;
@@ -71,6 +69,7 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
 	WebSocketClient webSocketClient;
     WebSocketSession webSocketSession;
     String agentid = "agent1";
+    List<String> conversationids = new ArrayList<String>();
     int port = 8080;
     
     public void connectWS() {
@@ -99,6 +98,15 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
                         String oldstatus = (String)jsonMap.get("oldstatus");
                         String newstatus = (String)jsonMap.get("newstatus");
                         updateAgentStatusUI(newstatus);
+			        }
+			        else if(jsonMap.get("action").equals("incomingTask")) { 
+			            String a = (String)jsonMap.get("conversationid");
+			            conversationids.add(a);
+			        }
+			        else if(action.equals("chatMessageReceived")) {
+			        	String conversationid = (String) jsonMap.get("conversationid");
+                        String content = (String) jsonMap.get("content");
+                        appendMessageReply(conversationid, content);
 			        }
 			    }
 			    @Override
@@ -142,7 +150,14 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
         jsonMap.put("status", status);
         sendMessage(webSocketSession, jsonMap);
     }
-    
+    public void sendChatMessage(String conversationid, String chatMessage) {
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "sendChatMessage");
+        jsonMap.put("conversationid", conversationid);
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("chatMessage", chatMessage);
+        sendMessage(webSocketSession, jsonMap);
+    }
     public void sendMessage(WebSocketSession session, Map<String, Object> jsonMap) {
         System.out.println("DEBUG sendMessage session " + (session != null));
     	ObjectMapper objectMapper = new ObjectMapper();
@@ -173,6 +188,48 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
     			targetStatus = AgentTerminal.NOT_READY;
     		}
 			statusButton.setText(targetStatus);
+    	});
+    }
+    
+    VerticalLayout chatBox = new VerticalLayout();
+    void renderChatBox() {
+    	v.add(chatBox);
+    	TextField messageTF = new TextField();
+		v.add(messageTF);
+		Button sendChatBtn = new Button("Send");
+		v.add(sendChatBtn);
+		sendChatBtn.addClickListener( e -> {
+			String message = messageTF.getValue();
+			sendChatMessage(conversationids.get(0), message);
+			appendSelfReply(message);
+		});
+    }
+    void appendSelfReply(String content) {
+    	UI ui = chatBox.getUI().get();
+    	ui.access( () -> {
+    		Label label = new Label("You: " + content);
+    		label.setWidthFull();
+    		label.getStyle().set("text-align", "right");
+    		chatBox.add(label);
+    	});
+    	maintainLastNChat();
+    }
+    void appendMessageReply(String conversationid, String content) {
+    	UI ui = chatBox.getUI().get();
+    	ui.access( () -> {
+    		Label label = new Label("System: " + content);
+    		label.setWidthFull();
+    		label.getStyle().set("text-align", "left");
+    		chatBox.add(label);
+    	});
+    	maintainLastNChat();
+    }
+    void maintainLastNChat() {
+    	UI ui = chatBox.getUI().get();
+    	ui.access( () -> {
+    		while(chatBox.getComponentCount() > 10) {
+    			chatBox.remove(chatBox.getComponentAt(0));
+    		}
     	});
     }
 }

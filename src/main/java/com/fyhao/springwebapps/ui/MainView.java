@@ -40,6 +40,7 @@ public class MainView extends Composite<Div> implements RouterLayout {
         menu.add(createRouterLink("Agent Profile", AgentProfileView.class));
         menu.add(createRouterLink("Manage Skill", ManageSkillView.class));
         menu.add(createRouterLink("Agent Chat", AgentChatView.class));
+        menu.add(createRouterLink("Customer Chat", CustomerChatView.class));
         menu.setWidth("20%");
         content.setWidth("80%");
         container.add(menu);
