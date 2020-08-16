@@ -19,11 +19,13 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fyhao.springwebapps.entity.AgentTerminal;
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -63,7 +65,7 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
 			connectWS();
 		});
 		renderStatusButton();
-		renderChatBox();
+		renderChatBoxGroup();
 		add(v);
 	}
 	Registration broadcasterRegistration;
@@ -106,7 +108,8 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
 			            String a = (String)jsonMap.get("conversationid");
 			            Map<String,Object> context = (Map<String, Object>)jsonMap.get("context");
 			            updateContextVariable(context);
-			            conversationids.add(a);
+                        conversationids.add(a);
+                        appendNewConversation(a);
 			        }
 			        else if(action.equals("chatMessageReceived")) {
 			        	String conversationid = (String) jsonMap.get("conversationid");
@@ -196,41 +199,94 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
     	});
     }
     
-    VerticalLayout chatBox = new VerticalLayout();
-    void renderChatBox() {
-    	v.add(chatBox);
+    HorizontalLayout chgroup = new HorizontalLayout();
+    VerticalLayout chtab = new VerticalLayout();
+    VerticalLayout charea = new VerticalLayout();
+    void renderChatBoxGroup() {
+        // draw tabs based on list of conversationids 
+        v.add(chgroup);
+        // render chatbox tabs based on conversationids
+        chtab.setWidth("20%");
+        charea.setWidth("80%");
+        chgroup.add(chtab);
+        chgroup.add(charea);
+    }
+    
+    int buttonCount = 0;
+    void appendNewConversation(String conversationid) {
+        UI ui = v.getUI().get();
+        ui.access(() -> {
+            Button button = new Button();
+            button.setText("Chat " + (++buttonCount));
+            button.getElement().setAttribute("conversationid", conversationid);
+            chtab.add(button);
+            button.addClickListener(e -> {
+                String id = e.getSource().getElement().getAttribute("conversationid");
+                showChatBox(id);
+            });
+            showChatBox(conversationid);
+        });
+    }
+    Map<String, Div> conMap = new HashMap<String, Div>();
+    void showChatBox(String conversationid) {
+        for(Div div : conMap.values()) {
+            div.setVisible(false);
+        }
+        if(conMap.containsKey(conversationid)) {
+            conMap.get(conversationid).setVisible(true);
+        }
+        else {
+            Div div = new Div();
+            div.getElement().setAttribute("conversationid", conversationid);
+            conMap.put(conversationid, div);
+            charea.add(div);
+            renderChatBox(div);
+        }
+    }
+    
+    void renderChatBox(Div div) {
+        String conversationid = div.getElement().getAttribute("conversationid");
+        VerticalLayout chatBox = new VerticalLayout();
+        chatBox.getElement().setAttribute("isChatBox", "1");
+    	div.add(chatBox);
     	TextField messageTF = new TextField();
-		v.add(messageTF);
+		div.add(messageTF);
 		Button sendChatBtn = new Button("Send");
-		v.add(sendChatBtn);
+		div.add(sendChatBtn);
 		sendChatBtn.addClickListener( e -> {
 			String message = messageTF.getValue();
-			sendChatMessage(conversationids.get(conversationids.size() - 1), message);
-			appendSelfReply(message);
+			sendChatMessage(conversationid, message);
+			appendSelfReply(conversationid, message);
 		});
     }
-    void appendSelfReply(String content) {
-    	UI ui = chatBox.getUI().get();
+    void appendSelfReply(String conversationid, String content) {
+        Div div = conMap.get(conversationid);
+        VerticalLayout chatBox = (VerticalLayout)div.getChildren().filter(e -> e.getElement().getAttribute("isChatBox") != null).findFirst().get();
+        UI ui = chatBox.getUI().get();
     	ui.access( () -> {
     		Label label = new Label("You: " + content);
     		label.setWidthFull();
     		label.getStyle().set("text-align", "right");
     		chatBox.add(label);
     	});
-    	maintainLastNChat();
+    	maintainLastNChat(conversationid);
     }
     void appendMessageReply(String conversationid, String content) {
-    	UI ui = chatBox.getUI().get();
+        Div div = conMap.get(conversationid);
+        VerticalLayout chatBox = (VerticalLayout)div.getChildren().filter(e -> e.getElement().getAttribute("isChatBox") != null).findFirst().get();
+        UI ui = chatBox.getUI().get();
     	ui.access( () -> {
     		Label label = new Label("System: " + content + "( " + conversationid + " )");
     		label.setWidthFull();
     		label.getStyle().set("text-align", "left");
     		chatBox.add(label);
     	});
-    	maintainLastNChat();
+    	maintainLastNChat(conversationid);
     }
-    void maintainLastNChat() {
-    	UI ui = chatBox.getUI().get();
+    void maintainLastNChat(String conversationid) {
+    	Div div = conMap.get(conversationid);
+        VerticalLayout chatBox = (VerticalLayout)div.getChildren().filter(e -> e.getElement().getAttribute("isChatBox") != null).findFirst().get();
+        UI ui = chatBox.getUI().get();
     	ui.access( () -> {
     		while(chatBox.getComponentCount() > 10) {
     			chatBox.remove(chatBox.getComponentAt(0));

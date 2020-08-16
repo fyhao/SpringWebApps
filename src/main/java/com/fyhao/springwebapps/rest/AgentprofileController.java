@@ -80,7 +80,7 @@ public class AgentprofileController {
 	public @ResponseBody String testdata() {
         logger.info("testdata");
         String[] skills = new String[] {"hotel"};
-        String[] agents = new String[] {"agent1","agent2"};
+        String[] agents = new String[] {"agent1","agent2","agent3"};
         for(String skill : skills) {
         	SkillDto dto = new SkillDto();
         	dto.setName(skill);
