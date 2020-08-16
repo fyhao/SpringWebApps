@@ -205,7 +205,7 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
 		v.add(sendChatBtn);
 		sendChatBtn.addClickListener( e -> {
 			String message = messageTF.getValue();
-			sendChatMessage(conversationids.get(0), message);
+			sendChatMessage(conversationids.get(conversationids.size() - 1), message);
 			appendSelfReply(message);
 		});
     }
@@ -222,7 +222,7 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
     void appendMessageReply(String conversationid, String content) {
     	UI ui = chatBox.getUI().get();
     	ui.access( () -> {
-    		Label label = new Label("System: " + content);
+    		Label label = new Label("System: " + content + "( " + conversationid + " )");
     		label.setWidthFull();
     		label.getStyle().set("text-align", "left");
     		chatBox.add(label);

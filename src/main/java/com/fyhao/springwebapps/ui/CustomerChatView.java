@@ -90,7 +90,7 @@ public class CustomerChatView extends Div  implements AfterNavigationObserver{
 			        if(action.equals("chatMessageReceived")) {
 			        	String conversationid = (String) jsonMap.get("conversationid");
                         String content = (String) jsonMap.get("content");
-                        appendMessageReply(content);
+                        appendMessageReply(conversationid, content);
 			        }
 			    }
 			    @Override
@@ -156,10 +156,10 @@ public class CustomerChatView extends Div  implements AfterNavigationObserver{
     	});
     	maintainLastNChat();
     }
-    void appendMessageReply(String content) {
+    void appendMessageReply(String conversationid, String content) {
     	UI ui = chatBox.getUI().get();
     	ui.access( () -> {
-    		Label label = new Label("System: " + content);
+    		Label label = new Label("System: " + content + "( " + conversationid + " )");
     		label.setWidthFull();
     		label.getStyle().set("text-align", "left");
     		chatBox.add(label);
