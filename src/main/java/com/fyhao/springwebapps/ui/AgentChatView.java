@@ -105,11 +105,12 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
                         updateAgentStatusUI(newstatus);
 			        }
 			        else if(jsonMap.get("action").equals("incomingTask")) { 
-			            String a = (String)jsonMap.get("conversationid");
+                        String a = (String)jsonMap.get("conversationid");
+                        String taskid = (String)jsonMap.get("taskid");
 			            Map<String,Object> context = (Map<String, Object>)jsonMap.get("context");
 			            updateContextVariable(context);
                         conversationids.add(a);
-                        appendNewConversation(a);
+                        appendNewConversation(a, taskid);
 			        }
 			        else if(action.equals("chatMessageReceived")) {
 			        	String conversationid = (String) jsonMap.get("conversationid");
@@ -166,6 +167,13 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
         jsonMap.put("chatMessage", chatMessage);
         sendMessage(webSocketSession, jsonMap);
     }
+    public void closeTask(String agentid, String taskid) {
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "closeTask");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("taskid", taskid);
+        sendMessage(webSocketSession, jsonMap);
+    }
     public void sendMessage(WebSocketSession session, Map<String, Object> jsonMap) {
         System.out.println("DEBUG sendMessage session " + (session != null));
     	ObjectMapper objectMapper = new ObjectMapper();
@@ -213,7 +221,7 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
     }
     
     int buttonCount = 0;
-    void appendNewConversation(String conversationid) {
+    void appendNewConversation(String conversationid, String taskid) {
         UI ui = v.getUI().get();
         ui.access(() -> {
             Button button = new Button();
@@ -224,11 +232,14 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
                 String id = e.getSource().getElement().getAttribute("conversationid");
                 showChatBox(id);
             });
-            showChatBox(conversationid);
+            showChatBox(conversationid, taskid);
         });
     }
     Map<String, Div> conMap = new HashMap<String, Div>();
     void showChatBox(String conversationid) {
+        showChatBox(conversationid, null);
+    }
+    void showChatBox(String conversationid, String taskid) {
         for(Div div : conMap.values()) {
             div.setVisible(false);
         }
@@ -238,6 +249,9 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
         else {
             Div div = new Div();
             div.getElement().setAttribute("conversationid", conversationid);
+            if(taskid != null) {
+                div.getElement().setAttribute("taskid", taskid);
+            }
             conMap.put(conversationid, div);
             charea.add(div);
             renderChatBox(div);
@@ -246,6 +260,7 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
     
     void renderChatBox(Div div) {
         String conversationid = div.getElement().getAttribute("conversationid");
+        String taskid = div.getElement().getAttribute("taskid");
         VerticalLayout chatBox = new VerticalLayout();
         chatBox.getElement().setAttribute("isChatBox", "1");
     	div.add(chatBox);
@@ -257,7 +272,12 @@ public class AgentChatView extends Div  implements AfterNavigationObserver{
 			String message = messageTF.getValue();
 			sendChatMessage(conversationid, message);
 			appendSelfReply(conversationid, message);
-		});
+        });
+        Button closeTaskBtn = new Button("Close Task");
+        div.add(closeTaskBtn);
+        closeTaskBtn.addClickListener( e -> {
+            closeTask(agentid, taskid);
+        });
     }
     void appendSelfReply(String conversationid, String content) {
         Div div = conMap.get(conversationid);
