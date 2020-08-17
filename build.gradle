@@ -41,6 +41,7 @@ sourceCompatibility = 11
 targetCompatibility = 11
 
 dependencies {
+	compile group: 'com.github.eirslett', name: 'frontend-maven-plugin', version: '1.7.6'
     implementation 'com.vaadin:vaadin-spring-boot-starter'
     compileOnly("org.springframework.boot:spring-boot-devtools")
     compile group: 'com.lmax', name: 'disruptor', version:'3.4.2'
@@ -63,7 +64,6 @@ dependencies {
     compile("org.webjars:stomp-websocket:2.3.3-1")
     compile("org.webjars:bootstrap:4.5.0")
     compile("org.webjars:jquery:3.5.1")
-	compile group: 'com.github.eirslett', name: 'frontend-maven-plugin', version: '1.7.6'
     testImplementation('org.springframework.boot:spring-boot-starter-test:2.3.3.RELEASE') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
