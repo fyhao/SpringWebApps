@@ -76,4 +76,28 @@ public class AgentprofileController {
         logger.info("setmaxconcurrenttaskofagent");
 		return agentProfileService.setMaxConcurrentTaskOfAgent(agentname, maxconcurrenttask);
     }
+    @RequestMapping("/testdata")
+	public @ResponseBody String testdata() {
+        logger.info("testdata");
+        String[] skills = new String[] {"hotel"};
+        String[] agents = new String[] {"agent1","agent2","agent3"};
+        for(String skill : skills) {
+        	SkillDto dto = new SkillDto();
+        	dto.setName(skill);
+        	agentProfileService.createSkillProfile(dto);
+        }
+        for(String agent : agents) {
+        	AgentProfileDto dto = new AgentProfileDto();
+        	dto.setName(agent);
+        	agentProfileService.createAgentProfile(dto);
+        	for(String skill : skills) {
+            	AgentSkillDto agentSkillDto = new AgentSkillDto();
+            	agentSkillDto.setAgent(agent);
+            	agentSkillDto.setSkill(skill);
+            	agentSkillDto.setAction(AgentSkillDto.ASSIGNED_TO_AGENT);
+            	agentProfileService.assignAgentSkillAction(agentSkillDto);
+        	}
+        }
+		return "0";
+    }
 }

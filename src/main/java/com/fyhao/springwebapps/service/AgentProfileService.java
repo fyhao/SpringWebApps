@@ -91,7 +91,7 @@ public class AgentProfileService {
         }
         String action = agentSkillDto.getAction();
         if (action.equals(AgentSkillDto.ASSIGNED_TO_AGENT)) {
-            if (!agent.getAgentSkills().contains(skill)) {
+        	if (!agent.getAgentSkills().contains(skill)) {
                 agent.getAgentSkills().add(skill);
             }
             agentRepository.save(agent);
@@ -138,5 +138,10 @@ public class AgentProfileService {
         agentRepository.save(agent);
         return 0;
     }
-    
+    public Iterable<Agent> getAllAgents() {
+        return agentRepository.findAll();
+    }
+    public Iterable<Skill> getAllSkills() {
+        return skillRepository.findAll();
+    }
 }

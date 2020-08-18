@@ -1,24 +1,30 @@
 package com.fyhao.springwebapps.service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
-import com.fyhao.springwebapps.entity.Agent;
-import com.fyhao.springwebapps.entity.AgentTerminal;
-import com.fyhao.springwebapps.entity.Conversation;
-import com.fyhao.springwebapps.entity.Task;
-import com.fyhao.springwebapps.model.TaskRepository;
-import com.fyhao.springwebapps.model.AgentRepository;
-import com.fyhao.springwebapps.model.ConversationRepository;
-import com.fyhao.springwebapps.util.Util;
-import com.fyhao.springwebapps.ws.AgentSocketHandler;
-import com.fyhao.springwebapps.ws.ChannelSocketHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.fyhao.springwebapps.dto.ContextDto;
+import com.fyhao.springwebapps.entity.Agent;
+import com.fyhao.springwebapps.entity.AgentTerminal;
+import com.fyhao.springwebapps.entity.Context;
+import com.fyhao.springwebapps.entity.Conversation;
+import com.fyhao.springwebapps.entity.Task;
+import com.fyhao.springwebapps.model.AgentRepository;
+import com.fyhao.springwebapps.model.ConversationRepository;
+import com.fyhao.springwebapps.model.TaskRepository;
+import com.fyhao.springwebapps.util.Util;
+import com.fyhao.springwebapps.ws.AgentSocketHandler;
+import com.fyhao.springwebapps.ws.ChannelSocketHandler;
 
 @Service
 public class TaskService {
@@ -50,7 +56,11 @@ public class TaskService {
         task.setConversation(conversation);
         task.setAgent(agent);
         taskRepository.save(task);
-        AgentSocketHandler.sendAgentIncomingTaskEvent(agentid, conversation.getId().toString(), task.getId().toString());
+        Map<String,Object> contexts = new HashMap<String,Object>();
+        for(Context context : conversation.getContexts()) {
+        	contexts.put(context.getKey(), context.getValue());
+        }
+        AgentSocketHandler.sendAgentIncomingTaskEvent(agentid, conversation.getId().toString(), task.getId().toString(), contexts);
         ChannelSocketHandler.sendAgentJoinedEvent(agentid, conversation.getId().toString());
         return 0;
     }
@@ -114,7 +124,11 @@ public class TaskService {
         }
         task.setAgent(agent2);
         taskRepository.save(task);
-        AgentSocketHandler.sendAgentIncomingTaskEvent(targetAgentid, conversation.getId().toString(), task.getId().toString());
+        Map<String,Object> contexts = new HashMap<String,Object>();
+        for(Context context : conversation.getContexts()) {
+        	contexts.put(context.getKey(), context.getValue());
+        }
+        AgentSocketHandler.sendAgentIncomingTaskEvent(agentid, conversation.getId().toString(), task.getId().toString(), contexts);
         ChannelSocketHandler.sendAgentJoinedEvent(targetAgentid, conversation.getId().toString());
         return 0;
     }
@@ -147,7 +161,11 @@ public class TaskService {
         }
         task.setAgent(term.getAgent());
         taskRepository.save(task);
-        AgentSocketHandler.sendAgentIncomingTaskEvent(term.getAgent().getName(), conversation.getId().toString(), task.getId().toString());
+        Map<String,Object> contexts = new HashMap<String,Object>();
+        for(Context context : conversation.getContexts()) {
+        	contexts.put(context.getKey(), context.getValue());
+        }
+        AgentSocketHandler.sendAgentIncomingTaskEvent(agentid, conversation.getId().toString(), task.getId().toString(), contexts);
         ChannelSocketHandler.sendAgentJoinedEvent(term.getAgent().getName(), conversation.getId().toString());
         return 0;
     }

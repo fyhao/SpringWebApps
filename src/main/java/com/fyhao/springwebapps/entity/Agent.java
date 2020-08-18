@@ -3,6 +3,7 @@ package com.fyhao.springwebapps.entity;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -12,11 +13,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.JoinColumn;
 
 @Entity
 public class Agent implements Serializable {
@@ -43,7 +44,7 @@ public class Agent implements Serializable {
     name = "agent_skill", 
     joinColumns = @JoinColumn(name = "agent_id"), 
     inverseJoinColumns = @JoinColumn(name = "skill_id"))
-    Set<Skill> agentSkills;
+    Set<Skill> agentSkills = new HashSet<Skill>();
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "agentterminal_id", referencedColumnName = "id")

@@ -22,4 +22,22 @@ public class AgentAvailabilityService {
         if(term == null || term.getAgent() == null) return null;
         return term.getAgent().getName();
     }
+    public String queueSkill(Conversation conversation, String skillName) {
+    	String foundAgent = null;
+    	foundAgent = findAgent(conversation, skillName);
+    	if(foundAgent != null) {
+    		return foundAgent;
+    	}
+    	long maxTimeToWait = 5000;
+    	long now = System.currentTimeMillis();
+    	
+    	while(System.currentTimeMillis() - now < maxTimeToWait) {
+    		try {Thread.sleep(100); } catch (Exception ex) {}
+    		foundAgent = findAgent(conversation, skillName);
+    		if(foundAgent != null) {
+    			return foundAgent;
+    		}
+    	}
+    	return foundAgent;
+    }
 }
