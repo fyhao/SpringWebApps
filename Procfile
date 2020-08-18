@@ -1,0 +1,1 @@
+web: npm install && java -jar build/libs/SpringWebApps-0.1.0.jar --server.port=$PORT
