@@ -9,6 +9,7 @@ public class AgentProfileDto implements Serializable {
     String targetagentid;
     String targetskill;
     String conversationid;
+    int maxconcurrenttask;
 
     public String getName() {
         return name;
@@ -57,6 +58,14 @@ public class AgentProfileDto implements Serializable {
     public void setConversationid(String conversationid) {
         this.conversationid = conversationid;
     }
+
+	public int getMaxconcurrenttask() {
+		return maxconcurrenttask;
+	}
+
+	public void setMaxconcurrenttask(int maxconcurrenttask) {
+		this.maxconcurrenttask = maxconcurrenttask;
+	}
 
     
 }

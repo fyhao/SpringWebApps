@@ -2,20 +2,22 @@ package com.fyhao.springwebapps.service;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import com.fyhao.springwebapps.dto.AgentProfileDto;
-import com.fyhao.springwebapps.dto.AgentSkillDto;
-import com.fyhao.springwebapps.dto.SkillDto;
-import com.fyhao.springwebapps.entity.Agent;
-import com.fyhao.springwebapps.entity.Skill;
-import com.fyhao.springwebapps.model.AgentRepository;
-import com.fyhao.springwebapps.model.SkillRepository;
+import java.util.Set;
 
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+
+import com.fyhao.springwebapps.dto.AgentProfileDto;
+import com.fyhao.springwebapps.dto.AgentSkillDto;
+import com.fyhao.springwebapps.dto.CCConfigDto;
+import com.fyhao.springwebapps.dto.SkillDto;
+import com.fyhao.springwebapps.entity.Agent;
+import com.fyhao.springwebapps.entity.Skill;
+import com.fyhao.springwebapps.model.AgentRepository;
+import com.fyhao.springwebapps.model.SkillRepository;
 
 @Service
 public class AgentProfileService {
@@ -143,5 +145,58 @@ public class AgentProfileService {
     }
     public Iterable<Skill> getAllSkills() {
         return skillRepository.findAll();
+    }
+    public CCConfigDto exportConfig() {
+    	CCConfigDto res = new CCConfigDto();
+    	for(Skill skill : skillRepository.findAll()) {
+    		SkillDto d = new SkillDto();
+    		d.setName(skill.getName());
+    		res.getSkills().add(d);
+    	}
+    	for(Agent agent : agentRepository.findAll()) {
+    		AgentProfileDto d = new AgentProfileDto();
+    		d.setName(agent.getName());
+    		d.setMaxconcurrenttask(agent.getMaxConcurrentTask());
+    		res.getAgents().add(d);
+    		Set<Skill> agentSkills = agent.getAgentSkills();
+    		for(Skill skill : agentSkills) {
+    			AgentSkillDto asDto = new AgentSkillDto();
+    			asDto.setAgent(agent.getName());
+    			asDto.setSkill(skill.getName());
+    			asDto.setAction(AgentSkillDto.ASSIGNED_TO_AGENT);
+    			res.getAgentSkills().add(asDto);
+    		}
+    	}
+    	return res;
+    }
+    public int importConfig(CCConfigDto dto) {
+    	// remove all skills from all agent first
+    	for(Agent agent : agentRepository.findAll()) {
+    		for(Skill skill : agent.getAgentSkills()) {
+    			agent.getAgentSkills().remove(skill);
+    		}
+    		agentRepository.save(agent);
+    		agentRepository.delete(agent);
+    	}
+    	for(Skill skill : skillRepository.findAll()) {
+    		skillRepository.delete(skill);
+    	}
+    	// add new skill
+    	for(SkillDto skillDto : dto.getSkills()) {
+    		Skill skill = new Skill();
+    		skill.setName(skillDto.getName());
+    		skillRepository.save(skill);
+    	}
+    	// add new agent
+    	for(AgentProfileDto agentDto : dto.getAgents()) {
+    		Agent agent = new Agent();
+    		agent.setName(agentDto.getName());
+    		agent.setMaxConcurrentTask(agentDto.getMaxconcurrenttask());
+    		agentRepository.save(agent);
+    	}
+    	for(AgentSkillDto asDto : dto.getAgentSkills()) {
+    		assignAgentSkillAction(asDto);
+    	}
+    	return 0;
     }
 }
