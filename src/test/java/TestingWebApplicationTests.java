@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JsonParser;
@@ -957,79 +958,7 @@ public class TestingWebApplicationTests {
         // hold and wait
         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }
-     @Test
-    public void testexportimport() throws Exception {
-    	String resp = this.restTemplate.getForObject("http://localhost:" + port + "/agentprofile/exportconfig",
-                 String.class);
-    	JsonParser springParser = JsonParserFactory.getJsonParser();
-        Map<String,Object> map = springParser.parseMap(resp);
-        List<AgentProfileDto> agents = (List<AgentProfileDto>)map.get("agents");
-        assertThat(agents).hasSize(0);
-        List<SkillDto> skills = (List<SkillDto>)map.get("skills");
-        assertThat(skills).hasSize(0);
-        List<AgentSkillDto> agentSkills = (List<AgentSkillDto>)map.get("agentSkills");
-        assertThat(agentSkills).hasSize(0);
-        // TODO add continue test for import, then export again
-        Map<String, Object> req = new HashMap<String, Object>();
-        List<Map<String,Object>> reqAgents = new ArrayList<Map<String,Object>>();
-        Map<String,Object> agent1 = new HashMap<String,Object>();
-        agent1.put("name", "agent1");
-        reqAgents.add(agent1);
-        req.put("agents", reqAgents);
-        List<Map<String,Object>> reqSkills = new ArrayList<Map<String,Object>>();
-        Map<String,Object> skill1 = new HashMap<String,Object>();
-        skill1.put("name", "skill1");
-        reqSkills.add(skill1);
-        Map<String,Object> skill2 = new HashMap<String,Object>();
-        skill2.put("name", "skill2");
-        reqSkills.add(skill2);
-        req.put("skills", reqSkills);
-        List<Map<String,Object>> reqAs = new ArrayList<Map<String,Object>>();
-        Map<String,Object> as1 = new HashMap<String,Object>();
-        as1.put("agent", "agent1");
-        as1.put("skill", "skill1");
-        as1.put("action", "ASSIGNED_TO_AGENT");
-        reqAs.add(as1);
-        Map<String,Object> as2 = new HashMap<String,Object>();
-        as2.put("agent", "agent1");
-        as2.put("skill", "skill2");
-        as2.put("action", "ASSIGNED_TO_AGENT");
-        reqAs.add(as2);
-        req.put("agentSkills", reqAs);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        ObjectMapper objectMapper = new ObjectMapper();
-        String message = null;
-        try {
-            message = objectMapper.writeValueAsString(req);
-        } catch (JsonProcessingException e) {
-        }
-        
-        HttpEntity<String> request = new HttpEntity<String>(message, headers);
-        ResponseEntity<String> resp1 = this.restTemplate.postForEntity("http://localhost:" + port + "/agentprofile/importconfig", request,
-                String.class);
-       
-        
-        // verify export again
-        resp = this.restTemplate.getForObject("http://localhost:" + port + "/agentprofile/exportconfig",
-                String.class);
-        map = springParser.parseMap(resp);
-        List<Map<String,Object>> agentsMap = (List<Map<String,Object>>)map.get("agents");
-        assertThat(agentsMap).hasSize(1);
-        assertThat((String)agentsMap.get(0).get("name")).contains("agent1");
-        List<Map<String,Object>> skillsMap = (List<Map<String,Object>>)map.get("skills");
-        assertThat(skillsMap).hasSize(2);
-        assertThat((String)skillsMap.get(0).get("name")).contains("skill1");
-        assertThat((String)skillsMap.get(1).get("name")).contains("skill2");
-        List<Map<String,Object>> agentSkillsMap = (List<Map<String,Object>>)map.get("agentSkills");
-        assertThat(agentSkillsMap).hasSize(2);
-        assertThat((String)agentSkillsMap.get(0).get("agent")).contains("agent1");
-        assertThat((String)agentSkillsMap.get(0).get("skill")).contains("skill1");
-        assertThat((String)agentSkillsMap.get(0).get("action")).contains("ASSIGNED_TO_AGENT");
-        assertThat((String)agentSkillsMap.get(1).get("agent")).contains("agent1");
-        assertThat((String)agentSkillsMap.get(1).get("skill")).contains("skill2");
-        assertThat((String)agentSkillsMap.get(1).get("action")).contains("ASSIGNED_TO_AGENT");
-    }
+     
     private List<String> getactiveagentterminalnames() {
         String resp = this.restTemplate.getForObject("http://localhost:" + port + "/agentterminal/getactiveagentterminalnames",
                 String.class);

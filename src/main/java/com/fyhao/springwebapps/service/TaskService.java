@@ -128,7 +128,7 @@ public class TaskService {
         for(Context context : conversation.getContexts()) {
         	contexts.put(context.getKey(), context.getValue());
         }
-        AgentSocketHandler.sendAgentIncomingTaskEvent(agentid, conversation.getId().toString(), task.getId().toString(), contexts);
+        AgentSocketHandler.sendAgentIncomingTaskEvent(targetAgentid, conversation.getId().toString(), task.getId().toString(), contexts);
         ChannelSocketHandler.sendAgentJoinedEvent(targetAgentid, conversation.getId().toString());
         return 0;
     }
@@ -165,7 +165,7 @@ public class TaskService {
         for(Context context : conversation.getContexts()) {
         	contexts.put(context.getKey(), context.getValue());
         }
-        AgentSocketHandler.sendAgentIncomingTaskEvent(agentid, conversation.getId().toString(), task.getId().toString(), contexts);
+        AgentSocketHandler.sendAgentIncomingTaskEvent(term.getAgent().getName(), conversation.getId().toString(), task.getId().toString(), contexts);
         ChannelSocketHandler.sendAgentJoinedEvent(term.getAgent().getName(), conversation.getId().toString());
         return 0;
     }

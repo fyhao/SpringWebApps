@@ -16,6 +16,7 @@ import com.fyhao.springwebapps.dto.CCConfigDto;
 import com.fyhao.springwebapps.dto.SkillDto;
 import com.fyhao.springwebapps.entity.Agent;
 import com.fyhao.springwebapps.entity.Skill;
+import com.fyhao.springwebapps.entity.Task;
 import com.fyhao.springwebapps.model.AgentRepository;
 import com.fyhao.springwebapps.model.SkillRepository;
 
@@ -45,6 +46,7 @@ public class AgentProfileService {
         }
         agent = modelMapper().map(agentDto, Agent.class);
         agent.setName(agent.getName().isEmpty() ? "Unnamed" : agent.getName());
+        agent.setMaxConcurrentTask(3); // default
         agentRepository.save(agent);
     }
 
@@ -174,6 +176,10 @@ public class AgentProfileService {
     	for(Agent agent : agentRepository.findAll()) {
     		for(Skill skill : agent.getAgentSkills()) {
     			agent.getAgentSkills().remove(skill);
+    		}
+    		while(agent.getTasks().size() > 0) {
+    			agent.getTasks().get(0).setAgent(null);
+    			agent.getTasks().remove(0);
     		}
     		agentRepository.save(agent);
     		agentRepository.delete(agent);
