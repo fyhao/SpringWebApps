@@ -208,6 +208,9 @@ public class Conversation implements Serializable {
     public void addActivityWithAgent(String action, String agentid) {
     	addActivityFull(action, agentid, null, null);
     }
+    public void addActivityWithSkill(String action, String targetSkill) {
+    	addActivityFull(action, null, null, targetSkill);
+    }
     public void addTransferToAgentActivity(String action, String agentid, String targetAgentid) {
     	addActivityFull(action, agentid, targetAgentid, null);
     }
