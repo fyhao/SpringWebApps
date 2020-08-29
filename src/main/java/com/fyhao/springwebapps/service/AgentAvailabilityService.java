@@ -30,6 +30,7 @@ public class AgentAvailabilityService {
     	foundAgent = findAgent(conversation, skillName);
     	if(foundAgent != null) {
     		conversation.addActivityWithAgent("conversationOffered", foundAgent);
+    		conversationRepository.save(conversation);
     		return foundAgent;
     	}
     	long maxTimeToWait = 5000;
@@ -40,6 +41,7 @@ public class AgentAvailabilityService {
     		foundAgent = findAgent(conversation, skillName);
     		if(foundAgent != null) {
     			conversation.addActivityWithAgent("conversationOffered", foundAgent);
+        		conversationRepository.save(conversation);
     			return foundAgent;
     		}
     	}
