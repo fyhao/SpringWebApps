@@ -3,16 +3,16 @@ package com.fyhao.springwebapps.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.fyhao.springwebapps.entity.Agent;
 import com.fyhao.springwebapps.entity.AgentTerminal;
 import com.fyhao.springwebapps.model.AgentRepository;
 import com.fyhao.springwebapps.model.AgentTerminalRepository;
 import com.fyhao.springwebapps.ws.AgentSocketHandler;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class AgentTerminalService {
@@ -21,7 +21,8 @@ public class AgentTerminalService {
     AgentRepository agentRepository;
     @Autowired
     AgentTerminalRepository agentTerminalRepository;
-
+    @Autowired
+    EventPublisher publisher;
     public int registerAgent(String agentName) {
         logger.info("AgentTerminalService registerAgent " + agentName);
         Agent agent = agentRepository.findByName(agentName);
@@ -34,6 +35,7 @@ public class AgentTerminalService {
             agent.setAgentTerminal(agentTerminal);
             agentTerminal.setAgent(agent);
             agentTerminalRepository.save(agentTerminal);
+            publisher.publishEvent("agentRegistered");
         }
         return 0;
     }
@@ -70,6 +72,9 @@ public class AgentTerminalService {
             agent.getAgentTerminal().setStatus(status);
             agentTerminalRepository.save(agent.getAgentTerminal());
             AgentSocketHandler.sendAgentStatusChangedEvent(agentName, oldstatus, status);
+            if(status.equals("READY")) {
+            	publisher.publishEvent("agentReady");
+            }
         }
         return 0;
     }
