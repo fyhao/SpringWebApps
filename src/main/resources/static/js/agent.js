@@ -58,6 +58,24 @@ $(function() {
 		};
 		sendWSMessage(json);
 	});
+	on('requestTransferToSkill', function(evt) {
+		var json = {
+			action : 'requestTransferToSkill',
+			taskid : evt.taskid,
+			agentid : agentid,
+			targetSkill : evt.targetSkill
+		};
+		sendWSMessage(json);
+	});
+	on('requestTransferToAgent', function(evt) {
+		var json = {
+			action : 'requestTransferToAgent',
+			taskid : evt.taskid,
+			agentid : agentid,
+			targetAgentid : evt.targetAgentid
+		};
+		sendWSMessage(json);
+	});
 	function createAgentLoginUI(con) {
 		var box = $('<div />').appendTo(con);
 		var agentidInput = $('<input type=text />').appendTo(box);
@@ -133,13 +151,7 @@ $(function() {
 			var chatrequestid = Math.random();
 			var tabcon = createTabContent(evt);
 			$('<div>Conversation ID: ' + evt.conversationid + '</div>').appendTo(tabcon);
-			var closeTaskBtn = $('<button>Close Task</button>').appendTo(tabcon);
-			$(closeTaskBtn).data('conversationid', evt.conversationid);
-			$(closeTaskBtn).data('taskid', evt.taskid);
-			$(closeTaskBtn).click(function() {
-				var taskid = $(this).data('taskid');
-				publishEvent('closeTask', {taskid:taskid});
-			});
+			renderTaskBar(tabcon, evt);
 			conv[evt.conversationid] = {evt:evt,chatrequestid:chatrequestid};
 			publishEvent('chatwidget.requestui', {requestid:chatrequestid});
 			on('chatwidget.responseui.' + chatrequestid, function(evt1) {
@@ -149,6 +161,46 @@ $(function() {
 					var chatmessage = evt2.chatmessage;
 					var conversationid = evt.conversationid;
 					publishEvent('sendChatMessage', {chatMessage:chatmessage,conversationid:conversationid});
+				});
+			});
+		};
+		function renderTaskBar(tabcon, evt) {
+			renderCloseTask(tabcon, evt);
+			renderTransferSkill(tabcon, evt);
+			renderTransferAgent(tabcon, evt);
+		}
+		function renderCloseTask(tabcon, evt) {
+			var closeTaskBtn = $('<button>Close Task</button>').appendTo(tabcon);
+			$(closeTaskBtn).data('conversationid', evt.conversationid);
+			$(closeTaskBtn).data('taskid', evt.taskid);
+			$(closeTaskBtn).click(function() {
+				var taskid = $(this).data('taskid');
+				publishEvent('closeTask', {taskid:taskid});
+			});
+		}
+		function renderTransferSkill(tabcon, evt) {
+			var btn = $('<button>Transfer Skill</button>').appendTo(tabcon);
+			$(btn).data('conversationid', evt.conversationid);
+			$(btn).data('taskid', evt.taskid);
+			$(btn).click(function() {
+				var targetSkill = 'hotel';
+				var taskid = $(this).data('taskid');
+				publishEvent('requestTransferToSkill', {
+					taskid : taskid,
+					targetSkill : targetSkill
+				});
+			});
+		}
+		function renderTransferAgent(tabcon, evt) {
+			var btn = $('<button>Transfer Agent</button>').appendTo(tabcon);
+			$(btn).data('conversationid', evt.conversationid);
+			$(btn).data('taskid', evt.taskid);
+			$(btn).click(function() {
+				var targetAgentid = 'agent2';
+				var taskid = $(this).data('taskid');
+				publishEvent('requestTransferToAgent', {
+					taskid : taskid,
+					targetAgentid : targetAgentid
 				});
 			});
 		};
