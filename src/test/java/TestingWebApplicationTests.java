@@ -182,6 +182,7 @@ public class TestingWebApplicationTests {
         // Before transfer agent, sjeffers active task should be zero
         assertThat(getagenttaskscount("sjeffers1")).contains("0");
         sendmessage(conversationid4, "do you know about abcde?");
+        try {Thread.sleep(100);} catch (Exception ex) {}
         assertThat(getcontext(conversationid4, "state")).contains("agent");
         // conversationid4 start to agent
         assertThat(getagenttaskscount("sjeffers1")).contains("1");
@@ -766,7 +767,7 @@ public class TestingWebApplicationTests {
         
         // then wait 2nd time for chatMessageReceived
         customerIncomingReceived = customer4.waitNextIncomingTextMessage();
-        jsonMap = customerIncomingReceived.get(2, SECONDS);
+        jsonMap = customerIncomingReceived.get(6, SECONDS);
         if (jsonMap.get("action").equals("chatMessageReceived")) {
             String content = (String) jsonMap.get("content");
             if(!content.equals("Sorry I am not understand. But agent not available.")) {

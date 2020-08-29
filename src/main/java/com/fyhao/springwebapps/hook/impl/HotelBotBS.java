@@ -1,16 +1,17 @@
 package com.fyhao.springwebapps.hook.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.fyhao.springwebapps.entity.Conversation;
 import com.fyhao.springwebapps.hook.BotServiceHook;
 import com.fyhao.springwebapps.hook.HookBS;
 import com.fyhao.springwebapps.service.AgentAvailabilityService;
 import com.fyhao.springwebapps.service.MessagingService;
+import com.fyhao.springwebapps.service.QueueService;
 import com.fyhao.springwebapps.service.TaskService;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 @Component
 @HookBS
@@ -22,6 +23,8 @@ public class HotelBotBS implements BotServiceHook {
     AgentAvailabilityService agentAvailabilityService;
     @Autowired
     TaskService taskService;
+    @Autowired
+    QueueService queueService;
     @Override
     public void processCustomerMessage(Conversation conversation, String input) {
         if(conversation.getChannel().startsWith("webchathotel")) {
@@ -43,6 +46,8 @@ public class HotelBotBS implements BotServiceHook {
             else if(input.equals("do you know about abcde?")) {
                 logger.info("HotelBotBS receive do you know?");
                 String agentName = null;
+                queueService.queueToSkill(conversation, "hotel");
+                /*
                 if(conversation.getChannel().equals("webchathotel")) {
                 	agentName = agentAvailabilityService.findAgent(conversation, "hotel");
                 }
@@ -62,6 +67,7 @@ public class HotelBotBS implements BotServiceHook {
                 	messagingService.sendBotMessage(conversation.getId().toString(), "Sorry I am not understand. But agent not available.");
                     
                 }
+                */
             }
             else {
                 messagingService.sendBotMessage(conversation.getId().toString(), "This is abc hotel.");
