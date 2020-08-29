@@ -59,6 +59,7 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-test:2.3.3.RELEASE') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+	providedRuntime("org.apache.tomcat.embed:tomcat-embed-jasper")
 }
 
 test {
