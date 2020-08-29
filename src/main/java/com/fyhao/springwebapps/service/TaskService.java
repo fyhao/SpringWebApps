@@ -56,6 +56,7 @@ public class TaskService {
         task.setConversation(conversation);
         task.setAgent(agent);
         taskRepository.save(task);
+        conversation.setTask(task);
         conversation.addActivityWithAgent("conversationAssigned", agentid);
         conversationRepository.save(conversation);
         Map<String,Object> contexts = new HashMap<String,Object>();
@@ -155,6 +156,7 @@ public class TaskService {
         agentTerminalService.setAgentStatus(agentid, AgentTerminal.BUSY);
         AgentTerminal term = agentTerminalService.getMostAvailableAgent(targetSkill);
         if(term == null) {
+        	agentTerminalService.setAgentStatus(agentid, oldstatus);
             logger.info("TaskService requestTransferToSkill 103 " + taskid);
             return 103;
         }

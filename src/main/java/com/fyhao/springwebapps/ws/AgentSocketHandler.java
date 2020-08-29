@@ -193,11 +193,12 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         }
     }
     
-    public static void sendCustomerMessage(String conversationid, String agentid, String message) {
+    public static void sendCustomerMessage(String conversationid, String taskid, String agentid, String message) {
         Map<String, Object> jsonMap = new HashMap<String, Object>();
         jsonMap.put("action", "chatMessageReceived");
         jsonMap.put("agentid", agentid);
         jsonMap.put("conversationid", conversationid);
+        jsonMap.put("taskid", taskid);
         jsonMap.put("content", message);
         sendCommandToAgent(agentid, jsonMap);
     }

@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.fyhao.springwebapps.entity.Contact;
 import com.fyhao.springwebapps.entity.Conversation;
 import com.fyhao.springwebapps.entity.Message;
+import com.fyhao.springwebapps.entity.Task;
 import com.fyhao.springwebapps.model.ContactRepository;
 import com.fyhao.springwebapps.model.ConversationRepository;
 import com.fyhao.springwebapps.model.MessageRepository;
@@ -79,7 +80,9 @@ public class MessagingService {
         if(state.equals("agent")) {
             String agentName = conversation.findContext("agentName");
             logger.info("MessagingService sendCustomerMessage to send agent " + agentName + " for " + input);
-            AgentSocketHandler.sendCustomerMessage(conversation.getId().toString(), agentName, input);
+            Task task = conversation.getTask();
+            System.out.println("task: " + (task != null));
+            AgentSocketHandler.sendCustomerMessage(conversation.getId().toString(), task.getId().toString(), agentName, input);
         }
         return 0;
     }
