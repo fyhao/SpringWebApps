@@ -85,6 +85,8 @@ public class QueueService implements ApplicationListener<CustomEvent> {
                 	Conversation conversation = conversationRepository.findById(conversation1.getId()).get();
                     conversation.saveContext("state", "agent");
                     conversation.saveContext("agentName", agentName);
+                    conversation.addActivityWithAgent("conversationOffered", agentName);
+            		conversationRepository.save(conversation);
                     messagingService.sendBotMessage(conversation.getId().toString(), "Sorry I am not understand. Will handover to agent.");
                     taskService.assignTask(conversation, agentName);
                 }
