@@ -24,7 +24,7 @@ public class AgentAvailabilityService {
         return term.getAgent().getName();
     }
     public String queueSkill(Conversation conversation, String skillName) {
-    	conversation.addActivity("conversationQueued");
+    	conversation.addActivityWithSkill("conversationQueued", skillName);
     	conversationRepository.save(conversation);
     	String foundAgent = null;
     	foundAgent = findAgent(conversation, skillName);
