@@ -72,7 +72,7 @@ $(function() {
 		var startChatBtn = $('<button>Start Chat</button>').appendTo(box);
 		$(startChatBtn).click(function() {
 			var email = $(emailInput).val();
-			publishEvent('createConversation', {email:email,channel:'webchathotel'});
+			publishEvent('createConversation', {email:email,channel:'webchathoteldemo'});
 		});
 		return box;
 	};
