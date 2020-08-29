@@ -137,7 +137,9 @@ $(function() {
 			});
 		};
 		on('incomingTask', function(evt) {
-			createNewConversation(evt);
+			if(typeof conv[evt.conversationid] == 'undefined') {
+				createNewConversation(evt);
+			}
 		});
 		on('chatMessageReceived', function(evt) {
 			if(typeof conv[evt.conversationid] == 'undefined') {
