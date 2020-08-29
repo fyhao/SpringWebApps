@@ -53,6 +53,9 @@ public class Conversation implements Serializable {
 
     @OneToOne(mappedBy = "conversation")
     private Task task;
+    
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "conversation")
+    private List<ConversationActivity> conversationActivities = new ArrayList<ConversationActivity>();
 
     public UUID getId() {
         return id;
@@ -198,6 +201,28 @@ public class Conversation implements Serializable {
         saveContext("state", "end");
         setEndTime(Util.getSQLTimestamp(new Date()));
     }
+    
+    public void addActivity(String action) {
+    	addActivityFull(action, null, null, null);
+    }
+    public void addActivityWithAgent(String action, String agentid) {
+    	addActivityFull(action, agentid, null, null);
+    }
+    public void addTransferToAgentActivity(String action, String agentid, String targetAgentid) {
+    	addActivityFull(action, agentid, targetAgentid, null);
+    }
+    public void addTransferToSkillActivity(String action, String agentid, String targetSkill) {
+    	addActivityFull(action, agentid, null, targetSkill);
+    }
+    public void addActivityFull(String action, String agentid, String targetAgentid, String targetSkill) {
+    	ConversationActivity act = new ConversationActivity();
+    	act.setAction(action);
+    	act.setAgentid(agentid);
+    	act.setTargetAgentid(targetAgentid);
+    	act.setTargetSkill(targetSkill);
+    	act.setStartTime(new java.sql.Timestamp(new Date().getTime()));
+    	getConversationActivities().add(act);
+    }
 
     public Task getTask() {
         return task;
@@ -206,4 +231,14 @@ public class Conversation implements Serializable {
     public void setTask(Task task) {
         this.task = task;
     }
+
+	public List<ConversationActivity> getConversationActivities() {
+		return conversationActivities;
+	}
+
+	public void setConversationActivities(List<ConversationActivity> conversationActivities) {
+		this.conversationActivities = conversationActivities;
+	}
+    
+    
 }

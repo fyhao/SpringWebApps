@@ -56,6 +56,8 @@ public class TaskService {
         task.setConversation(conversation);
         task.setAgent(agent);
         taskRepository.save(task);
+        conversation.addActivityWithAgent("conversationAssigned", agentid);
+        conversationRepository.save(conversation);
         Map<String,Object> contexts = new HashMap<String,Object>();
         for(Context context : conversation.getContexts()) {
         	contexts.put(context.getKey(), context.getValue());
@@ -76,6 +78,7 @@ public class TaskService {
         }
         Task task = taskobj.get();
         task.getConversation().endConversation();
+        task.getConversation().addActivityWithAgent("conversationClosed", agentid);
         conversationRepository.save(task.getConversation());
         task.setStatus("Closed");
         taskRepository.save(task);
@@ -128,6 +131,8 @@ public class TaskService {
         for(Context context : conversation.getContexts()) {
         	contexts.put(context.getKey(), context.getValue());
         }
+        conversation.addTransferToAgentActivity("conversationTransferredToAgent", agentid, targetAgentid);
+        conversationRepository.save(conversation);
         AgentSocketHandler.sendAgentIncomingTaskEvent(targetAgentid, conversation.getId().toString(), task.getId().toString(), contexts);
         ChannelSocketHandler.sendAgentJoinedEvent(targetAgentid, conversation.getId().toString());
         return 0;
@@ -165,6 +170,8 @@ public class TaskService {
         for(Context context : conversation.getContexts()) {
         	contexts.put(context.getKey(), context.getValue());
         }
+        conversation.addTransferToAgentActivity("conversationTransferredToSkill", agentid, targetSkill);
+        conversationRepository.save(conversation);
         AgentSocketHandler.sendAgentIncomingTaskEvent(term.getAgent().getName(), conversation.getId().toString(), task.getId().toString(), contexts);
         ChannelSocketHandler.sendAgentJoinedEvent(term.getAgent().getName(), conversation.getId().toString());
         return 0;

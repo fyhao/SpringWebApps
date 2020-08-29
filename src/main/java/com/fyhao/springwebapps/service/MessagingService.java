@@ -51,6 +51,7 @@ public class MessagingService {
         conversation.setStartTime(new Timestamp(new Date().getTime()));
         conversation.setChannel(channel);
         conversation.saveContext("state","bot");
+        conversation.addActivity("conversationStarted");
         conversationRepository.save(conversation);
         sendSystemMessage(conversation.getId().toString(), "Hi welcome " + contact.getEmail());
         return conversation.getId().toString();
