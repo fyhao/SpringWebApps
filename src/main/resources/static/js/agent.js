@@ -50,6 +50,14 @@ $(function() {
 		};
 		sendWSMessage(json);
 	});
+	on('closeTask', function(evt) {
+		var json = {
+			action : 'closeTask',
+			taskid : evt.taskid,
+			agentid : agentid
+		};
+		sendWSMessage(json);
+	});
 	function createAgentLoginUI(con) {
 		var box = $('<div />').appendTo(con);
 		var agentidInput = $('<input type=text />').appendTo(box);
@@ -93,6 +101,14 @@ $(function() {
 		var tabcontent = $('<div />').appendTo(box);
 		var conv = {};
 		var c = 0;
+		function showconversation(conversationid) {
+			$(tabcontent).find('div').filter(function() {
+				return typeof $(this).data('conversationid') != 'undefined'
+			}).hide();
+			$(tabcontent).find('div').filter(function() {
+				return $(this).data('conversationid') == conversationid
+			}).show();
+		}
 		function createTabMenu(evt) {
 			var btn = $('<button />').appendTo(tabbar);
 			$(btn).html('Chat ' + ++c);
@@ -101,14 +117,7 @@ $(function() {
 				var conversationid = $(btn).data('evt').conversationid
 				showconversation(conversationid);
 			});
-			function showconversation(conversationid) {
-				$(tabcontent).find('div').filter(function() {
-					return typeof $(this).data('conversationid') != 'undefined'
-				}).hide();
-				$(tabcontent).find('div').filter(function() {
-					return $(this).data('conversationid') == conversationid
-				}).show();
-			}
+			
 			showconversation(evt.conversationid);
 		};
 		function createTabContent(evt) {
@@ -124,6 +133,13 @@ $(function() {
 			var chatrequestid = Math.random();
 			var tabcon = createTabContent(evt);
 			$('<div>Conversation ID: ' + evt.conversationid + '</div>').appendTo(tabcon);
+			var closeTaskBtn = $('<button>Close Task</button>').appendTo(tabcon);
+			$(closeTaskBtn).data('conversationid', evt.conversationid);
+			$(closeTaskBtn).data('taskid', evt.taskid);
+			$(closeTaskBtn).click(function() {
+				var taskid = $(this).data('taskid');
+				publishEvent('closeTask', {taskid:taskid});
+			});
 			conv[evt.conversationid] = {evt:evt,chatrequestid:chatrequestid};
 			publishEvent('chatwidget.requestui', {requestid:chatrequestid});
 			on('chatwidget.responseui.' + chatrequestid, function(evt1) {
@@ -147,6 +163,23 @@ $(function() {
 			}
 			var chatrequestid = conv[evt.conversationid].chatrequestid;
 			publishEvent('chatwidget.res.chatMessageReceived.' + chatrequestid, evt);
+		});
+		on('taskClosed', function(evt) {
+			$(box).find('*').filter(function() {
+				var taskid = evt.taskid;
+				var ev = $(this).data('evt');
+				if(ev != null && ev.taskid == taskid) {
+					return true;
+				}
+				return false;
+			}).remove();
+			var s = $(tabbar).find('*').filter(function() {
+				return $(this).data('evt') != null;
+			});
+			if(s.length) {
+				var first = $(s[0]).data('evt').conversationid;
+				showconversation(first);
+			} 
 		});
 		return box;
 	}; // createAgentChatUI
