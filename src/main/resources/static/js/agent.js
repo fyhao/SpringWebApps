@@ -23,6 +23,7 @@ $(function() {
 	};
 	on('wsmessage', function(opts) {
 		var json = opts.json;
+		console.log('agent wsmessage: ' + JSON.stringify(json));
 		publishEvent(json.action, json);
 	});
 	var agentid = null;
@@ -33,12 +34,22 @@ $(function() {
 	});
 	on('connectionready', function(opts) {
 		$(agentLoginUI).hide();
+		$(agentCTIBar).show();
+		$(agentChatUI).show();
 	});
 	on('setAgentStatus', function(opts) {
 		var json = {action:'setAgentStatus',agentid:opts.agentid,status:opts.status};
 		sendWSMessage(json);
 	});
-	
+	on('sendChatMessage', function(evt) {
+		var json = {
+			action : 'sendChatMessage',
+			conversationid : evt.conversationid,
+			agentid : agentid,
+			chatMessage : evt.chatMessage
+		};
+		sendWSMessage(json);
+	});
 	function createAgentLoginUI(con) {
 		var box = $('<div />').appendTo(con);
 		var agentidInput = $('<input type=text />').appendTo(box);
@@ -51,11 +62,12 @@ $(function() {
 	};
 	var agentLoginUI = createAgentLoginUI(con);
 	function createAgentCTIBar(con) {
-		var box = $('<div />').appendTo(con);
+		var box = $('<div />').hide().appendTo(con);
 		var stateBtn = $('<span />').appendTo(box);
 		renderStateButton(stateBtn);
 		return box;
 	}; // createAgentCTIBar
+	var agentCTIBar = createAgentCTIBar(con);
 	function renderStateButton(con) {
 		var stateBtn = $('<button />').appendTo(con);
 		var states = {'NOT_READY':'READY','READY':'NOT_READY'};
@@ -75,7 +87,68 @@ $(function() {
 			updateAgentStatus(newstatus);
 		});
 	}; // renderStateButton
-	var agentCTIBar = createAgentCTIBar(con);
+	function createAgentChatUI(con) {
+		var box = $('<div />').appendTo(con);
+		var tabbar = $('<div />').appendTo(box);
+		var tabcontent = $('<div />').appendTo(box);
+		var conv = {};
+		var c = 0;
+		function createTabMenu(evt) {
+			var btn = $('<button />').appendTo(tabbar);
+			$(btn).html('Chat ' + ++c);
+			$(btn).data('evt', evt);
+			$(btn).click(function() {
+				var conversationid = $(btn).data('evt').conversationid
+				showconversation(conversationid);
+			});
+			function showconversation(conversationid) {
+				$(tabcontent).find('div').filter(function() {
+					return typeof $(this).data('conversationid') != 'undefined'
+				}).hide();
+				$(tabcontent).find('div').filter(function() {
+					return $(this).data('conversationid') == conversationid
+				}).show();
+			}
+			showconversation(evt.conversationid);
+		};
+		function createTabContent(evt) {
+			createTabMenu(evt);
+			var tabcon = $('<div />');
+			$(tabcon).data('evt', evt);
+			$(tabcon).data('conversationid', evt.conversationid);
+			$(tabcon).data('taskid', evt.taskid);
+			$(tabcon).appendTo(tabcontent);
+			return tabcon;
+		};
+		function createNewConversation(evt) {
+			var chatrequestid = Math.random();
+			var tabcon = createTabContent(evt);
+			$('<div>Conversation ID: ' + evt.conversationid + '</div>').appendTo(tabcon);
+			conv[evt.conversationid] = {evt:evt,chatrequestid:chatrequestid};
+			publishEvent('chatwidget.requestui', {requestid:chatrequestid});
+			on('chatwidget.responseui.' + chatrequestid, function(evt1) {
+				var chatcon = evt1.con;
+				$(chatcon.ui).appendTo(tabcon);
+				on('chatwidget.req.sendChatMessage.' + chatrequestid, function(evt2) {
+					var chatmessage = evt2.chatmessage;
+					var conversationid = evt.conversationid;
+					publishEvent('sendChatMessage', {chatMessage:chatmessage,conversationid:conversationid});
+				});
+			});
+		};
+		on('incomingTask', function(evt) {
+			createNewConversation(evt);
+		});
+		on('chatMessageReceived', function(evt) {
+			if(typeof conv[evt.conversationid] == 'undefined') {
+				createNewConversation(evt);
+			}
+			var chatrequestid = conv[evt.conversationid].chatrequestid;
+			publishEvent('chatwidget.res.chatMessageReceived.' + chatrequestid, evt);
+		});
+		return box;
+	}; // createAgentChatUI
+	var agentChatUI = createAgentChatUI(con);
 	
 	// Testing mode
 	if(true) {
