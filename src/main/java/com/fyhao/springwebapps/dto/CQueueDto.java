@@ -7,6 +7,7 @@ public class CQueueDto implements Serializable {
 	String name;
 	long maxwaittime;
 	String skilllist;
+	long maxlimit;
 	public String getName() {
 		return name;
 	}
@@ -24,6 +25,12 @@ public class CQueueDto implements Serializable {
 	}
 	public void setSkilllist(String skilllist) {
 		this.skilllist = skilllist;
+	}
+	public long getMaxlimit() {
+		return maxlimit;
+	}
+	public void setMaxlimit(long maxlimit) {
+		this.maxlimit = maxlimit;
 	}
 	
 }

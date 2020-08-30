@@ -30,6 +30,9 @@ public class CQueue implements Serializable {
 
     @Column(name="skilllist")
     private String skilllist;
+    
+    @Column(name="maxlimit")
+    private long maxlimit;
 
 	public UUID getId() {
 		return id;
@@ -61,6 +64,14 @@ public class CQueue implements Serializable {
 
 	public void setSkilllist(String skilllist) {
 		this.skilllist = skilllist;
+	}
+
+	public long getMaxlimit() {
+		return maxlimit;
+	}
+
+	public void setMaxlimit(long maxlimit) {
+		this.maxlimit = maxlimit;
 	}
     
 }

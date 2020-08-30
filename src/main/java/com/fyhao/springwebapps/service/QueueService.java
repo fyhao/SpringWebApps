@@ -50,16 +50,33 @@ public class QueueService implements ApplicationListener<CustomEvent> {
 	@Autowired
 	EventPublisher publisher;
 
-	public void addToQueue(Conversation conversation, String skillName) {
+	public boolean addToQueue(Conversation conversation, String queueName) {
 		QueueDto queue = new QueueDto();
 		queue.setConversation(conversation);
 		queue.setEnteredTime(new Date());
 		queue.setStatus("active");
         //queues.add(queue);
-        listOfQueues.get(skillName).add(queue);
-    	conversation.addActivityWithSkill("conversationQueued", skillName);
+		long maxlimit = -1;
+		try {
+			maxlimit = (long)getCQueueList().stream().filter(x -> {
+	            return x.get("queuename").equals(queueName);
+	        }).findFirst().get().get("maxlimit");
+		} catch (Exception ex) {	
+		}
+		if(maxlimit >= 0) {
+			if(listOfQueues.get(queueName).size() >= maxlimit) {
+				conversation.addActivityWithSkill("conversationQueuedFull", queueName);
+		    	conversationRepository.save(conversation);
+		    	messagingService.sendBotMessage(conversation.getId().toString(), "Sorry I am not understand. But agent not available as queue full.");
+		    	publisher.publishEvent("conversationQueuedFull");
+				return false;
+			}
+		}
+        listOfQueues.get(queueName).add(queue);
+    	conversation.addActivityWithSkill("conversationQueued", queueName);
     	conversationRepository.save(conversation);
     	publisher.publishEvent("conversationQueued");
+    	return true;
 	}
 	
 	public static long maxWaitTime = 5000;
@@ -152,6 +169,7 @@ public class QueueService implements ApplicationListener<CustomEvent> {
         cqueue.put("queuename", cq.getName());
         cqueue.put("maxwaittime", cq.getMaxwaittime());
         cqueue.put("skillList", cq.getSkilllist());
+        cqueue.put("maxlimit", cq.getMaxlimit());
         getCQueueList().add(cqueue);
         ArrayList<QueueDto> queues = new ArrayList<QueueDto>();
         listOfQueues.put(cq.getName(), queues);

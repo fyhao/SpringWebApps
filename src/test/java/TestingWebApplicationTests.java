@@ -967,6 +967,64 @@ public class TestingWebApplicationTests {
         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }
      
+     @Test
+     public void testqueuemaxlimitreached() throws Exception {
+     	// create skills
+         createskillprofile("hotel");
+         // create queues
+         createqueueprofile("hotel:5000:hotel:0");
+         // create agents
+         boolean hasError = false;
+         
+         // create agent
+         createagentprofile("agent6");
+         assignagentskillaction("agent6", "hotel", AgentSkillDto.ASSIGNED_TO_AGENT);
+         CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
+         MyAgentClient agent = new MyAgentClient(this, "agent6");
+         CompletableFuture<WebSocketSession> agentEstablished = agent.waitNextAgentEstablishedEvent();
+         agent.start();
+         assertThat(agentEstablished.get(2, SECONDS)).isNotNull();
+         agent.registerAgentSession();
+         CompletableFuture<Map<String,Object>> incomingReceived = agent.waitNextIncomingTextMessage();
+         Map<String,Object> jsonMap = incomingReceived.get(2, SECONDS);
+         agent.setAgentStatus(AgentTerminal.READY);
+         
+         // create customer
+         String conversationid = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
+         MyCustomerClient customer = new MyCustomerClient(this, conversationid);
+         CompletableFuture<WebSocketSession> customerEstablished = customer.waitNextCustomerEstablishedEvent();
+         customer.start();
+         assertThat(customerEstablished.get(2, SECONDS)).isNotNull();
+         customer.registerCustomerSession();
+         
+         CompletableFuture<Map<String,Object>> customerIncomingReceived = customer.waitNextIncomingTextMessage();
+         jsonMap = customerIncomingReceived.get(2, SECONDS);
+         incomingReceived = agent.waitNextIncomingTextMessage();
+         customer.sendChatMessage("do you know about abcde?");
+         customerIncomingReceived = customer.waitNextIncomingTextMessage();
+         jsonMap = customerIncomingReceived.get(2, SECONDS);
+         if (jsonMap.get("action").equals("chatMessageReceived")) {
+             String content = (String) jsonMap.get("content");
+             System.out.println("customer received :" +  content);
+             if(!content.equals("Sorry I am not understand. Will handover to agent.")) {
+                 futureTestCompletion.complete("error1 " + content);
+                 hasError = true;
+             }
+         }
+         else {
+         	futureTestCompletion.complete("error11 " + jsonMap.get("action"));
+         }
+         if(!hasError) {
+        	 futureTestCompletion.complete("completed"); 
+         }
+         // housekeeping
+         
+         agent.setAgentStatus(AgentTerminal.NOT_READY);
+         agent.unregisterAgentSesssion();
+         // hold and wait
+         assertThat(futureTestCompletion.get(2, SECONDS)).contains("error1 Sorry I am not understand. But agent not available as queue full.");
+     }
+     
     private List<String> getactiveagentterminalnames() {
         String resp = this.restTemplate.getForObject("http://localhost:" + port + "/agentterminal/getactiveagentterminalnames",
                 String.class);
@@ -1083,6 +1141,11 @@ public class TestingWebApplicationTests {
     	dto.setName(cqueuename);
     	dto.setMaxwaittime(maxwaittime);
     	dto.setSkilllist(skilllist);
+    	dto.setMaxlimit(-1);
+    	if(arr.length > 3) {
+    		long maxlimit = Long.parseLong(arr[3]);
+    		dto.setMaxlimit(maxlimit);
+    	}
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         ObjectMapper objectMapper = new ObjectMapper();
