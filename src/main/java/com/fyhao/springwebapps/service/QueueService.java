@@ -66,6 +66,7 @@ public class QueueService implements ApplicationListener<CustomEvent> {
 		}
 		if(maxlimit >= 0) {
 			if(listOfQueues.get(queueName).size() >= maxlimit) {
+				System.out.println("queueName: " + queueName + " maxlimit: "+ maxlimit);
 				conversation.addActivityWithSkill("conversationQueuedFull", queueName);
 		    	conversationRepository.save(conversation);
 		    	messagingService.sendBotMessage(conversation.getId().toString(), "Sorry I am not understand. But agent not available as queue full.");
