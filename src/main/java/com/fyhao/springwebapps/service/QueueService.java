@@ -31,7 +31,7 @@ public class QueueService implements ApplicationListener<CustomEvent> {
         // mimic queue setting data
         Map<String, Object> cqueue = new HashMap<String, Object>();
         cqueue.put("queuename", "hotel");
-        cqueue.put("maxwaittime", 5000);
+        cqueue.put("maxwaittime", 5000L);
         cqueue.put("skillList", "hotel");
         cqueueList.add(cqueue);
         for(Map<String,Object> item : cqueueList) {
@@ -95,12 +95,17 @@ public class QueueService implements ApplicationListener<CustomEvent> {
 	//@Scheduled(fixedRate = 20)
 	//@Transactional
 	public void checkQueue() {
-		for(List<QueueDto> queues : listOfQueues.values()) {
-            for(QueueDto q : queues) {
+		 for(Map.Entry<String,ArrayList<QueueDto>> entry : listOfQueues.entrySet()) {
+	        String queueName = entry.getKey();
+	        String skillList = (String)cqueueList.stream().filter(x -> {
+                return x.get("queuename").equals(queueName);
+            }).findFirst().get().get("skillList");
+	        List<QueueDto> queues = entry.getValue();
+	        for(QueueDto q : queues) {
                 if(!q.getStatus().equals("active")) continue;
                 Date now = new Date();
                 Conversation conversation1 = q.getConversation();
-                AgentTerminal term = agentTerminalService.getMostAvailableAgent(q.getSkillName());
+                AgentTerminal term = agentTerminalService.getMostAvailableAgent(skillList);
                 if(term != null) {
                     q.setStatus("toBeRemoved");
                     String agentName = term.getAgent().getName();
