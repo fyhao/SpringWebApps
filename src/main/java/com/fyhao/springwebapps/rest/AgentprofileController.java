@@ -95,7 +95,7 @@ public class AgentprofileController {
 	public @ResponseBody String testdata() {
         logger.info("testdata");
         String[] skills = new String[] {"hotel"};
-        String[] cqueues = new String[] {"hotel:5000:hotel"};
+        String[] cqueues = new String[] {"hotel:5000:hotel:1000:5"};
         String[] agents = new String[] {"agent1","agent2","agent3"};
         for(String skill : skills) {
         	SkillDto dto = new SkillDto();
@@ -111,6 +111,8 @@ public class AgentprofileController {
         	dto.setName(cqueuename);
         	dto.setMaxwaittime(maxwaittime);
         	dto.setSkilllist(skilllist);
+        	dto.setMaxlimit(Long.parseLong(arr[3]));
+        	dto.setPriority(Long.parseLong(arr[4]));
         	agentProfileService.createCQueueProfile(dto);
         }
         for(String agent : agents) {
