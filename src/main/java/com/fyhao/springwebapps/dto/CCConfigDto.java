@@ -9,6 +9,7 @@ public class CCConfigDto implements Serializable{
 	List<AgentProfileDto> agents = new ArrayList<AgentProfileDto>();
 	List<SkillDto> skills = new ArrayList<SkillDto>();
 	List<AgentSkillDto> agentSkills = new ArrayList<AgentSkillDto>();
+	List<CQueueDto> cqueues = new ArrayList<CQueueDto>();
 	public List<AgentProfileDto> getAgents() {
 		return agents;
 	}
@@ -27,4 +28,11 @@ public class CCConfigDto implements Serializable{
 	public void setAgentSkills(List<AgentSkillDto> agentSkills) {
 		this.agentSkills = agentSkills;
 	}
+	public List<CQueueDto> getCqueues() {
+		return cqueues;
+	}
+	public void setCqueues(List<CQueueDto> cqueues) {
+		this.cqueues = cqueues;
+	}
+	
 }
