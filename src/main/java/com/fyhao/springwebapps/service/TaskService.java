@@ -1,6 +1,7 @@
 package com.fyhao.springwebapps.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -187,6 +188,116 @@ public class TaskService {
     public int agentStopTyping(String agentid, String conversationid) {
         ChannelSocketHandler.sendAgentStoppedTypingEvent(agentid, conversationid);
         return 0;
+    }
+    public int inviteConference(String agentid, String targetAgentid, String conversationid) {
+    	Optional<Conversation> conv = conversationRepository.findById(UUID.fromString(conversationid));
+        if(conv.isEmpty()) {
+            return 100;
+        }
+        Conversation conversation = conv.get();
+        if(agentid.equals(targetAgentid)) {
+        	return 101;
+        }
+        String activeAgentsStr = conversation.findContext("activeAgents");
+        if(activeAgentsStr == null) {
+        	return 102;
+        }
+        String[] activeAgents = activeAgentsStr.split("\\,");
+        if(!Arrays.asList(activeAgents).contains(agentid)) {
+        	return 103;
+        }
+        if(Arrays.asList(activeAgents).contains(targetAgentid)) {
+        	return 104;
+        }
+        String bargeinAgentsStr = conversation.findContext("bargeinAgents");
+        if(bargeinAgentsStr != null) {
+        	if(Arrays.asList(bargeinAgentsStr.split("\\,")).contains(targetAgentid)) {
+        		return 105;
+        	}
+        }
+        String invitedAgent = conversation.findContext("invitedAgent");
+        if(invitedAgent != null && !invitedAgent.isEmpty()) {
+        	return 106;
+        }
+        conversation.saveContext("invitedAgent", targetAgentid);
+        conversationRepository.save(conversation);
+        AgentSocketHandler.sendAgentInvitedEvent(targetAgentid, conversationid);
+    	return 0;
+    }
+    public int acceptInvite(String agentid, String conversationid) {
+    	Optional<Conversation> conv = conversationRepository.findById(UUID.fromString(conversationid));
+        if(conv.isEmpty()) {
+            return 100;
+        }
+        Conversation conversation = conv.get();
+        String activeAgentsStr = conversation.findContext("activeAgents");
+        if(activeAgentsStr == null) {
+        	return 102;
+        }
+        String[] activeAgents = activeAgentsStr.split("\\,");
+        if(Arrays.asList(activeAgents).contains(agentid)) {
+        	return 103;
+        }
+        String bargeinAgentsStr = conversation.findContext("bargeinAgents");
+        if(bargeinAgentsStr != null) {
+        	if(Arrays.asList(bargeinAgentsStr.split("\\,")).contains(agentid)) {
+        		return 105;
+        	}
+        }
+        String invitedAgent = conversation.findContext("invitedAgent");
+        if(invitedAgent == null) {
+        	return 106;
+        }
+        if(!invitedAgent.equals(agentid)) {
+        	return 107;
+        }
+        List<String> activeAgentList = Arrays.asList(activeAgents);
+        activeAgentList.add(agentid);
+        conversation.saveContext("activeAgents", joinString(activeAgentList));
+        conversation.saveContext("invitedAgent", "");
+        conversationRepository.save(conversation);
+        return 0;
+    }
+    public int bargeinConversation(String agentid, String conversationid) {
+    	Optional<Conversation> conv = conversationRepository.findById(UUID.fromString(conversationid));
+        if(conv.isEmpty()) {
+            return 100;
+        }
+        Conversation conversation = conv.get();
+        String activeAgentsStr = conversation.findContext("activeAgents");
+        if(activeAgentsStr == null) {
+        	return 102;
+        }
+        String[] activeAgents = activeAgentsStr.split("\\,");
+        if(Arrays.asList(activeAgents).contains(agentid)) {
+        	return 103;
+        }
+        String invitedAgent = conversation.findContext("invitedAgent");
+        if(invitedAgent != null && invitedAgent.equals(agentid)) {
+        	return 107;
+        }
+        String bargeinAgentsStr = conversation.findContext("bargeinAgents");
+        List<String> bargeinAgentList = new ArrayList<String>();
+        if(bargeinAgentsStr != null) {
+        	if(Arrays.asList(bargeinAgentsStr.split("\\,")).contains(agentid)) {
+        		return 105;
+        	}
+        	bargeinAgentList = Arrays.asList(bargeinAgentsStr.split("\\,"));
+        }
+        bargeinAgentList.add(agentid);
+        conversation.saveContext("bargeinAgents", joinString(bargeinAgentList));
+        conversationRepository.save(conversation);
+        return 0;
+    }
+    private String joinString(List<String> list) {
+    	String s = "";
+    	String comma = "";
+    	for(String item : list) {
+    		s += comma;
+    		s += item;
+    		comma = ",";
+    	}
+    	return s;
     }
     public int getAgentTasksCount(String agentid) {
         Agent agent = agentRepository.findByName(agentid);

@@ -1,5 +1,6 @@
 package com.fyhao.springwebapps.service;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -78,11 +79,23 @@ public class MessagingService {
         String state = conversation.findContext("state");
         logger.info("MessagingService sendCustomerMessage state " + conversation_id + " " + input + " " + state);
         if(state.equals("agent")) {
-            String agentName = conversation.findContext("agentName");
-            logger.info("MessagingService sendCustomerMessage to send agent " + agentName + " for " + input);
-            Task task = conversation.getTask();
-            System.out.println("task: " + (task != null));
-            AgentSocketHandler.sendCustomerMessage(conversation.getId().toString(), task.getId().toString(), agentName, input);
+        	Task task = conversation.getTask();
+            String activeAgentsStr = conversation.findContext("activeAgents");
+            if(activeAgentsStr != null) {
+            	String[] activeAgents = activeAgentsStr.split("\\,");
+            	for(String agentName : activeAgents) {
+                	logger.info("MessagingService sendCustomerMessage to send agent " + agentName + " for " + input);
+                    AgentSocketHandler.sendCustomerMessage(conversation.getId().toString(), task.getId().toString(), agentName, input);
+                }
+            }
+            String bargeinAgentsStr = conversation.findContext("bargeinAgents");
+            if(bargeinAgentsStr != null) {
+            	String[] bargeinAgents = bargeinAgentsStr.split("\\,");
+            	for(String agentName : bargeinAgents) {
+                	logger.info("MessagingService sendCustomerMessage to send agent " + agentName + " for " + input);
+                    AgentSocketHandler.sendCustomerMessage(conversation.getId().toString(), task.getId().toString(), agentName, input);
+                }
+            }
         }
         return 0;
     }
@@ -92,9 +105,28 @@ public class MessagingService {
             return 100;
         }
         Conversation conversation = conv.get();
+        String activeAgentsStr = conversation.findContext("activeAgents");
+        if(activeAgentsStr == null) return 101;
+        if(!Arrays.asList(activeAgentsStr.split("\\,")).contains(agentName)) {
+        	return 102;
+        }
         chatService.processAgentMessage(conversation, agentName, input);
         conversationRepository.save(conversation);
         ChannelSocketHandler.sendChatMessageToCustomer(conversation.getId().toString(), input);
+        Task task = conversation.getTask();
+        String[] activeAgents = activeAgentsStr.split("\\,");
+        for(String activeAgent : activeAgents) {
+        	if(!activeAgent.equals(agentName)) {
+        		AgentSocketHandler.sendCustomerMessage(conversation.getId().toString(), task.getId().toString(), activeAgent, input);
+        	}
+        }
+        String bargeinAgentsStr = conversation.findContext("bargeinAgents");
+        if(bargeinAgentsStr != null) {
+        	String[] bargeinAgents = bargeinAgentsStr.split("\\,");
+        	for(String bargeinAgent : bargeinAgents) {
+        		AgentSocketHandler.sendCustomerMessage(conversation.getId().toString(), task.getId().toString(), bargeinAgent, input);
+        	}
+        }
         return 0;
     }
     public int sendBotMessage(String conversation_id, String input) {

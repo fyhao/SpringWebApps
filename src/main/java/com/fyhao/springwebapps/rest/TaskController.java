@@ -55,6 +55,24 @@ public class TaskController {
         taskService.agentStopTyping(dto.getName(), dto.getConversationid());
         return "0";
     }
+    @RequestMapping(method= RequestMethod.POST, value = "/inviteconference", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public @ResponseBody String inviteconference(@RequestBody AgentProfileDto dto) {
+        logger.info("TaskController inviteconference " + dto.getName() + " " + dto.getConversationid() + " " + dto.getTargetagentid());
+        taskService.inviteConference(dto.getName(), dto.getTargetagentid(), dto.getConversationid());
+        return "0";
+    }
+    @RequestMapping(method= RequestMethod.POST, value = "/acceptinvite", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public @ResponseBody String acceptinvite(@RequestBody AgentProfileDto dto) {
+        logger.info("TaskController acceptinvite " + dto.getName() + " " + dto.getConversationid());
+        taskService.acceptInvite(dto.getName(), dto.getConversationid());
+        return "0";
+    }
+    @RequestMapping(method= RequestMethod.POST, value = "/bargeinconversation", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public @ResponseBody String bargeinconversation(@RequestBody AgentProfileDto dto) {
+        logger.info("TaskController bargeinconversation " + dto.getName() + " " + dto.getConversationid());
+        taskService.bargeinConversation(dto.getName(), dto.getConversationid());
+        return "0";
+    }
     @RequestMapping("/getagenttaskscount")
 	public @ResponseBody long getagenttaskscount(String agentid) {
         logger.info("getagenttaskscount " + agentid);

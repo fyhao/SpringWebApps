@@ -107,6 +107,28 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         	Integer serverport = (Integer)session.getAttributes().get("serverport");
         	stopTyping(agentid, conversationid, serverport);
         }
+        else if(jsonMap.get("action").equals("inviteConference")) {
+        	logger.info("AgentSocketHandler agent to system inviteConference");
+        	String agentid = (String)jsonMap.get("agentid");
+        	String targetAgentid = (String)jsonMap.get("targetAgentid");
+        	String conversationid = (String)jsonMap.get("conversationid");
+        	Integer serverport = (Integer)session.getAttributes().get("serverport");
+        	inviteConference(agentid, targetAgentid, conversationid, serverport);
+        }
+        else if(jsonMap.get("action").equals("acceptedInvite")) {
+        	logger.info("AgentSocketHandler agent to system acceptedInvite");
+        	String agentid = (String)jsonMap.get("agentid");
+        	String conversationid = (String)jsonMap.get("conversationid");
+        	Integer serverport = (Integer)session.getAttributes().get("serverport");
+        	acceptInvite(agentid, conversationid, serverport);
+        }
+        else if(jsonMap.get("action").equals("bargeinConversation")) {
+        	logger.info("AgentSocketHandler agent to system bargeinConversation");
+        	String agentid = (String)jsonMap.get("agentid");
+        	String conversationid = (String)jsonMap.get("conversationid");
+        	Integer serverport = (Integer)session.getAttributes().get("serverport");
+        	bargeinConversation(agentid, conversationid, serverport);
+        }
 	}
 
 	@Override
@@ -173,6 +195,15 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         logger.info("AgentSocketHandler.sendCustomerStoppedTypingEvent " + agentid + " " + conversationid);
         Map<String, Object> jsonMap = new HashMap<String, Object>();
         jsonMap.put("action", "customerStoppedTyping");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("conversationid", conversationid);
+        sendCommandToAgent(agentid, jsonMap);
+    }
+    //sendAgentInvitedEvent
+    public static void sendAgentInvitedEvent(String agentid, String conversationid) {
+    	logger.info("AgentSocketHandler.sendAgentInvitedEvent " + agentid + " " + conversationid);
+    	Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "agentInvited");
         jsonMap.put("agentid", agentid);
         jsonMap.put("conversationid", conversationid);
         sendCommandToAgent(agentid, jsonMap);
@@ -352,6 +383,63 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         }
         HttpEntity<String> request = new HttpEntity<String>(message, headers);
         ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/task/agentstoptyping", request,
+                String.class);
+        return resp.getBody();
+    }
+    
+    private String inviteConference(String agentid, String targetAgentid, String conversationid, Integer port) {
+    	RestTemplate restTemplate = new RestTemplate();
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentid);
+        dto.setTargetagentid(targetAgentid);
+        dto.setConversationid(conversationid);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/task/inviteconference", request,
+                String.class);
+        return resp.getBody();
+    }
+    //acceptInvite(agentid, conversationid, serverport);
+    private String acceptInvite(String agentid, String conversationid, Integer port) {
+    	RestTemplate restTemplate = new RestTemplate();
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentid);
+        dto.setConversationid(conversationid);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/task/acceptinvite", request,
+                String.class);
+        return resp.getBody();
+    }
+    private String bargeinConversation(String agentid, String conversationid, Integer port) {
+    	RestTemplate restTemplate = new RestTemplate();
+        AgentProfileDto dto = new AgentProfileDto();
+        dto.setName(agentid);
+        dto.setConversationid(conversationid);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:" + port + "/task/bargeinconversation", request,
                 String.class);
         return resp.getBody();
     }
