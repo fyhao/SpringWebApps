@@ -174,6 +174,15 @@ public class AgentProfileService {
     }
     public CCConfigDto exportConfig() {
     	CCConfigDto res = new CCConfigDto();
+    	for(CQueue cqueue : cqueueRepository.findAll()) {
+    		CQueueDto d = new CQueueDto();
+    		d.setName(cqueue.getName());
+    		d.setMaxlimit(cqueue.getMaxlimit());
+    		d.setMaxwaittime(cqueue.getMaxwaittime());
+    		d.setPriority(cqueue.getPriority());
+    		d.setSkilllist(cqueue.getSkilllist());
+    		res.getCqueues().add(d);
+    	}
     	for(Skill skill : skillRepository.findAll()) {
     		SkillDto d = new SkillDto();
     		d.setName(skill.getName());
@@ -211,11 +220,23 @@ public class AgentProfileService {
     	for(Skill skill : skillRepository.findAll()) {
     		skillRepository.delete(skill);
     	}
+    	for(CQueue cq : cqueueRepository.findAll()) {
+    		cqueueRepository.delete(cq);
+    	}
     	// add new skill
     	for(SkillDto skillDto : dto.getSkills()) {
     		Skill skill = new Skill();
     		skill.setName(skillDto.getName());
     		skillRepository.save(skill);
+    	}
+    	for(CQueueDto cqueueDto : dto.getCqueues()) {
+    		CQueue cq = new CQueue();
+    		cq.setName(cqueueDto.getName());
+    		cq.setMaxlimit(cqueueDto.getMaxlimit());
+    		cq.setMaxwaittime(cqueueDto.getMaxwaittime());
+    		cq.setPriority(cqueueDto.getPriority());
+    		cq.setSkilllist(cqueueDto.getSkilllist());
+    		cqueueRepository.save(cq);
     	}
     	// add new agent
     	for(AgentProfileDto agentDto : dto.getAgents()) {
