@@ -94,12 +94,11 @@ public class QueueService implements ApplicationListener<CustomEvent> {
 	@Scheduled(fixedRate = 100)
 	@Transactional
 	public void checkExpiry() {
-        for(Map.Entry<String,ArrayList<QueueDto>> entry : listOfQueues.entrySet()) {
-            String queueName = entry.getKey();
-            long maxWaitTime = (long)getCQueueList().stream().filter(x -> {
-                return x.get("queuename").equals(queueName);
-            }).findFirst().get().get("maxwaittime");
-            List<QueueDto> queues = entry.getValue();
+		//for(Map.Entry<String,ArrayList<QueueDto>> entry : listOfQueues.entrySet()) {
+	     for(Map<String, Object> entry : getCQueueList()) {
+	    	String queueName = (String)entry.get("queuename");
+	        Long maxWaitTime = (Long)entry.get("maxwaittime");
+	        List<QueueDto> queues = listOfQueues.get(queueName);
             synchronized(queues) {
             	for(QueueDto q : queues) {
                     if(!q.getStatus().equals("active")) continue;
@@ -130,6 +129,7 @@ public class QueueService implements ApplicationListener<CustomEvent> {
 	    	String queueName = (String)entry.get("queuename");
 	        String skillList = (String)entry.get("skillList");
 	        List<QueueDto> queues = listOfQueues.get(queueName);
+	        System.out.println("checkqueue : " + queueName + " - " + skillList + " - " + queues.size());
 	        synchronized(queues) {
 	        	for(QueueDto q : queues) {
 	                if(!q.getStatus().equals("active")) continue;
@@ -185,17 +185,23 @@ public class QueueService implements ApplicationListener<CustomEvent> {
         	list.add(cqueue);
         }
         else {
+        	boolean added = false;
         	for(int i = 0; i < list.size(); i++) {
             	Map<String,Object> item = list.get(i);
             	if((Long)cqueue.get("priority")
             	 > (Long)item.get("priority")) {
             		list.add(i, cqueue);
+            		added = true;
             		break;
             	}
             }
+        	if(!added) {
+        		list.add(cqueue);
+        	}
         }
         ArrayList<QueueDto> queues = new ArrayList<QueueDto>();
         listOfQueues.put(cq.getName(), queues);
+        System.out.println("addcqueue " + cq.getName() + " - " + listOfQueues.size() + " - " + list.size());
 	}
 	@Bean
 	public ThreadPoolTaskScheduler taskScheduler() {
