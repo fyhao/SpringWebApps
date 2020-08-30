@@ -46,7 +46,7 @@ public class HotelBotBS implements BotServiceHook {
             else if(input.equals("do you know about abcde?")) {
                 logger.info("HotelBotBS receive do you know?");
                 String agentName = null;
-                queueService.queueToSkill(conversation, "hotel");
+                queueService.addToQueue(conversation, "hotel");
                 /*
                 if(conversation.getChannel().equals("webchathotel")) {
                 	agentName = agentAvailabilityService.findAgent(conversation, "hotel");
