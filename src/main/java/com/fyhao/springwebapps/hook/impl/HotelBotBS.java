@@ -43,10 +43,14 @@ public class HotelBotBS implements BotServiceHook {
                 botmenu = "menubookhoteltime";
                 messagingService.sendBotMessage(conversation.getId().toString(), "When you want to book hotel?");
             }
-            else if(input.equals("do you know about abcde?")) {
+            else if(input.startsWith("do you know about abcde?")) {
                 logger.info("HotelBotBS receive do you know?");
                 String agentName = null;
-                queueService.addToQueue(conversation, "hotel");
+                String queueToGo = "hotel";
+                if(input.contains("urgent")) {
+                	queueToGo = "hotelpriority";
+                }
+                queueService.addToQueue(conversation, queueToGo);
                 /*
                 if(conversation.getChannel().equals("webchathotel")) {
                 	agentName = agentAvailabilityService.findAgent(conversation, "hotel");

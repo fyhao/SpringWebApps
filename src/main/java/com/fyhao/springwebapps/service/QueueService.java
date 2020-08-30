@@ -2,6 +2,7 @@ package com.fyhao.springwebapps.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -99,53 +100,60 @@ public class QueueService implements ApplicationListener<CustomEvent> {
                 return x.get("queuename").equals(queueName);
             }).findFirst().get().get("maxwaittime");
             List<QueueDto> queues = entry.getValue();
-            for(QueueDto q : queues) {
-                if(!q.getStatus().equals("active")) continue;
-                Date now = new Date();
-                Conversation conversation1 = q.getConversation();
-                if(now.getTime() - q.getEnteredTime().getTime() > maxWaitTime) {
-                    q.setStatus("toBeRemoved");
-                    messagingService.sendBotMessage(conversation1.getId().toString(), "Sorry I am not understand. But agent not available.");
-                    continue;
+            synchronized(queues) {
+            	for(QueueDto q : queues) {
+                    if(!q.getStatus().equals("active")) continue;
+                    Date now = new Date();
+                    Conversation conversation1 = q.getConversation();
+                    if(now.getTime() - q.getEnteredTime().getTime() > maxWaitTime) {
+                        q.setStatus("toBeRemoved");
+                        messagingService.sendBotMessage(conversation1.getId().toString(), "Sorry I am not understand. But agent not available.");
+                        continue;
+                    }
                 }
-            }
-            for(int i = queues.size() - 1; i >= 0; i--) {
-                if(!queues.get(i).getStatus().equals("active")) {
-                    queues.remove(i);
+                for(int i = queues.size() - 1; i >= 0; i--) {
+                    if(!queues.get(i).getStatus().equals("active")) {
+                        queues.remove(i);
+                    }
                 }
             }
         }
 	}
 	//@Scheduled(fixedRate = 20)
 	//@Transactional
+	static boolean isCheckQueueRunning = false;
 	public void checkQueue() {
-		 for(Map.Entry<String,ArrayList<QueueDto>> entry : listOfQueues.entrySet()) {
-	        String queueName = entry.getKey();
-	        String skillList = (String)getCQueueList().stream().filter(x -> {
-                return x.get("queuename").equals(queueName);
-            }).findFirst().get().get("skillList");
-	        List<QueueDto> queues = entry.getValue();
-	        for(QueueDto q : queues) {
-                if(!q.getStatus().equals("active")) continue;
-                Date now = new Date();
-                Conversation conversation1 = q.getConversation();
-                AgentTerminal term = agentTerminalService.getMostAvailableAgent(skillList);
-                if(term != null) {
-                    q.setStatus("toBeRemoved");
-                    String agentName = term.getAgent().getName();
-                    if(agentName != null) {
-                        Conversation conversation = conversationRepository.findById(conversation1.getId()).get();
-                        conversation.saveContext("state", "agent");
-                        conversation.saveContext("agentName", agentName);
-                        conversation.addActivityWithAgent("conversationOffered", agentName);
-                        conversationRepository.save(conversation);
-                        messagingService.sendBotMessage(conversation.getId().toString(), "Sorry I am not understand. Will handover to agent.");
-                        taskService.assignTask(conversation, agentName);
-                    }
-                    continue;
-                }
-            }
+		 if(isCheckQueueRunning)return;
+		 isCheckQueueRunning = true;
+		 //for(Map.Entry<String,ArrayList<QueueDto>> entry : listOfQueues.entrySet()) {
+	     for(Map<String, Object> entry : getCQueueList()) {
+	    	String queueName = (String)entry.get("queuename");
+	        String skillList = (String)entry.get("skillList");
+	        List<QueueDto> queues = listOfQueues.get(queueName);
+	        synchronized(queues) {
+	        	for(QueueDto q : queues) {
+	                if(!q.getStatus().equals("active")) continue;
+	                Date now = new Date();
+	                Conversation conversation1 = q.getConversation();
+	                AgentTerminal term = agentTerminalService.getMostAvailableAgent(skillList);
+	                if(term != null) {
+	                    q.setStatus("toBeRemoved");
+	                    String agentName = term.getAgent().getName();
+	                    if(agentName != null) {
+	                        Conversation conversation = conversationRepository.findById(conversation1.getId()).get();
+	                        conversation.saveContext("state", "agent");
+	                        conversation.saveContext("agentName", agentName);
+	                        conversation.addActivityWithAgent("conversationOffered", agentName);
+	                        conversationRepository.save(conversation);
+	                        messagingService.sendBotMessage(conversation.getId().toString(), "Sorry I am not understand. Will handover to agent.");
+	                        taskService.assignTask(conversation, agentName);
+	                    }
+	                    continue;
+	                }
+	            }
+	        }
         }
+		isCheckQueueRunning = false;
 	}
 	public List<Map<String, Object>> getCQueueList() {
 		if(cqueueList == null) {
@@ -170,7 +178,22 @@ public class QueueService implements ApplicationListener<CustomEvent> {
         cqueue.put("maxwaittime", cq.getMaxwaittime());
         cqueue.put("skillList", cq.getSkilllist());
         cqueue.put("maxlimit", cq.getMaxlimit());
-        getCQueueList().add(cqueue);
+        cqueue.put("priority", cq.getPriority());
+        //getCQueueList().add(cqueue);
+        List<Map<String,Object>> list = getCQueueList();
+        if(list.isEmpty()) {
+        	list.add(cqueue);
+        }
+        else {
+        	for(int i = 0; i < list.size(); i++) {
+            	Map<String,Object> item = list.get(i);
+            	if((Long)cqueue.get("priority")
+            	 > (Long)item.get("priority")) {
+            		list.add(i, cqueue);
+            		break;
+            	}
+            }
+        }
         ArrayList<QueueDto> queues = new ArrayList<QueueDto>();
         listOfQueues.put(cq.getName(), queues);
 	}

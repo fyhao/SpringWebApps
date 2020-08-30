@@ -33,6 +33,9 @@ public class CQueue implements Serializable {
     
     @Column(name="maxlimit")
     private long maxlimit;
+    
+    @Column(name="priority")
+    private long priority;
 
 	public UUID getId() {
 		return id;
@@ -72,6 +75,14 @@ public class CQueue implements Serializable {
 
 	public void setMaxlimit(long maxlimit) {
 		this.maxlimit = maxlimit;
+	}
+
+	public long getPriority() {
+		return priority;
+	}
+
+	public void setPriority(long priority) {
+		this.priority = priority;
 	}
     
 }

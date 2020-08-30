@@ -1005,7 +1005,6 @@ public class TestingWebApplicationTests {
          jsonMap = customerIncomingReceived.get(2, SECONDS);
          if (jsonMap.get("action").equals("chatMessageReceived")) {
              String content = (String) jsonMap.get("content");
-             System.out.println("customer received :" +  content);
              if(!content.equals("Sorry I am not understand. Will handover to agent.")) {
                  futureTestCompletion.complete("error1 " + content);
                  hasError = true;
@@ -1023,6 +1022,81 @@ public class TestingWebApplicationTests {
          agent.unregisterAgentSesssion();
          // hold and wait
          assertThat(futureTestCompletion.get(2, SECONDS)).contains("error1 Sorry I am not understand. But agent not available as queue full.");
+     }
+     
+     @Test
+     public void testqueuepriority() throws Exception {
+     	// create skills
+         createskillprofile("hotel");
+         // create queues
+         createqueueprofile("hotel:5000:hotel:1000:5");
+         createqueueprofile("hotelpriority:5000:hotel:1000:10");
+         // create agents
+         boolean hasError = false;
+         
+         // create agent
+         createagentprofile("agent7");
+         setmaxconcurrenttaskofagent("agent7",1);
+         assignagentskillaction("agent7", "hotel", AgentSkillDto.ASSIGNED_TO_AGENT);
+         CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
+         MyAgentClient agent = new MyAgentClient(this, "agent7");
+         CompletableFuture<WebSocketSession> agentEstablished = agent.waitNextAgentEstablishedEvent();
+         agent.start();
+         assertThat(agentEstablished.get(2, SECONDS)).isNotNull();
+         agent.registerAgentSession();
+         CompletableFuture<Map<String,Object>> incomingReceived = agent.waitNextIncomingTextMessage();
+         Map<String,Object> jsonMap = incomingReceived.get(2, SECONDS);
+         //agent.setAgentStatus(AgentTerminal.READY);
+         
+         // create customer
+         String conversationid = createconversationwithchannel("fyhao1@gmail.com", "webchathotel");
+         MyCustomerClient customer = new MyCustomerClient(this, conversationid);
+         CompletableFuture<WebSocketSession> customerEstablished = customer.waitNextCustomerEstablishedEvent();
+         customer.start();
+         assertThat(customerEstablished.get(2, SECONDS)).isNotNull();
+         customer.registerCustomerSession();
+         CompletableFuture<Map<String,Object>> customerIncomingReceived = customer.waitNextIncomingTextMessage();
+         jsonMap = customerIncomingReceived.get(2, SECONDS);
+         
+
+         String conversationid2 = createconversationwithchannel("fyhao2@gmail.com", "webchathotel");
+         MyCustomerClient customer2 = new MyCustomerClient(this, conversationid2);
+         CompletableFuture<WebSocketSession> customerEstablished2 = customer2.waitNextCustomerEstablishedEvent();
+         customer2.start();
+         assertThat(customerEstablished2.get(2, SECONDS)).isNotNull();
+         customer2.registerCustomerSession();
+         CompletableFuture<Map<String,Object>> customerIncomingReceived2 = customer2.waitNextIncomingTextMessage();
+         jsonMap = customerIncomingReceived2.get(2, SECONDS);
+         
+         
+         incomingReceived = agent.waitNextIncomingTextMessage();
+         System.out.println("customer1 conversation " + conversationid);
+         System.out.println("customer2 conversation " + conversationid2);
+         customer.sendChatMessage("do you know about abcde?");
+         try {Thread.sleep(100); } catch (Exception ex) {}
+         customer2.sendChatMessage("do you know about abcde? urgent");
+         agent.setAgentStatus(AgentTerminal.READY);
+         customerIncomingReceived2 = customer2.waitNextIncomingTextMessage();
+         jsonMap = customerIncomingReceived2.get(2, SECONDS);
+         if (jsonMap.get("action").equals("chatMessageReceived")) {
+             String content = (String) jsonMap.get("content");
+             if(!content.equals("Sorry I am not understand. Will handover to agent.")) {
+                 futureTestCompletion.complete("error1 " + content);
+                 hasError = true;
+             }
+         }
+         else {
+         	futureTestCompletion.complete("error11 " + jsonMap.get("action"));
+         }
+         if(!hasError) {
+        	 futureTestCompletion.complete("completed"); 
+         }
+         // housekeeping
+         
+         agent.setAgentStatus(AgentTerminal.NOT_READY);
+         agent.unregisterAgentSesssion();
+         // hold and wait
+         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
      }
      
     private List<String> getactiveagentterminalnames() {
@@ -1145,6 +1219,10 @@ public class TestingWebApplicationTests {
     	if(arr.length > 3) {
     		long maxlimit = Long.parseLong(arr[3]);
     		dto.setMaxlimit(maxlimit);
+    	}
+    	if(arr.length > 4) {
+    		long priority = Long.parseLong(arr[4]);
+    		dto.setPriority(priority);
     	}
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

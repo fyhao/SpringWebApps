@@ -55,10 +55,12 @@ public class TaskService {
         task.setCreatedTime(Util.getSQLTimestamp(new Date()));
         task.setConversation(conversation);
         task.setAgent(agent);
+        agent.getTasks().add(task);
         taskRepository.save(task);
         conversation.setTask(task);
         conversation.addActivityWithAgent("conversationAssigned", agentid);
         conversationRepository.save(conversation);
+        agentRepository.save(agent);
         Map<String,Object> contexts = new HashMap<String,Object>();
         for(Context context : conversation.getContexts()) {
         	contexts.put(context.getKey(), context.getValue());
