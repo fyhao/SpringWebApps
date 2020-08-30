@@ -1,7 +1,9 @@
 package com.fyhao.springwebapps.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.modelmapper.Conditions;
@@ -13,11 +15,13 @@ import org.springframework.stereotype.Service;
 import com.fyhao.springwebapps.dto.AgentProfileDto;
 import com.fyhao.springwebapps.dto.AgentSkillDto;
 import com.fyhao.springwebapps.dto.CCConfigDto;
+import com.fyhao.springwebapps.dto.CQueueDto;
 import com.fyhao.springwebapps.dto.SkillDto;
 import com.fyhao.springwebapps.entity.Agent;
+import com.fyhao.springwebapps.entity.CQueue;
 import com.fyhao.springwebapps.entity.Skill;
-import com.fyhao.springwebapps.entity.Task;
 import com.fyhao.springwebapps.model.AgentRepository;
+import com.fyhao.springwebapps.model.CQueueRepository;
 import com.fyhao.springwebapps.model.SkillRepository;
 
 @Service
@@ -28,9 +32,15 @@ public class AgentProfileService {
 
     @Autowired
     SkillRepository skillRepository;
+    
+    @Autowired
+    CQueueRepository cqueueRepository;
 
     @Autowired
     private ModelMapper modelMapper;
+    
+    @Autowired
+    EventPublisher publisher;
 
     @Bean
     public ModelMapper modelMapper() {
@@ -58,6 +68,17 @@ public class AgentProfileService {
         skill = modelMapper().map(skillDto, Skill.class);
         skill.setName(skill.getName().isEmpty() ? "Unnamed" : skill.getName());
         skillRepository.save(skill);
+    }
+    public void createCQueueProfile(CQueueDto cqueueDto) {
+    	CQueue cqueue = cqueueRepository.findByName(cqueueDto.getName());
+    	if(cqueue != null)
+    		return;
+    	cqueue = modelMapper().map(cqueueDto, CQueue.class);
+    	cqueue.setName(cqueue.getName().isEmpty() ? "Unnamed" : cqueue.getName());
+    	cqueueRepository.save(cqueue);
+    	Map<String, Object> eventObj = new HashMap<String,Object>();
+    	eventObj.put("queuename", cqueue.getName());
+    	publisher.publishEvent("cqueueCreated", eventObj);
     }
 
     public int removeAgentProfile(AgentProfileDto agentDto) {
@@ -112,6 +133,9 @@ public class AgentProfileService {
     }
     public long getSkillCount() {
         return skillRepository.count();
+    }
+    public long getCQueueCount() {
+    	return cqueueRepository.count();
     }
     public List<String> getSkillNamesOfAgent(String agentName) {
         Agent agent = agentRepository.findByName(agentName);
