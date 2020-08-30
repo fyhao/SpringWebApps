@@ -36,6 +36,7 @@ import com.fyhao.springwebapps.SpringWebMain;
 import com.fyhao.springwebapps.TestController;
 import com.fyhao.springwebapps.dto.AgentProfileDto;
 import com.fyhao.springwebapps.dto.AgentSkillDto;
+import com.fyhao.springwebapps.dto.CQueueDto;
 import com.fyhao.springwebapps.dto.SkillDto;
 import com.fyhao.springwebapps.entity.AgentTerminal;
 
@@ -525,6 +526,8 @@ public class TestingWebApplicationTests {
     public void testsimplifiedwebsocketclient() throws Exception {
         // create skills
         createskillprofile("hotel");
+        // create queues
+        createqueueprofile("hotel:5000:hotel");
         // create agents
         boolean hasError = false;
         createagentprofile("agent2");
@@ -659,6 +662,8 @@ public class TestingWebApplicationTests {
     public void testmaxconcurrenttask() throws Exception {
     	// create skills
         createskillprofile("hotel");
+        // create queues
+        createqueueprofile("hotel:5000:hotel");
         // create agents
         boolean hasError = false;
         
@@ -827,6 +832,8 @@ public class TestingWebApplicationTests {
     public void testtransfertasktoanotheragent() throws Exception {
     	// create skills
         createskillprofile("hotel");
+        // create queues
+        createqueueprofile("hotel:5000:hotel");
         // create agents
         boolean hasError = false;
         
@@ -1064,6 +1071,28 @@ public class TestingWebApplicationTests {
         }
         HttpEntity<String> request = new HttpEntity<String>(message, headers);
         ResponseEntity<String> resp = this.restTemplate.postForEntity("http://localhost:" + port + "/agentprofile/createskillprofile", request,
+                String.class);
+        return resp.getBody();
+    }
+    private String createqueueprofile(String queueprofile) {
+    	String[] arr = queueprofile.split("\\:");
+    	String cqueuename = arr[0];
+    	long maxwaittime = Long.parseLong(arr[1]);
+    	String skilllist = arr[2];
+    	CQueueDto dto = new CQueueDto();
+    	dto.setName(cqueuename);
+    	dto.setMaxwaittime(maxwaittime);
+    	dto.setSkilllist(skilllist);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = null;
+        try {
+            message = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+        }
+        HttpEntity<String> request = new HttpEntity<String>(message, headers);
+        ResponseEntity<String> resp = this.restTemplate.postForEntity("http://localhost:" + port + "/agentprofile/createcqueueprofile", request,
                 String.class);
         return resp.getBody();
     }

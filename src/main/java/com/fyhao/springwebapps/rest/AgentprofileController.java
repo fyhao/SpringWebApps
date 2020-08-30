@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fyhao.springwebapps.dto.AgentProfileDto;
 import com.fyhao.springwebapps.dto.AgentSkillDto;
 import com.fyhao.springwebapps.dto.CCConfigDto;
+import com.fyhao.springwebapps.dto.CQueueDto;
 import com.fyhao.springwebapps.dto.SkillDto;
 import com.fyhao.springwebapps.service.AgentProfileService;
 @RestController
@@ -51,6 +52,15 @@ public class AgentprofileController {
         agentProfileService.assignAgentSkillAction(dto);
         return "0";
     }
+    
+    @RequestMapping(method= RequestMethod.POST, value = "/createcqueueprofile", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public @ResponseBody String createcqueueprofile(@RequestBody CQueueDto cqueue) {
+        logger.info("AgentprofileController createcqueueprofile " + cqueue.getName());
+        agentProfileService.createCQueueProfile(cqueue);
+        return "0";
+    }
+    
+    
     @RequestMapping("/getskillnamesofagent")
 	public @ResponseBody List<String> getskillnamesofagent(@RequestParam String agent) {
         logger.info("getskillnamesofagent");
@@ -66,6 +76,11 @@ public class AgentprofileController {
         logger.info("getskillcount");
 		return agentProfileService.getSkillCount();
     }
+    @RequestMapping("/getcqueuecount")
+	public @ResponseBody long getcqueuecount() {
+        logger.info("getcqueuecount");
+		return agentProfileService.getCQueueCount();
+    }
     @RequestMapping("/getmaxconcurrenttaskofagent")
 	public @ResponseBody long getmaxconcurrenttaskofagent(@RequestParam String agentname) {
         logger.info("getmaxconcurrenttaskofagent");
@@ -80,11 +95,23 @@ public class AgentprofileController {
 	public @ResponseBody String testdata() {
         logger.info("testdata");
         String[] skills = new String[] {"hotel"};
+        String[] cqueues = new String[] {"hotel:5000:hotel"};
         String[] agents = new String[] {"agent1","agent2","agent3"};
         for(String skill : skills) {
         	SkillDto dto = new SkillDto();
         	dto.setName(skill);
         	agentProfileService.createSkillProfile(dto);
+        }
+        for(String cqueue : cqueues) {
+        	String[] arr = cqueue.split("\\:");
+        	String cqueuename = arr[0];
+        	long maxwaittime = Long.parseLong(arr[1]);
+        	String skilllist = arr[2];
+        	CQueueDto dto = new CQueueDto();
+        	dto.setName(cqueuename);
+        	dto.setMaxwaittime(maxwaittime);
+        	dto.setSkilllist(skilllist);
+        	agentProfileService.createCQueueProfile(dto);
         }
         for(String agent : agents) {
         	AgentProfileDto dto = new AgentProfileDto();

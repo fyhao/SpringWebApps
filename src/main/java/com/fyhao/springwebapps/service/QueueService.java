@@ -18,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fyhao.springwebapps.dto.CustomEvent;
 import com.fyhao.springwebapps.dto.QueueDto;
 import com.fyhao.springwebapps.entity.AgentTerminal;
+import com.fyhao.springwebapps.entity.CQueue;
 import com.fyhao.springwebapps.entity.Conversation;
+import com.fyhao.springwebapps.model.CQueueRepository;
 import com.fyhao.springwebapps.model.ConversationRepository;
 
 @Service
@@ -26,8 +28,12 @@ public class QueueService implements ApplicationListener<CustomEvent> {
 	
     static List<QueueDto> queues = new ArrayList<QueueDto>();
     static Map<String, ArrayList<QueueDto>> listOfQueues = new HashMap<String, ArrayList<QueueDto>>();
-    static List<Map<String, Object>> cqueueList = new ArrayList<Map<String,Object>>();
+    static List<Map<String, Object>> cqueueList = null;
+    
+    @Autowired
+    CQueueRepository cqueueRepository;
 	static {
+		/*
         // mimic queue setting data
         Map<String, Object> cqueue = new HashMap<String, Object>();
         cqueue.put("queuename", "hotel");
@@ -39,6 +45,7 @@ public class QueueService implements ApplicationListener<CustomEvent> {
             ArrayList<QueueDto> queues = new ArrayList<QueueDto>();
             listOfQueues.put(queuename, queues);
         }
+        */
     }
 	@Autowired
 	EventPublisher publisher;
@@ -71,7 +78,7 @@ public class QueueService implements ApplicationListener<CustomEvent> {
 	public void checkExpiry() {
         for(Map.Entry<String,ArrayList<QueueDto>> entry : listOfQueues.entrySet()) {
             String queueName = entry.getKey();
-            long maxWaitTime = (long)cqueueList.stream().filter(x -> {
+            long maxWaitTime = (long)getCQueueList().stream().filter(x -> {
                 return x.get("queuename").equals(queueName);
             }).findFirst().get().get("maxwaittime");
             List<QueueDto> queues = entry.getValue();
@@ -97,7 +104,7 @@ public class QueueService implements ApplicationListener<CustomEvent> {
 	public void checkQueue() {
 		 for(Map.Entry<String,ArrayList<QueueDto>> entry : listOfQueues.entrySet()) {
 	        String queueName = entry.getKey();
-	        String skillList = (String)cqueueList.stream().filter(x -> {
+	        String skillList = (String)getCQueueList().stream().filter(x -> {
                 return x.get("queuename").equals(queueName);
             }).findFirst().get().get("skillList");
 	        List<QueueDto> queues = entry.getValue();
@@ -123,6 +130,32 @@ public class QueueService implements ApplicationListener<CustomEvent> {
             }
         }
 	}
+	public List<Map<String, Object>> getCQueueList() {
+		if(cqueueList == null) {
+			cqueueList = new ArrayList<Map<String,Object>>();
+			for(CQueue cq : cqueueRepository.findAll()) {
+				addcqueue(cq);
+			}
+		}
+		return cqueueList;
+	}
+	public void addcqueue(Map<String, Object> prop) {
+		String queuename = (String)prop.get("queuename");
+		addcqueue(queuename);
+	}
+	public void addcqueue(String queuename) {
+		CQueue cq = cqueueRepository.findByName(queuename);
+		addcqueue(cq);
+	}
+	public void addcqueue(CQueue cq) {
+		Map<String, Object> cqueue = new HashMap<String, Object>();
+        cqueue.put("queuename", cq.getName());
+        cqueue.put("maxwaittime", cq.getMaxwaittime());
+        cqueue.put("skillList", cq.getSkilllist());
+        getCQueueList().add(cqueue);
+        ArrayList<QueueDto> queues = new ArrayList<QueueDto>();
+        listOfQueues.put(cq.getName(), queues);
+	}
 	@Bean
 	public ThreadPoolTaskScheduler taskScheduler() {
 		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
@@ -138,6 +171,10 @@ public class QueueService implements ApplicationListener<CustomEvent> {
 		String[] checkQueueEvents = new String[] {"agentRegistered", "agentReady", "conversationQueued"};
 		if(Arrays.asList(checkQueueEvents).contains(event.getAction())) {
 			checkQueue();
+		}
+		String[] cqueueCreatedEvents = new String[] {"cqueueCreated"};
+		if(Arrays.asList(cqueueCreatedEvents).contains(event.getAction())) {
+			addcqueue(event.getProp());
 		}
 	}
 }
