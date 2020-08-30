@@ -1026,7 +1026,7 @@ public class TestingWebApplicationTests {
      
      @Test
      public void testqueuepriority() throws Exception {
-     	// create skills
+     	 // create skills
          createskillprofile("hotel");
          // create queues
          createqueueprofile("hotel:5000:hotel:1000:5");
@@ -1097,6 +1097,59 @@ public class TestingWebApplicationTests {
          agent.unregisterAgentSesssion();
          // hold and wait
          assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
+     }
+     @Test
+     public void testqueuemultiple() throws Exception {
+    	// create skills
+    	 for(int i = 0; i < 10; i++) {
+             createskillprofile("hotel" + i);
+             // create queues
+             createqueueprofile("hotel:5000:hotel" + i + ":1000:5");
+    	 }
+         // create agents
+         boolean hasError = false;
+         
+         // create agent
+         for(int i = 0; i < 3; i++) {
+        	 createagentprofile("agent" + i);
+             assignagentskillaction("agent" + i, "hotel" + i, AgentSkillDto.ASSIGNED_TO_AGENT);
+             CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
+             MyAgentClient agent = new MyAgentClient(this, "agent" + i);
+             CompletableFuture<WebSocketSession> agentEstablished = agent.waitNextAgentEstablishedEvent();
+             agent.start();
+             assertThat(agentEstablished.get(2, SECONDS)).isNotNull();
+             agent.registerAgentSession();
+             CompletableFuture<Map<String,Object>> incomingReceived = agent.waitNextIncomingTextMessage();
+             Map<String,Object> jsonMap = incomingReceived.get(2, SECONDS);
+             //agent.setAgentStatus(AgentTerminal.READY);
+
+             
+             // create customer
+             String conversationid = createconversationwithchannel("fyhao1@gmail.com", "webchatselfservicetransfer");
+             MyCustomerClient customer = new MyCustomerClient(this, conversationid);
+             CompletableFuture<WebSocketSession> customerEstablished = customer.waitNextCustomerEstablishedEvent();
+             customer.start();
+             assertThat(customerEstablished.get(2, SECONDS)).isNotNull();
+             customer.registerCustomerSession();
+             CompletableFuture<Map<String,Object>> customerIncomingReceived = customer.waitNextIncomingTextMessage();
+             jsonMap = customerIncomingReceived.get(2, SECONDS);
+
+             agent.setAgentStatus(AgentTerminal.READY);
+
+             incomingReceived = agent.waitNextIncomingTextMessage();
+             customer.sendChatMessage("queue:hotel");
+             try {Thread.sleep(100); } catch (Exception ex) {}
+             customer.sendChatMessage("transfer");
+             customerIncomingReceived = customer.waitNextIncomingTextMessage();
+             try {Thread.sleep(100); } catch (Exception ex) {}
+             futureTestCompletion.complete("completed"); 
+             
+             // housekeeping
+             
+             agent.setAgentStatus(AgentTerminal.NOT_READY);
+             agent.unregisterAgentSesssion();
+         }
+         
      }
      
     private List<String> getactiveagentterminalnames() {
@@ -1333,4 +1386,5 @@ public class TestingWebApplicationTests {
         return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/getlastmessagecontent?id=" + conversationid,
                 String.class);
     }
+
 }
