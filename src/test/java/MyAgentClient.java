@@ -116,6 +116,13 @@ public class MyAgentClient {
         jsonMap.put("action", "unregister");
         jsonMap.put("agentid", agentid);
         sendMessage(webSocketSession, jsonMap);
+        int i = 0;
+        while(++i < 10 && !waitNextAction().equals("agentUnregistered")) {
+        	
+        }
+        try {
+        	Thread.sleep(1000);
+        } catch (Exception ex) {}
     }
     public void setAgentStatus(String status) {
         Map<String, Object> jsonMap = new HashMap<String, Object>();

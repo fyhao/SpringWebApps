@@ -206,48 +206,53 @@ public class AgentProfileService {
     }
     public int importConfig(CCConfigDto dto) {
     	// remove all skills from all agent first
-    	for(Agent agent : agentRepository.findAll()) {
-    		for(Skill skill : agent.getAgentSkills()) {
-    			agent.getAgentSkills().remove(skill);
-    		}
-    		while(agent.getTasks().size() > 0) {
-    			agent.getTasks().get(0).setAgent(null);
-    			agent.getTasks().remove(0);
-    		}
-    		agentRepository.save(agent);
-    		agentRepository.delete(agent);
+    	synchronized(this) {
+    		QueueService.cqueueList.clear();
+        	QueueService.listOfQueues.clear();
+        	for(Agent agent : agentRepository.findAll()) {
+        		for(Skill skill : agent.getAgentSkills()) {
+        			agent.getAgentSkills().remove(skill);
+        		}
+        		while(agent.getTasks().size() > 0) {
+        			agent.getTasks().get(0).setAgent(null);
+        			agent.getTasks().remove(0);
+        		}
+        		System.out.println("importconfig agentterminal: " + (agent.getAgentTerminal() != null));
+        		agentRepository.save(agent);
+        		agentRepository.delete(agent);
+        	}
+        	for(Skill skill : skillRepository.findAll()) {
+        		skillRepository.delete(skill);
+        	}
+        	for(CQueue cq : cqueueRepository.findAll()) {
+        		cqueueRepository.delete(cq);
+        	}
+        	// add new skill
+        	for(SkillDto skillDto : dto.getSkills()) {
+        		Skill skill = new Skill();
+        		skill.setName(skillDto.getName());
+        		skillRepository.save(skill);
+        	}
+        	for(CQueueDto cqueueDto : dto.getCqueues()) {
+        		CQueue cq = new CQueue();
+        		cq.setName(cqueueDto.getName());
+        		cq.setMaxlimit(cqueueDto.getMaxlimit());
+        		cq.setMaxwaittime(cqueueDto.getMaxwaittime());
+        		cq.setPriority(cqueueDto.getPriority());
+        		cq.setSkilllist(cqueueDto.getSkilllist());
+        		cqueueRepository.save(cq);
+        	}
+        	// add new agent
+        	for(AgentProfileDto agentDto : dto.getAgents()) {
+        		Agent agent = new Agent();
+        		agent.setName(agentDto.getName());
+        		agent.setMaxConcurrentTask(agentDto.getMaxconcurrenttask());
+        		agentRepository.save(agent);
+        	}
+        	for(AgentSkillDto asDto : dto.getAgentSkills()) {
+        		assignAgentSkillAction(asDto);
+        	}
+        	return 0;
     	}
-    	for(Skill skill : skillRepository.findAll()) {
-    		skillRepository.delete(skill);
-    	}
-    	for(CQueue cq : cqueueRepository.findAll()) {
-    		cqueueRepository.delete(cq);
-    	}
-    	// add new skill
-    	for(SkillDto skillDto : dto.getSkills()) {
-    		Skill skill = new Skill();
-    		skill.setName(skillDto.getName());
-    		skillRepository.save(skill);
-    	}
-    	for(CQueueDto cqueueDto : dto.getCqueues()) {
-    		CQueue cq = new CQueue();
-    		cq.setName(cqueueDto.getName());
-    		cq.setMaxlimit(cqueueDto.getMaxlimit());
-    		cq.setMaxwaittime(cqueueDto.getMaxwaittime());
-    		cq.setPriority(cqueueDto.getPriority());
-    		cq.setSkilllist(cqueueDto.getSkilllist());
-    		cqueueRepository.save(cq);
-    	}
-    	// add new agent
-    	for(AgentProfileDto agentDto : dto.getAgents()) {
-    		Agent agent = new Agent();
-    		agent.setName(agentDto.getName());
-    		agent.setMaxConcurrentTask(agentDto.getMaxconcurrenttask());
-    		agentRepository.save(agent);
-    	}
-    	for(AgentSkillDto asDto : dto.getAgentSkills()) {
-    		assignAgentSkillAction(asDto);
-    	}
-    	return 0;
     }
 }

@@ -64,6 +64,26 @@ public class TestingWebApplicationTests {
     }
 
     @Test
+    public void testall() throws Exception {
+    	//testconversation();
+    	//testhotelbotusecase();
+    	//testwebsocketconnectionforcustomer();
+    	//testwebsocketconnectionforagent();
+    	//testagentprofileservice();
+
+    	//testqueuemaxlimitreached();
+    	//testqueuepriority();
+
+    	//testbargeinConversation();
+    	testsimplifiedwebsocketclient();
+    	testmaxconcurrenttask();
+    	testtransfertasktoanotheragent();
+    	
+    	testqueuemultiple();
+    	testconference();
+    }
+    
+    //@Test
     public void testconversation() throws Exception {
         createskillprofile("hotel");
         createagentprofile("sjeffers");
@@ -139,7 +159,7 @@ public class TestingWebApplicationTests {
 
     }
 
-    @Test
+    //@Test
     public void testhotelbotusecase() throws Exception {
         // conversationid4 used for full testing now
         // make an agent sjeffers ready to take chat task
@@ -199,7 +219,7 @@ public class TestingWebApplicationTests {
         assertThat(getcontext(conversationid4, "state")).contains("end");
     }
 
-    @Test
+    //@Test
     public void testwebsocketconnectionforcustomer() throws Exception {
         CompletableFuture<String> futureConversationid = new CompletableFuture<>();
         CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
@@ -300,7 +320,7 @@ public class TestingWebApplicationTests {
         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }
 
-    @Test
+    //@Test
     public void testwebsocketconnectionforagent() throws Exception {
         // create skills
         createskillprofile("english");
@@ -443,8 +463,9 @@ public class TestingWebApplicationTests {
         unregisteragent("rbarrows");
     }
     
-    @Test
+    //@Test
     public void testagentprofileservice() throws Exception {
+    	resetdata();
         // create skills
         String c = getskillcount();
         assertThat(getskillcount()).contains(getskillcount());
@@ -522,12 +543,13 @@ public class TestingWebApplicationTests {
         assertThat(getmaxconcurrenttaskofagent("sjeffers")).contains("4");
         assertThat(getmaxconcurrenttaskofagent("rbarrows")).contains("3");
     }
-    @Test
+    //@Test
     public void testsimplifiedwebsocketclient() throws Exception {
+    	resetdata();
         // create skills
         createskillprofile("hotel");
         // create queues
-        createqueueprofile("hotel:5000:hotel");
+        createqueueprofile("hotel:5000:hotel:10:5");
         // create agents
         boolean hasError = false;
         createagentprofile("agent2");
@@ -658,8 +680,9 @@ public class TestingWebApplicationTests {
         // hold and wait
         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }
-    @Test
+    //@Test
     public void testmaxconcurrenttask() throws Exception {
+    	resetdata();
     	// create skills
         createskillprofile("hotel");
         // create queues
@@ -828,8 +851,9 @@ public class TestingWebApplicationTests {
         // hold and wait
         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }
-     @Test
+    //@Test
     public void testtransfertasktoanotheragent() throws Exception {
+    	resetdata();
     	// create skills
         createskillprofile("hotel");
         // create queues
@@ -967,8 +991,9 @@ public class TestingWebApplicationTests {
         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }
      
-     @Test
+     //@Test
      public void testqueuemaxlimitreached() throws Exception {
+    	 resetdata();
      	// create skills
          createskillprofile("hotel");
          // create queues
@@ -1024,8 +1049,9 @@ public class TestingWebApplicationTests {
          assertThat(futureTestCompletion.get(2, SECONDS)).contains("error1 Sorry I am not understand. But agent not available as queue full.");
      }
      
-     @Test
+     //@Test
      public void testqueuepriority() throws Exception {
+    	 resetdata();
      	 // create skills
          createskillprofile("hotel");
          // create queues
@@ -1098,8 +1124,9 @@ public class TestingWebApplicationTests {
          // hold and wait
          assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
      }
-     @Test
+     //@Test
      public void testqueuemultiple() throws Exception {
+    	 resetdata();
     	// create skills
     	 for(int i = 0; i < 10; i++) {
              createskillprofile("hotel" + i);
@@ -1152,8 +1179,9 @@ public class TestingWebApplicationTests {
          
      }
      
-     @Test
+     //@Test
      public void testconference() throws Exception {
+    	 resetdata();
      	 // create skills
          createskillprofile("hotel");
          // create queues
@@ -1231,8 +1259,9 @@ public class TestingWebApplicationTests {
          assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
      }
      
-     @Test
+     //@Test
      public void testbargeinConversation() throws Exception {
+    	 resetdata();
      	 // create skills
          createskillprofile("hotel");
          // create queues
@@ -1308,6 +1337,27 @@ public class TestingWebApplicationTests {
          
          // hold and wait
          assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
+     }
+     private void resetdata() {
+    	 Map<String, Object> req = new HashMap<String, Object>();
+         List<Map<String,Object>> reqAgents = new ArrayList<Map<String,Object>>();
+         req.put("agents", reqAgents);
+         List<Map<String,Object>> reqSkills = new ArrayList<Map<String,Object>>();
+         req.put("skills", reqSkills);
+         List<Map<String,Object>> reqAs = new ArrayList<Map<String,Object>>();
+         req.put("agentSkills", reqAs);
+         HttpHeaders headers = new HttpHeaders();
+         headers.setContentType(MediaType.APPLICATION_JSON);
+         ObjectMapper objectMapper = new ObjectMapper();
+         String message = null;
+         try {
+             message = objectMapper.writeValueAsString(req);
+         } catch (JsonProcessingException e) {
+         }
+         
+         HttpEntity<String> request = new HttpEntity<String>(message, headers);
+         ResponseEntity<String> resp1 = this.restTemplate.postForEntity("http://localhost:" + port + "/agentprofile/importconfig", request,
+                 String.class);
      }
     private List<String> getactiveagentterminalnames() {
         String resp = this.restTemplate.getForObject("http://localhost:" + port + "/agentterminal/getactiveagentterminalnames",

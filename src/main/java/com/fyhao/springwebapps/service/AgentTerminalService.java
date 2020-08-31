@@ -54,8 +54,8 @@ public class AgentTerminalService {
                 return 102;
             }
             agent.setAgentTerminal(null);
-            agentRepository.save(agent);
             agentTerminalRepository.delete(terminal);
+            agentRepository.save(agent);
             AgentSocketHandler.sendAgentUnregisteredEvent(agentName, true, "SUCCESS");
         }
         return 0;
