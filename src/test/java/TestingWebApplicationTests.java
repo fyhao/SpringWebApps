@@ -1230,6 +1230,85 @@ public class TestingWebApplicationTests {
          // hold and wait
          assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
      }
+     
+     @Test
+     public void testbargeinConversation() throws Exception {
+     	 // create skills
+         createskillprofile("hotel");
+         // create queues
+         createqueueprofile("hotel:5000:hotel:1000:5");
+         // create agents
+         boolean hasError = false;
+         
+         // create agent
+         createagentprofile("agent10");
+         assignagentskillaction("agent10", "hotel", AgentSkillDto.ASSIGNED_TO_AGENT);
+         CompletableFuture<String> futureTestCompletion = new CompletableFuture<>();
+         MyAgentClient agent = new MyAgentClient(this, "agent10");
+         CompletableFuture<WebSocketSession> agentEstablished = agent.waitNextAgentEstablishedEvent();
+         agent.start();
+         assertThat(agentEstablished.get(2, SECONDS)).isNotNull();
+         agent.registerAgentSession();
+         CompletableFuture<Map<String,Object>> incomingReceived = agent.waitNextIncomingTextMessage();
+         Map<String,Object> jsonMap = incomingReceived.get(2, SECONDS);
+         agent.setAgentStatus("READY");
+         // create 2nd agent
+         createagentprofile("agent11");
+         assignagentskillaction("agent11", "hotel", AgentSkillDto.ASSIGNED_TO_AGENT);
+         CompletableFuture<String> futureTestCompletion2 = new CompletableFuture<>();
+         MyAgentClient agent2 = new MyAgentClient(this, "agent11");
+         CompletableFuture<WebSocketSession> agentEstablished2 = agent2.waitNextAgentEstablishedEvent();
+         agent2.start();
+         assertThat(agentEstablished2.get(2, SECONDS)).isNotNull();
+         agent2.registerAgentSession();
+         CompletableFuture<Map<String,Object>> incomingReceived2 = agent2.waitNextIncomingTextMessage();
+         Map<String,Object> jsonMap2 = incomingReceived2.get(2, SECONDS);
+         //agent.setAgentStatus(AgentTerminal.READY);
+         
+         // create customer
+         String conversationid = createconversationwithchannel("fyhao1@gmail.com", "webchatselfservicetransfer");
+         MyCustomerClient customer = new MyCustomerClient(this, conversationid);
+         CompletableFuture<WebSocketSession> customerEstablished = customer.waitNextCustomerEstablishedEvent();
+         customer.start();
+         assertThat(customerEstablished.get(2, SECONDS)).isNotNull();
+         customer.registerCustomerSession();
+         CompletableFuture<Map<String,Object>> customerIncomingReceived = customer.waitNextIncomingTextMessage();
+         jsonMap = customerIncomingReceived.get(2, SECONDS);
+
+         incomingReceived = agent.waitNextIncomingTextMessage();
+         
+         assertThat(customer.sendChatMessageWait("addskill:car")).contains("skill created");
+         assertThat(customer.sendChatMessageWait("addqueue:car1:5000:car:10:5")).contains("queue is created");
+         assertThat(customer.sendChatMessageWait("listqueue")).contains("car1");
+         assertThat(customer.sendChatMessageWait("assignskill:agent10:car")).contains("Assigned");
+         assertThat(customer.sendChatMessageWait("queue:car1")).contains("set queueToGo");
+         assertThat(customer.sendChatMessageWait("transfer")).contains("Will handover");
+         
+         assertThat(agent.waitNextAction()).contains("incomingTask");
+         assertThat(agent.waitNextKey("content")).contains("transfer");
+         agent2.bargeinConversation(conversationid);
+         assertThat(agent2.waitNextAction()).contains("incomingTask");
+         customer.sendChatMessage("send from customer");
+         assertThat(agent.waitNextKey("content")).contains("send from customer");
+         assertThat(agent2.waitNextKey("content")).contains("send from customer");
+         agent.sendChatMessage(conversationid, "send from agent 1");
+         assertThat(customer.waitNextMessage()).contains("send from agent 1");
+         assertThat(agent2.waitNextKey("content")).contains("send from agent 1");
+         agent2.sendChatMessage(conversationid, "send from agent 2");
+         
+         if(!hasError) {
+        	 futureTestCompletion.complete("completed"); 
+         }
+         // housekeeping
+         
+         agent.setAgentStatus(AgentTerminal.NOT_READY);
+         agent.unregisterAgentSesssion();
+         agent2.setAgentStatus(AgentTerminal.NOT_READY);
+         agent2.unregisterAgentSesssion();
+         
+         // hold and wait
+         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
+     }
     private List<String> getactiveagentterminalnames() {
         String resp = this.restTemplate.getForObject("http://localhost:" + port + "/agentterminal/getactiveagentterminalnames",
                 String.class);

@@ -178,6 +178,13 @@ public class MyAgentClient {
         jsonMap.put("conversationid", conversationid);
         sendMessage(webSocketSession, jsonMap);
     }
+    public void bargeinConversation(String conversationid) {
+    	Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "bargeinConversation");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("conversationid", conversationid);
+        sendMessage(webSocketSession, jsonMap);
+    }
     public void sendMessage(WebSocketSession session, Map<String, Object> jsonMap) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {

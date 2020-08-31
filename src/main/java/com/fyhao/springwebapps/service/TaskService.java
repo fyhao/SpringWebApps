@@ -289,11 +289,17 @@ public class TaskService {
         	if(Arrays.asList(bargeinAgentsStr.split("\\,")).contains(agentid)) {
         		return 105;
         	}
-        	bargeinAgentList = Arrays.asList(bargeinAgentsStr.split("\\,"));
+        	bargeinAgentList = new ArrayList(Arrays.asList(bargeinAgentsStr.split("\\,")));
         }
         bargeinAgentList.add(agentid);
         conversation.saveContext("bargeinAgents", joinString(bargeinAgentList));
         conversationRepository.save(conversation);
+        Task task = conversation.getTask();
+        Map<String,Object> contexts = new HashMap<String,Object>();
+        for(Context context : conversation.getContexts()) {
+        	contexts.put(context.getKey(), context.getValue());
+        }
+        AgentSocketHandler.sendAgentIncomingTaskEvent(agentid, conversation.getId().toString(), task.getId().toString(), contexts);
         return 0;
     }
     private String joinString(List<String> list) {
