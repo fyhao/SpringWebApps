@@ -1208,9 +1208,15 @@ public class TestingWebApplicationTests {
          assertThat(agent2.waitNextAction()).contains("agentInvited");
          agent2.acceptInvite(conversationid);
          assertThat(agent2.waitNextAction()).contains("incomingTask");
-         customer.sendChatMessage("test");
-         assertThat(agent.waitNextAction()).contains("chatMessageReceived");
-         assertThat(agent2.waitNextAction()).contains("chatMessageReceived");
+         customer.sendChatMessage("send from customer");
+         assertThat(agent.waitNextKey("content")).contains("send from customer");
+         assertThat(agent2.waitNextKey("content")).contains("send from customer");
+         agent.sendChatMessage(conversationid, "send from agent 1");
+         assertThat(customer.waitNextMessage()).contains("send from agent 1");
+         assertThat(agent2.waitNextKey("content")).contains("send from agent 1");
+         agent2.sendChatMessage(conversationid, "send from agent 2");
+         assertThat(customer.waitNextMessage()).contains("send from agent 2");
+         assertThat(agent.waitNextKey("content")).contains("send from agent 2");
          if(!hasError) {
         	 futureTestCompletion.complete("completed"); 
          }
