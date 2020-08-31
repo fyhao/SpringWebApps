@@ -1,3 +1,5 @@
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,6 +73,21 @@ public class MyCustomerClient {
         jsonMap.put("conversationid", conversationid);
         jsonMap.put("chatMessage", chatMessage);
         sendMessage(webSocketSession, jsonMap);
+    }
+    public String sendChatMessageWait(String chatMessage) {
+    	sendChatMessage(chatMessage);
+    	return waitNextMessage();
+    }
+    public String waitNextMessage() {
+    	Map<String, Object> jsonMap = new HashMap<String, Object>();
+    	CompletableFuture<Map<String,Object>> customerIncomingReceived = waitNextIncomingTextMessage();
+        try {
+        	jsonMap = customerIncomingReceived.get(2, SECONDS);
+        	if(jsonMap.get("action").equals("chatMessageReceived")) {
+        		return (String)jsonMap.get("content");
+        	}
+        } catch (Exception ex) {}
+        return null;
     }
     public void registerCustomerSession() {
         Map<String, Object> jsonMap = new HashMap<String, Object>();

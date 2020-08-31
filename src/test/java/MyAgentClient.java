@@ -1,9 +1,13 @@
 import java.net.URI;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
@@ -73,6 +77,25 @@ public class MyAgentClient {
         incomingJsonMapReceived = new CompletableFuture<Map<String, Object>>();
         return incomingJsonMapReceived;
     }
+    public Map<String,Object> waitNextJsonMap() {
+    	CompletableFuture<Map<String, Object>> received = waitNextIncomingTextMessage();
+    	Map<String, Object> jsonMap;
+		try {
+			jsonMap = received.get(2, SECONDS);
+	    	return jsonMap;
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+    }
+    public String waitNextKey(String key) {
+    	Map<String, Object> jsonMap = waitNextJsonMap();
+    	return (String)jsonMap.get(key);
+    }
+    public String waitNextAction() {
+    	return waitNextKey("action");
+    }
     public void sendChatMessage(String conversationid, String chatMessage) {
         Map<String, Object> jsonMap = new HashMap<String, Object>();
         jsonMap.put("action", "sendChatMessage");
@@ -135,6 +158,22 @@ public class MyAgentClient {
     public void stopTyping(String conversationid) {
         Map<String, Object> jsonMap = new HashMap<String, Object>();
         jsonMap.put("action", "stopTyping");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("conversationid", conversationid);
+        sendMessage(webSocketSession, jsonMap);
+    }
+    public void inviteConference(MyAgentClient agent2, String conversationid) {
+    	String targetAgentid = agent2.agentid;
+    	Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "inviteConference");
+        jsonMap.put("agentid", agentid);
+        jsonMap.put("targetAgentid", targetAgentid);
+        jsonMap.put("conversationid", conversationid);
+        sendMessage(webSocketSession, jsonMap);
+    }
+    public void acceptInvite(String conversationid) {
+    	Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "acceptedInvite");
         jsonMap.put("agentid", agentid);
         jsonMap.put("conversationid", conversationid);
         sendMessage(webSocketSession, jsonMap);

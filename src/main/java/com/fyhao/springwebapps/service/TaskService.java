@@ -251,11 +251,18 @@ public class TaskService {
         if(!invitedAgent.equals(agentid)) {
         	return 107;
         }
-        List<String> activeAgentList = Arrays.asList(activeAgents);
+        List<String> activeAgentList = new ArrayList<String>(Arrays.asList(activeAgents));
         activeAgentList.add(agentid);
         conversation.saveContext("activeAgents", joinString(activeAgentList));
         conversation.saveContext("invitedAgent", "");
         conversationRepository.save(conversation);
+        Task task = conversation.getTask();
+        Map<String,Object> contexts = new HashMap<String,Object>();
+        for(Context context : conversation.getContexts()) {
+        	contexts.put(context.getKey(), context.getValue());
+        }
+        AgentSocketHandler.sendAgentIncomingTaskEvent(agentid, conversation.getId().toString(), task.getId().toString(), contexts);
+        ChannelSocketHandler.sendAgentJoinedEvent(agentid, conversation.getId().toString());
         return 0;
     }
     public int bargeinConversation(String agentid, String conversationid) {
