@@ -69,12 +69,12 @@ public class TestingWebApplicationTests {
     	//testhotelbotusecase();
     	//testwebsocketconnectionforcustomer();
     	//testwebsocketconnectionforagent();
-    	//testagentprofileservice();
+    	testagentprofileservice();
 
-    	//testqueuemaxlimitreached();
-    	//testqueuepriority();
+    	testqueuemaxlimitreached();
+    	testqueuepriority();
 
-    	//testbargeinConversation();
+    	testbargeinConversation();
     	testsimplifiedwebsocketclient();
     	testmaxconcurrenttask();
     	testtransfertasktoanotheragent();
@@ -618,6 +618,7 @@ public class TestingWebApplicationTests {
         else {
             hasError = true;
         }
+        customerIncomingReceived = customer.waitNextIncomingTextMessage();
         jsonMap = incomingReceived.get(2, SECONDS);
         String agentConversationid = null;
         if(jsonMap.get("action").equals("incomingTask")) { 
@@ -626,7 +627,6 @@ public class TestingWebApplicationTests {
         else {
             hasError = true;
         }
-        customerIncomingReceived = customer.waitNextIncomingTextMessage();
         jsonMap = customerIncomingReceived.get(2, SECONDS);
         if (jsonMap.get("action").equals("agentJoined")) {
             String joinedAgentid = (String)jsonMap.get("agentid");
@@ -675,8 +675,10 @@ public class TestingWebApplicationTests {
             futureTestCompletion.complete("completed");
         }
         // housekeeping cleanup, need to unregister agent to avoid affect other test case
+       
         agent.setAgentStatus(AgentTerminal.NOT_READY);
         agent.unregisterAgentSesssion();
+        customer.unregisterAgentSesssion();
         // hold and wait
         assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");
     }
@@ -917,7 +919,7 @@ public class TestingWebApplicationTests {
         jsonMap = incomingReceived2.get(2, SECONDS);
         // chatMessageReceived for agent
         String agentConversationid = (String) jsonMap.get("conversationid");
-        
+        System.out.println("agentConversationid for agent2: " + agentConversationid);
         // Check agent tasks
         assertThat(agent.taskidList.size()).isEqualTo(0);
         assertThat(agent2.taskidList.size()).isEqualTo(1);
@@ -930,7 +932,7 @@ public class TestingWebApplicationTests {
         jsonMap = incomingReceived.get(2, SECONDS);
         incomingReceived = agent.waitNextIncomingTextMessage();
         agent2.requestTransferToAgent(agent, agent2.taskidList.get(0));
-        jsonMap = incomingReceived.get(2, SECONDS);
+        jsonMap = incomingReceived.get(5, SECONDS);
         assertThat((String)jsonMap.get("action")).contains("incomingTask");
         assertThat(getagentactivetaskscount(agent.agentid)).contains("1");
         assertThat(getagentactivetaskscount(agent2.agentid)).contains("0");
@@ -1103,7 +1105,7 @@ public class TestingWebApplicationTests {
          customer2.sendChatMessage("do you know about abcde? urgent");
          agent.setAgentStatus(AgentTerminal.READY);
          customerIncomingReceived2 = customer2.waitNextIncomingTextMessage();
-         jsonMap = customerIncomingReceived2.get(2, SECONDS);
+         jsonMap = customerIncomingReceived2.get(5, SECONDS);
          if (jsonMap.get("action").equals("chatMessageReceived")) {
              String content = (String) jsonMap.get("content");
              if(!content.equals("Sorry I am not understand. Will handover to agent.")) {
@@ -1334,6 +1336,7 @@ public class TestingWebApplicationTests {
          agent.unregisterAgentSesssion();
          agent2.setAgentStatus(AgentTerminal.NOT_READY);
          agent2.unregisterAgentSesssion();
+         customer.unregisterAgentSesssion();
          
          // hold and wait
          assertThat(futureTestCompletion.get(2, SECONDS)).contains("completed");

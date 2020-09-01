@@ -210,9 +210,7 @@ public class AgentProfileService {
     		QueueService.cqueueList.clear();
         	QueueService.listOfQueues.clear();
         	for(Agent agent : agentRepository.findAll()) {
-        		for(Skill skill : agent.getAgentSkills()) {
-        			agent.getAgentSkills().remove(skill);
-        		}
+        		agent.getAgentSkills().clear();
         		while(agent.getTasks().size() > 0) {
         			agent.getTasks().get(0).setAgent(null);
         			agent.getTasks().remove(0);

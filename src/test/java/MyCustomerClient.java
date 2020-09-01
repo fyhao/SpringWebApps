@@ -96,6 +96,16 @@ public class MyCustomerClient {
         jsonMap.put("serverport", port);
         sendMessage(webSocketSession, jsonMap);
     }
+    public void unregisterAgentSesssion() {
+        Map<String, Object> jsonMap = new HashMap<String, Object>();
+        jsonMap.put("action", "unregister");
+        jsonMap.put("serverport", port);
+        sendMessage(webSocketSession, jsonMap);
+        
+        try {
+        	Thread.sleep(1000);
+        } catch (Exception ex) {}
+    }
     public void startTyping() {
         Map<String, Object> jsonMap = new HashMap<String, Object>();
         jsonMap.put("action", "startTyping");
