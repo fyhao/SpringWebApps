@@ -17,7 +17,6 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
-apply plugin: "war"
 apply plugin: "project-report"
 apply plugin: "com.github.jk1.dependency-license-report"
 apply plugin: 'org.owasp.dependencycheck'
@@ -56,11 +55,11 @@ dependencies {
     compile("org.webjars:stomp-websocket:2.3.3-1")
     compile("org.webjars:bootstrap:4.5.0")
     compile("org.webjars:jquery:3.5.1")
-    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat:2.3.3.RELEASE'
     testImplementation('org.springframework.boot:spring-boot-starter-test:2.3.3.RELEASE') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
-	providedRuntime("org.apache.tomcat.embed:tomcat-embed-jasper")
+	compile("javax.servlet:jstl")	
+	compile("org.apache.tomcat.embed:tomcat-embed-jasper")
 }
 
 test {
