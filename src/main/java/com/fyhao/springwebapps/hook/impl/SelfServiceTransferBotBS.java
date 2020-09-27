@@ -123,6 +123,14 @@ public class SelfServiceTransferBotBS implements BotServiceHook {
 			agentProfileService.assignAgentSkillAction(dto);
 			messagingService.sendBotMessage(id, "Assigned");
 		}
+		else if(input.startsWith("direct")) {
+			processBot(conversation, "addskill:car");
+			processBot(conversation, "assignskill:agent1:car");
+			processBot(conversation, "addqueue:car:10000:car:1000:10");
+			processBot(conversation, "queue:car");
+			processBot(conversation, "transfer");
+			
+		}
 		else {
 			messagingService.sendBotMessage(id, "Invalid command");
 		}

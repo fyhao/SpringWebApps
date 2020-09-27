@@ -44,6 +44,7 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
             session.getAttributes().put("serverport", serverport);
             String responseMessage = objectMapper.writeValueAsString(response);
             session.sendMessage(new TextMessage(responseMessage));
+            checkExistingMessageForCustomer(conversationid, serverport);
         }
         else if(jsonMap.get("action").equals("sendChatMessage")) {
             logger.info("ChannelSocketHandler customer to system sendChatMessage");
@@ -157,6 +158,13 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
         logger.info("ChannelSocketHandler sendCustomerStopTyping " + conversationid );
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getForObject("http://localhost:" + port + "/webchat/sendcustomerstoptyping?id=" + conversationid,
+                String.class);
+    }
+    //checkExistingMessageForCustomer(conversationid);
+    public void checkExistingMessageForCustomer(String conversationid, Integer port) {
+        logger.info("ChannelSocketHandler checkExistingMessageForCustomer " + conversationid );
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getForObject("http://localhost:" + port + "/webchat/checkexistingmessageforcustomer?id=" + conversationid,
                 String.class);
     }
 }

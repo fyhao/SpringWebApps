@@ -48,14 +48,21 @@ public class MessagingService {
             contact.setName(email);
             contactRepository.save(contact);
         }
-        Conversation conversation = new Conversation();
-        conversation.setContact(contact);
-        conversation.setStartTime(new Timestamp(new Date().getTime()));
-        conversation.setChannel(channel);
-        conversation.saveContext("state","bot");
-        conversation.addActivity("conversationStarted");
-        conversationRepository.save(conversation);
-        sendSystemMessage(conversation.getId().toString(), "Hi welcome " + contact.getEmail());
+        Conversation conversation = conversationRepository.findByContact_emailAndEndTimeIsNull(email);
+        if(conversation == null) {
+        	conversation = new Conversation();
+        	conversation.setContact(contact);
+            conversation.setStartTime(new Timestamp(new Date().getTime()));
+            conversation.setChannel(channel);
+            conversation.saveContext("state","bot");
+            conversation.addActivity("conversationStarted");
+            conversationRepository.save(conversation);
+            sendSystemMessage(conversation.getId().toString(), "Hi welcome " + contact.getEmail());
+            System.out.println("New conversation id: " + conversation.getId().toString());
+        }
+        else {
+        	System.out.println("Existing conversation id: " + conversation.getId().toString());
+        }
         return conversation.getId().toString();
     }
     public int sendSystemMessage(String conversation_id, String input) {
@@ -222,5 +229,22 @@ public class MessagingService {
         Conversation conv = conversation.get();
         Message message = conv.getMessages().get(conv.getMessages().size() - 1);
         return message.getContent();
+    }
+    public String checkExistingMessageForCustomer(String conversation_id) {
+        Optional<Conversation> conversation = conversationRepository.findById(UUID.fromString(conversation_id));
+        if(conversation.isEmpty()) {
+            return null;
+        }
+        Conversation conv = conversation.get();
+        if(!conv.getMessages().isEmpty()) {
+        	for(Message message : conv.getMessages()) {
+        		String messagebody = "";
+        		messagebody += "From: " + message.getFromparty() + " ";
+        		messagebody += "To: " + message.getToparty() + " ";
+        		messagebody += message.getContent();
+        		ChannelSocketHandler.sendChatMessageToCustomer(conversation_id, messagebody);
+        	}
+        }
+        return "0";
     }
 }

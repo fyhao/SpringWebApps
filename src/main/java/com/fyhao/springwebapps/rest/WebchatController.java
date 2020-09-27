@@ -100,4 +100,9 @@ public class WebchatController {
         logger.info("getlastmessagecontent");
         return messagingService.getLastMessageContent(id);
     }
+    @RequestMapping("/checkexistingmessageforcustomer")
+	public @ResponseBody String checkexistingmessageforcustomer(@RequestParam String id) {
+        logger.info("checkexistingmessageforcustomer");
+        return messagingService.checkExistingMessageForCustomer(id);
+    }
 }

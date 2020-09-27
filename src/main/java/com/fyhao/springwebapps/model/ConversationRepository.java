@@ -8,4 +8,5 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface ConversationRepository extends CrudRepository<Conversation, UUID> {
     
+	public Conversation findByContact_emailAndEndTimeIsNull(String email);
 }
