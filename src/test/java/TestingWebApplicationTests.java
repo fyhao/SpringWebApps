@@ -71,16 +71,16 @@ public class TestingWebApplicationTests {
     	//testwebsocketconnectionforagent();
     	testagentprofileservice();
 
-    	testqueuemaxlimitreached();
-    	testqueuepriority();
+    	//testqueuemaxlimitreached();
+    	//testqueuepriority();
 
     	testbargeinConversation();
-    	testsimplifiedwebsocketclient();
+    	//testsimplifiedwebsocketclient();
     	testmaxconcurrenttask();
     	testtransfertasktoanotheragent();
     	
     	testqueuemultiple();
-    	//testconference();
+    	testconference();
     }
     
     //@Test
@@ -619,7 +619,7 @@ public class TestingWebApplicationTests {
             hasError = true;
         }
         customerIncomingReceived = customer.waitNextIncomingTextMessage();
-        jsonMap = incomingReceived.get(2, SECONDS);
+        jsonMap = incomingReceived.get(5, SECONDS);
         String agentConversationid = null;
         if(jsonMap.get("action").equals("incomingTask")) { 
             agentConversationid = (String)jsonMap.get("conversationid");
@@ -717,6 +717,7 @@ public class TestingWebApplicationTests {
         jsonMap = customerIncomingReceived.get(2, SECONDS);
         incomingReceived = agent.waitNextIncomingTextMessage();
         customer.sendChatMessage("do you know about abcde?");
+        customer.waitNextMessage();
         customerIncomingReceived = customer.waitNextIncomingTextMessage();
         jsonMap = customerIncomingReceived.get(2, SECONDS);
         if (jsonMap.get("action").equals("chatMessageReceived")) {
@@ -742,7 +743,7 @@ public class TestingWebApplicationTests {
         jsonMap = customerIncomingReceived.get(2, SECONDS);
         // send message
         customer2.sendChatMessage("do you know about abcde?");
-        
+        customer2.waitNextMessage();
         // then wait 2nd time for chatMessageReceived
         customerIncomingReceived = customer2.waitNextIncomingTextMessage();
         jsonMap = customerIncomingReceived.get(2, SECONDS);
@@ -768,7 +769,7 @@ public class TestingWebApplicationTests {
         jsonMap = customerIncomingReceived.get(2, SECONDS);
         // send message
         customer3.sendChatMessage("do you know about abcde?");
-        
+        customer3.waitNextMessage();
         // then wait 2nd time for chatMessageReceived
         customerIncomingReceived = customer3.waitNextIncomingTextMessage();
         jsonMap = customerIncomingReceived.get(2, SECONDS);
@@ -794,7 +795,7 @@ public class TestingWebApplicationTests {
         jsonMap = customerIncomingReceived.get(2, SECONDS);
         // send message
         customer4.sendChatMessage("do you know about abcde?");
-        
+        customer4.waitNextMessage();
         // then wait 2nd time for chatMessageReceived
         customerIncomingReceived = customer4.waitNextIncomingTextMessage();
         jsonMap = customerIncomingReceived.get(6, SECONDS);
@@ -899,6 +900,7 @@ public class TestingWebApplicationTests {
         incomingReceived = agent.waitNextIncomingTextMessage();
         incomingReceived2 = agent2.waitNextIncomingTextMessage();
         customer.sendChatMessage("do you know about abcde?");
+        customer.waitNextMessage();
         customerIncomingReceived = customer.waitNextIncomingTextMessage();
         jsonMap = customerIncomingReceived.get(2, SECONDS);
         if (jsonMap.get("action").equals("chatMessageReceived")) {
@@ -1028,6 +1030,7 @@ public class TestingWebApplicationTests {
          jsonMap = customerIncomingReceived.get(2, SECONDS);
          incomingReceived = agent.waitNextIncomingTextMessage();
          customer.sendChatMessage("do you know about abcde?");
+         customer.waitNextMessage();
          customerIncomingReceived = customer.waitNextIncomingTextMessage();
          jsonMap = customerIncomingReceived.get(2, SECONDS);
          if (jsonMap.get("action").equals("chatMessageReceived")) {
@@ -1104,6 +1107,7 @@ public class TestingWebApplicationTests {
          try {Thread.sleep(100); } catch (Exception ex) {}
          customer2.sendChatMessage("do you know about abcde? urgent");
          agent.setAgentStatus(AgentTerminal.READY);
+         customer2.waitNextMessage();
          customerIncomingReceived2 = customer2.waitNextIncomingTextMessage();
          jsonMap = customerIncomingReceived2.get(5, SECONDS);
          if (jsonMap.get("action").equals("chatMessageReceived")) {
@@ -1154,7 +1158,7 @@ public class TestingWebApplicationTests {
 
              
              // create customer
-             String conversationid = createconversationwithchannel("fyhao1@gmail.com", "webchatselfservicetransfer");
+             String conversationid = createconversationwithchannel("fyhao" + i + "@gmail.com", "webchatselfservicetransfer");
              MyCustomerClient customer = new MyCustomerClient(this, conversationid);
              CompletableFuture<WebSocketSession> customerEstablished = customer.waitNextCustomerEstablishedEvent();
              customer.start();
@@ -1217,7 +1221,7 @@ public class TestingWebApplicationTests {
          //agent.setAgentStatus(AgentTerminal.READY);
          
          // create customer
-         String conversationid = createconversationwithchannel("fyhao1@gmail.com", "webchatselfservicetransfer");
+         String conversationid = createconversationwithchannel("fyhao9@gmail.com", "webchatselfservicetransfer");
          MyCustomerClient customer = new MyCustomerClient(this, conversationid);
          CompletableFuture<WebSocketSession> customerEstablished = customer.waitNextCustomerEstablishedEvent();
          customer.start();
@@ -1227,7 +1231,7 @@ public class TestingWebApplicationTests {
          jsonMap = customerIncomingReceived.get(2, SECONDS);
 
          incomingReceived = agent.waitNextIncomingTextMessage();
-         
+         customer.waitNextMessage();
          assertThat(customer.sendChatMessageWait("addskill:car")).contains("skill created");
          assertThat(customer.sendChatMessageWait("addqueue:car1:5000:car:10:5")).contains("queue is created");
          assertThat(customer.sendChatMessageWait("listqueue")).contains("car1");
@@ -1297,7 +1301,7 @@ public class TestingWebApplicationTests {
          //agent.setAgentStatus(AgentTerminal.READY);
          
          // create customer
-         String conversationid = createconversationwithchannel("fyhao1@gmail.com", "webchatselfservicetransfer");
+         String conversationid = createconversationwithchannel("fyhao111@gmail.com", "webchatselfservicetransfer");
          MyCustomerClient customer = new MyCustomerClient(this, conversationid);
          CompletableFuture<WebSocketSession> customerEstablished = customer.waitNextCustomerEstablishedEvent();
          customer.start();
@@ -1305,8 +1309,9 @@ public class TestingWebApplicationTests {
          customer.registerCustomerSession();
          CompletableFuture<Map<String,Object>> customerIncomingReceived = customer.waitNextIncomingTextMessage();
          jsonMap = customerIncomingReceived.get(2, SECONDS);
-
          incomingReceived = agent.waitNextIncomingTextMessage();
+         
+         customer.waitNextMessage();
          
          assertThat(customer.sendChatMessageWait("addskill:car")).contains("skill created");
          assertThat(customer.sendChatMessageWait("addqueue:car1:5000:car:10:5")).contains("queue is created");

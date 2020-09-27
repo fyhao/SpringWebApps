@@ -2,11 +2,11 @@ package com.fyhao.springwebapps.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -30,7 +30,7 @@ public class QueueService implements ApplicationListener<CustomEvent> {
     static List<QueueDto> queues = new ArrayList<QueueDto>();
     static Map<String, ArrayList<QueueDto>> listOfQueues = new HashMap<String, ArrayList<QueueDto>>();
     static List<Map<String, Object>> cqueueList = null;
-    
+    ReentrantLock lock = new ReentrantLock();
     @Autowired
     CQueueRepository cqueueRepository;
 	static {
@@ -52,6 +52,7 @@ public class QueueService implements ApplicationListener<CustomEvent> {
 	EventPublisher publisher;
 
 	public boolean addToQueue(Conversation conversation, String queueName) {
+		lock.lock();
 		QueueDto queue = new QueueDto();
 		queue.setConversation(conversation);
 		queue.setEnteredTime(new Date());
@@ -78,6 +79,7 @@ public class QueueService implements ApplicationListener<CustomEvent> {
     	conversation.addActivityWithSkill("conversationQueued", queueName);
     	conversationRepository.save(conversation);
     	publisher.publishEvent("conversationQueued");
+    	lock.unlock();
     	return true;
 	}
 	
@@ -215,8 +217,12 @@ public class QueueService implements ApplicationListener<CustomEvent> {
 
 	    return scheduler;
 	}
+	int locked = 0;
 	@Override
 	public void onApplicationEvent(CustomEvent event) {
+		System.out.println("onApplicationEvent:start:" + locked);
+		lock.lock();
+		locked++;
 		String[] checkQueueEvents = new String[] {"agentRegistered", "agentReady", "conversationQueued"};
 		if(Arrays.asList(checkQueueEvents).contains(event.getAction())) {
 			checkQueue();
@@ -225,5 +231,8 @@ public class QueueService implements ApplicationListener<CustomEvent> {
 		if(Arrays.asList(cqueueCreatedEvents).contains(event.getAction())) {
 			addcqueue(event.getProp());
 		}
+		locked--;
+		lock.unlock();
+		System.out.println("onApplicationEvent:end:" + locked);
 	}
 }
