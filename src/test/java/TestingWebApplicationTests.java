@@ -80,7 +80,7 @@ public class TestingWebApplicationTests {
     	testtransfertasktoanotheragent();
     	
     	testqueuemultiple();
-    	testconference();
+    	//testconference();
     }
     
     //@Test

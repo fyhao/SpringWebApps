@@ -81,7 +81,7 @@ public class MyAgentClient {
     	CompletableFuture<Map<String, Object>> received = waitNextIncomingTextMessage();
     	Map<String, Object> jsonMap;
 		try {
-			jsonMap = received.get(2, SECONDS);
+			jsonMap = received.get(5, SECONDS);
 	    	return jsonMap;
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
 			// TODO Auto-generated catch block
