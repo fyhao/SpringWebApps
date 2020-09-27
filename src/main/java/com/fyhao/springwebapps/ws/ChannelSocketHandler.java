@@ -2,17 +2,14 @@ package com.fyhao.springwebapps.ws;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.sql.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fyhao.springwebapps.service.MessagingService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.stereotype.Component;
@@ -21,6 +18,8 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class ChannelSocketHandler extends TextWebSocketHandler {
@@ -125,6 +124,9 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
         }
     }
     public static void sendChatMessageToCustomer(String conversationid, String message) {
+    	sendChatMessageToCustomer(conversationid, message, new java.util.Date());
+    }
+    public static void sendChatMessageToCustomer(String conversationid, String message, java.util.Date date) {
         logger.info("ChannelSocketHandler.sendChatMessageToCustomer " + conversationid + " - " + message);
         ObjectMapper objectMapper = new ObjectMapper();
         for(WebSocketSession session : sessions) {
@@ -134,6 +136,7 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
                 response.put("action", "chatMessageReceived");
                 response.put("conversationid", conversationid);
                 response.put("content", message);
+                response.put("senttime", date.toString());
                 try {
                     String responseMessage = objectMapper.writeValueAsString(response);
                     session.sendMessage(new TextMessage(responseMessage));

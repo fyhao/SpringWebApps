@@ -30,7 +30,11 @@ $(function() {
 			on('chatwidget.newmessage.' + me.requestid, function(evt) {
 				var content = evt.content;
 				var fromparty = evt.fromparty;
-				$(div).append(fromparty + ': ' + content + ' - ' + new Date().toString() + '<br />');
+				var senttime = evt.senttime;
+				if(senttime == null) {
+					senttime = new Date().toString();
+				}
+				$(div).append(fromparty + ': ' + content + ' - ' + senttime + '<br />');
 			});
 		};
 		function renderChatInputBar(con) {

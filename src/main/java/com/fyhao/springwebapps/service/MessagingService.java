@@ -242,7 +242,7 @@ public class MessagingService {
         		messagebody += "From: " + message.getFromparty() + " ";
         		messagebody += "To: " + message.getToparty() + " ";
         		messagebody += message.getContent();
-        		ChannelSocketHandler.sendChatMessageToCustomer(conversation_id, messagebody);
+        		ChannelSocketHandler.sendChatMessageToCustomer(conversation_id, messagebody, message.getCreatedTime());
         	}
         }
         return "0";
