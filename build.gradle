@@ -51,7 +51,7 @@ dependencies {
     compile group: 'org.apache.tomcat', name: 'tomcat-dbcp', version: '10.0.5'
     compile("org.springframework.boot:spring-boot-starter-websocket:2.3.3.RELEASE")
     compile("org.webjars:webjars-locator-core")
-    compile("org.webjars:sockjs-client:1.1.2")
+    compile("org.webjars:sockjs-client:1.5.1")
     compile("org.webjars:stomp-websocket:2.3.4")
     compile("org.webjars:bootstrap:4.5.2")
     compile("org.webjars:jquery:3.5.1")
