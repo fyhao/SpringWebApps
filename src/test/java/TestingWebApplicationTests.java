@@ -68,19 +68,19 @@ public class TestingWebApplicationTests {
     	//testconversation();
     	//testhotelbotusecase();
     	//testwebsocketconnectionforcustomer();
-    	//testwebsocketconnectionforagent();
+    	testwebsocketconnectionforagent();
     	testagentprofileservice();
 
     	//testqueuemaxlimitreached();
     	//testqueuepriority();
 
-    	testbargeinConversation();
+    	//testbargeinConversation();
     	//testsimplifiedwebsocketclient();
-    	testmaxconcurrenttask();
-    	testtransfertasktoanotheragent();
+    	//testmaxconcurrenttask();
+    	//testtransfertasktoanotheragent();
     	
-    	testqueuemultiple();
-    	testconference();
+    	//testqueuemultiple();
+    	//testconference();
     }
     
     //@Test
