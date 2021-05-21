@@ -6,7 +6,7 @@ buildscript {
 		}
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.4.5")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.5.0")
         classpath "com.github.jk1:gradle-license-report:1.16"
         classpath 'org.owasp:dependency-check-gradle:6.1.6'
     }
