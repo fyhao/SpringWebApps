@@ -41,9 +41,9 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-data-jpa:2.5.0")
     compile("org.springframework.boot:spring-boot-starter-data-rest:2.4.5")
     compile("com.h2database:h2:1.4.200")
-    compile group: 'org.modelmapper', name: 'modelmapper', version: '2.4.3'
+    compile group: 'org.modelmapper', name: 'modelmapper', version: '2.4.4'
     compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '9.3.1.jre8-preview'
-    compile group: 'org.modelmapper', name: 'modelmapper', version: '2.4.3'
+    compile group: 'org.modelmapper', name: 'modelmapper', version: '2.4.4'
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
     compile group: 'com.sun.xml.bind', name: 'jaxb-core', version: '3.0.1'
     compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '3.0.1'
