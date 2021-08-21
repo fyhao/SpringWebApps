@@ -39,7 +39,7 @@ dependencies {
 	  compile("org.springframework.boot:spring-boot-starter-web:2.5.4")
 	  compile 'org.springframework.boot:spring-boot-starter-log4j2:2.5.2'
     compile("org.springframework.boot:spring-boot-starter-data-jpa:2.5.4")
-    compile("org.springframework.boot:spring-boot-starter-data-rest:2.5.2")
+    compile("org.springframework.boot:spring-boot-starter-data-rest:2.5.4")
     compile("com.h2database:h2:1.4.200")
     compile group: 'org.modelmapper', name: 'modelmapper', version: '2.4.4'
     compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '9.4.0.jre8'
