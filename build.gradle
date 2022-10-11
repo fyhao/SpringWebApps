@@ -48,7 +48,7 @@ dependencies {
     compile group: 'com.sun.xml.bind', name: 'jaxb-core', version: '3.0.2'
     compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '3.0.2'
     compile group: 'javax.activation', name: 'activation', version: '1.1.1'
-    compile group: 'org.apache.tomcat', name: 'tomcat-dbcp', version: '10.0.11'
+    compile group: 'org.apache.tomcat', name: 'tomcat-dbcp', version: '10.1.1'
     compile("org.springframework.boot:spring-boot-starter-websocket:2.5.5")
     compile("org.webjars:webjars-locator-core")
     compile("org.webjars:sockjs-client:1.5.1")
