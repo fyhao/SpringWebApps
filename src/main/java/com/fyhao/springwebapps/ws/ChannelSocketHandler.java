@@ -147,8 +147,8 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
     public void sendCustomerMessage(String conversationid, String message, Integer port) {
         logger.info("ChannelSocketHandler sendCustomerMessage " + conversationid + " - " + message);
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=" + URLEncoder.encode(message),
-                String.class);
+        restTemplate.postForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=" + URLEncoder.encode(message),
+                null, String.class);
     }
     //sendCustomerStartTyping
     public void sendCustomerStartTyping(String conversationid, Integer port) {

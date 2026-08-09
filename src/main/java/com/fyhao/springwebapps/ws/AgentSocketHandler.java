@@ -25,7 +25,10 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fyhao.springwebapps.dto.AgentProfileDto;
+import com.fyhao.springwebapps.dto.CloseTaskDto;
 import com.fyhao.springwebapps.dto.ContextDto;
+import com.fyhao.springwebapps.dto.RequestTransferToAgentDto;
+import com.fyhao.springwebapps.dto.RequestTransferToSkillDto;
 @Component
 public class AgentSocketHandler extends TextWebSocketHandler {
     static Logger logger = LoggerFactory.getLogger(AgentSocketHandler.class);
@@ -236,8 +239,8 @@ public class AgentSocketHandler extends TextWebSocketHandler {
     }
     private void sendAgentMessage(String conversationid, String agentname, String input, Integer port) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getForObject("http://localhost:" + port + "/webchat/sendagentmessage?id=" + conversationid + "&agentname=" + agentname + "&input=" + URLEncoder.encode(input),
-                String.class);
+        restTemplate.postForObject("http://localhost:" + port + "/webchat/sendagentmessage?id=" + conversationid + "&agentname=" + agentname + "&input=" + URLEncoder.encode(input),
+                null, String.class);
     }
 
 
@@ -296,7 +299,7 @@ public class AgentSocketHandler extends TextWebSocketHandler {
     ///closetask(agentid, taskid, serverport);
     private String closetask(String agentid, String taskid, Integer port) {
         RestTemplate restTemplate = new RestTemplate();
-        AgentProfileDto dto = new AgentProfileDto();
+        CloseTaskDto dto = new CloseTaskDto();
         dto.setName(agentid);
         dto.setTaskid(taskid);
         HttpHeaders headers = new HttpHeaders();
@@ -314,7 +317,7 @@ public class AgentSocketHandler extends TextWebSocketHandler {
     }
     private String requestTransferToAgent(String agentid, String targetAgentid, String taskid, Integer port) {
         RestTemplate restTemplate = new RestTemplate();
-        AgentProfileDto dto = new AgentProfileDto();
+        RequestTransferToAgentDto dto = new RequestTransferToAgentDto();
         dto.setName(agentid);
         dto.setTaskid(taskid);
         dto.setTargetagentid(targetAgentid);
@@ -333,7 +336,7 @@ public class AgentSocketHandler extends TextWebSocketHandler {
     }
     private String requestTransferToSkill(String agentid, String targetSkill, String taskid, Integer port) {
         RestTemplate restTemplate = new RestTemplate();
-        AgentProfileDto dto = new AgentProfileDto();
+        RequestTransferToSkillDto dto = new RequestTransferToSkillDto();
         dto.setName(agentid);
         dto.setTaskid(taskid);
         dto.setTargetskill(targetSkill);
@@ -445,4 +448,3 @@ public class AgentSocketHandler extends TextWebSocketHandler {
         return resp.getBody();
     }
 }
-    

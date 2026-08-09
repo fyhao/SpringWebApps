@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,24 +25,24 @@ public class WebchatController {
         logger.info("Greeting");
 		return "Hello, World 1";
     }
-    @RequestMapping("/createconversation")
+    @PostMapping("/createconversation")
 	public @ResponseBody String createconversation(@RequestParam String email) {
         logger.info("createconversation");
         return messagingService.createConversation(email);
     }
-    @RequestMapping("/createconversationwithchannel")
+    @PostMapping("/createconversationwithchannel")
 	public @ResponseBody String createconversationwithchannel(@RequestParam String email, @RequestParam String channel) {
         logger.info("createconversationwithchannel");
         return messagingService.createConversation(email, channel);
     }
-    @RequestMapping("/sendmessage")
+    @PostMapping("/sendmessage")
 	public @ResponseBody String sendmessage(@RequestParam String id, @RequestParam String input) {
         input = URLDecoder.decode(input);
         logger.info("sendmessage");
         messagingService.sendCustomerMessage(id, input);
 		return "0";
     }
-    @RequestMapping("/sendagentmessage")
+    @PostMapping("/sendagentmessage")
 	public @ResponseBody String sendagentmessage(@RequestParam String id, @RequestParam String agentname, @RequestParam String input) {
         logger.info("sendagentmessage");
         input = URLDecoder.decode(input);
