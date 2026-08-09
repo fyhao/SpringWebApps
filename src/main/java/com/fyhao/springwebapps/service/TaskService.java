@@ -38,6 +38,8 @@ public class TaskService {
     AgentTerminalService agentTerminalService;
     @Autowired
     ConversationRepository conversationRepository;
+    @Autowired
+    EventPublisher eventPublisher;
     public int assignTask(Conversation conversation, String agentid) {
         logger.info("TaskService assignTask " + conversation.getId().toString() + " " + agentid);
         Agent agent = agentRepository.findByName(agentid);
@@ -86,6 +88,7 @@ public class TaskService {
         conversationRepository.save(task.getConversation());
         task.setStatus("Closed");
         taskRepository.save(task);
+        eventPublisher.publishEvent("agentAvailable");
         AgentSocketHandler.sendAgentTaskClosedEvent(agentid, taskid);
     	logger.info("TaskService closeTask success " + agentid + " " + taskid);
         return 0;
