@@ -37,10 +37,16 @@ public class MessagingService {
     @Autowired
     ChatService chatService;
 
+    @Autowired
+    BotService botService;
+
     public String createConversation(String email) {
         return createConversation(email, "webchat");
     }
     public String createConversation(String email, String channel) {
+        return createConversation(email, channel, null, true);
+    }
+    public String createConversation(String email, String channel, String botName, boolean botEnabled) {
         Contact contact = contactRepository.findByEmail(email);
         if(contact == null) {
             contact = new Contact();
@@ -56,6 +62,7 @@ public class MessagingService {
             conversation.setStartTime(new Timestamp(new Date().getTime()));
             conversation.setChannel(channel);
             conversation.saveContext("state","bot");
+            botService.configureConversation(conversation, botName, botEnabled);
             conversation.addActivity("conversationStarted");
             conversationRepository.save(conversation);
             sendSystemMessage(conversation.getId().toString(), "Hi welcome " + contact.getEmail());

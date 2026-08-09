@@ -31,9 +31,11 @@ public class WebchatController {
         return messagingService.createConversation(email);
     }
     @PostMapping("/createconversationwithchannel")
-	public @ResponseBody String createconversationwithchannel(@RequestParam String email, @RequestParam String channel) {
+	public @ResponseBody String createconversationwithchannel(@RequestParam String email, @RequestParam String channel,
+            @RequestParam(required = false) String bot,
+            @RequestParam(defaultValue = "true") boolean botEnabled) {
         logger.info("createconversationwithchannel");
-        return messagingService.createConversation(email, channel);
+        return messagingService.createConversation(email, channel, bot, botEnabled);
     }
     @PostMapping("/sendmessage")
 	public @ResponseBody String sendmessage(@RequestParam String id, @RequestParam String input) {
