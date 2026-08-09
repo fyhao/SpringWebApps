@@ -1,6 +1,9 @@
 package com.fyhao.springwebapps.rest;
 
 import com.fyhao.springwebapps.dto.AgentProfileDto;
+import com.fyhao.springwebapps.dto.CloseTaskDto;
+import com.fyhao.springwebapps.dto.RequestTransferToAgentDto;
+import com.fyhao.springwebapps.dto.RequestTransferToSkillDto;
 import com.fyhao.springwebapps.dto.AgentSkillDto;
 import com.fyhao.springwebapps.dto.SkillDto;
 import com.fyhao.springwebapps.entity.Agent;
@@ -22,23 +25,26 @@ import org.springframework.web.bind.annotation.RestController;
 public class TaskController {
     static Logger logger = LoggerFactory.getLogger(TaskController.class);
 
-    @Autowired
-    TaskService taskService;
+    private final TaskService taskService;
+
+    public TaskController(TaskService taskService) {
+        this.taskService = taskService;
+    }
     
     @RequestMapping(method= RequestMethod.POST, value = "/closetask", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public @ResponseBody String closetask(@RequestBody AgentProfileDto dto) {
+    public @ResponseBody String closetask(@RequestBody CloseTaskDto dto) {
         logger.info("TaskController closetask " + dto.getName() + " " + dto.getTaskid());
         taskService.closeTask(dto.getName(), dto.getTaskid());
         return "0";
     }
     @RequestMapping(method= RequestMethod.POST, value = "/requesttransfertoagent", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public @ResponseBody String requesttransfertoagent(@RequestBody AgentProfileDto dto) {
+    public @ResponseBody String requesttransfertoagent(@RequestBody RequestTransferToAgentDto dto) {
         logger.info("TaskController requesttransfertoagent " + dto.getName() + " " + dto.getTaskid() + " " + dto.getTargetagentid());
         taskService.requestTransferToAgent(dto.getName(), dto.getTaskid(), dto.getTargetagentid());
         return "0";
     }
     @RequestMapping(method= RequestMethod.POST, value = "/requesttransfertoskill", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public @ResponseBody String requesttransfertoskill(@RequestBody AgentProfileDto dto) {
+    public @ResponseBody String requesttransfertoskill(@RequestBody RequestTransferToSkillDto dto) {
         logger.info("TaskController requesttransfertoskill " + dto.getName() + " " + dto.getTaskid() + " " + dto.getTargetskill());
         taskService.requestTransferToSkill(dto.getName(), dto.getTaskid(), dto.getTargetskill());
         return "0";

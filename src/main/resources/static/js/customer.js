@@ -18,7 +18,6 @@ $(function() {
 	    };
 	};
 	function sendWSMessage(json) {
-		json.serverport = serverport;
 		ws.send(JSON.stringify(json));
 	};
 	function sendRestRequest(opts) {
@@ -37,7 +36,7 @@ $(function() {
 		var email = evt.email;
 		var channel = evt.channel;
 		sendRestRequest({
-			method : "GET",
+			method : "POST",
 			path : "/webchat/createconversationwithchannel?email=" + email + "&channel=" + channel,
 			success : function(conversationid) {
 				initWS(conversationid);
@@ -47,8 +46,7 @@ $(function() {
 	on('register', function(opts) {
 		var json = {
 			action : 'register',
-			conversationid : opts.conversationid,
-			serverport: serverport
+			conversationid : opts.conversationid
 		};
 		sendWSMessage(json);
 	});

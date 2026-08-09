@@ -5,9 +5,7 @@ import java.io.Serializable;
 public class AgentProfileDto implements Serializable {
     String name;
     String status;
-    String taskid;
     String targetagentid;
-    String targetskill;
     String conversationid;
     int maxconcurrenttask;
 
@@ -27,14 +25,6 @@ public class AgentProfileDto implements Serializable {
         this.status = status;
     }
 
-	public String getTaskid() {
-		return taskid;
-	}
-
-	public void setTaskid(String taskid) {
-		this.taskid = taskid;
-	}
-
 	public String getTargetagentid() {
 		return targetagentid;
 	}
@@ -42,14 +32,6 @@ public class AgentProfileDto implements Serializable {
 	public void setTargetagentid(String targetagentid) {
 		this.targetagentid = targetagentid;
 	}
-
-    public String getTargetskill() {
-        return targetskill;
-    }
-
-    public void setTargetskill(String targetskill) {
-        this.targetskill = targetskill;
-    }
 
     public String getConversationid() {
         return conversationid;
