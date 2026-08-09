@@ -1,0 +1,15 @@
+{
+  "name": "SpringWebApps Demo",
+  "description": "Spring Boot contact-centre and web-chat demonstration",
+  "buildpacks": [
+    {
+      "url": "heroku/gradle"
+    }
+  ],
+  "env": {
+    "JAVA_TOOL_OPTIONS": {
+      "description": "JVM runtime options",
+      "value": "-XX:MaxRAMPercentage=75.0"
+    }
+  }
+}

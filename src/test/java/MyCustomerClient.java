@@ -93,13 +93,11 @@ public class MyCustomerClient {
         Map<String, Object> jsonMap = new HashMap<String, Object>();
         jsonMap.put("action", "register");
         jsonMap.put("conversationid", conversationid);
-        jsonMap.put("serverport", port);
         sendMessage(webSocketSession, jsonMap);
     }
     public void unregisterAgentSesssion() {
         Map<String, Object> jsonMap = new HashMap<String, Object>();
         jsonMap.put("action", "unregister");
-        jsonMap.put("serverport", port);
         sendMessage(webSocketSession, jsonMap);
         
         try {

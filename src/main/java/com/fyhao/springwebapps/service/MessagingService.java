@@ -9,6 +9,7 @@ import com.fyhao.springwebapps.entity.Contact;
 import com.fyhao.springwebapps.entity.Conversation;
 import com.fyhao.springwebapps.entity.Message;
 import com.fyhao.springwebapps.entity.Task;
+import com.fyhao.springwebapps.dto.ConversationMessage;
 import com.fyhao.springwebapps.model.ContactRepository;
 import com.fyhao.springwebapps.model.ConversationRepository;
 import com.fyhao.springwebapps.model.MessageRepository;
@@ -36,10 +37,16 @@ public class MessagingService {
     @Autowired
     ChatService chatService;
 
+    @Autowired
+    BotService botService;
+
     public String createConversation(String email) {
         return createConversation(email, "webchat");
     }
     public String createConversation(String email, String channel) {
+        return createConversation(email, channel, null, true);
+    }
+    public String createConversation(String email, String channel, String botName, boolean botEnabled) {
         Contact contact = contactRepository.findByEmail(email);
         if(contact == null) {
             contact = new Contact();
@@ -55,6 +62,7 @@ public class MessagingService {
             conversation.setStartTime(new Timestamp(new Date().getTime()));
             conversation.setChannel(channel);
             conversation.saveContext("state","bot");
+            botService.configureConversation(conversation, botName, botEnabled);
             conversation.addActivity("conversationStarted");
             conversationRepository.save(conversation);
             sendSystemMessage(conversation.getId().toString(), "Hi welcome " + contact.getEmail());
@@ -64,6 +72,14 @@ public class MessagingService {
         	System.out.println("Existing conversation id: " + conversation.getId().toString());
         }
         return conversation.getId().toString();
+    }
+    public String receiveMessage(ConversationMessage message) {
+        String conversationId = createConversation(message.getFrom(), message.getChannel());
+        int result = sendCustomerMessage(conversationId, message.getContent());
+        if(result != 0) {
+            throw new IllegalStateException("Unable to route inbound message to conversation " + conversationId);
+        }
+        return conversationId;
     }
     public int sendSystemMessage(String conversation_id, String input) {
         Optional<Conversation> conv = conversationRepository.findById(UUID.fromString(conversation_id));

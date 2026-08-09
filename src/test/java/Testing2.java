@@ -287,24 +287,24 @@ public class Testing2 {
                 String.class);
     }
     private String setmaxconcurrenttaskofagent(String agent, int maxconcurrenttask) {
-        return this.restTemplate.getForObject("http://localhost:" + port + "/agentprofile/setmaxconcurrenttaskofagent?agentname=" + agent + "&maxconcurrenttask=" + maxconcurrenttask,
-                String.class);
+        return this.restTemplate.postForObject("http://localhost:" + port + "/agentprofile/setmaxconcurrenttaskofagent?agentname=" + agent + "&maxconcurrenttask=" + maxconcurrenttask,
+                null, String.class);
     }
     private String createconversation(String email) {
-        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversation?email=" + email,
-                String.class);
+        return this.restTemplate.postForObject("http://localhost:" + port + "/webchat/createconversation?email=" + email,
+                null, String.class);
     }
     private String createconversationwithchannel(String email, String channel) {
-        return this.restTemplate.getForObject("http://localhost:" + port + "/webchat/createconversationwithchannel?email=" + email + "&channel=" + channel,
-                String.class);
+        return this.restTemplate.postForObject("http://localhost:" + port + "/webchat/createconversationwithchannel?email=" + email + "&channel=" + channel,
+                null, String.class);
     }
     private void sendmessage(String conversationid, String input) {
-        this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=" + input,
-                String.class);
+        this.restTemplate.postForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=" + input,
+                null, String.class);
     }
     private void sendagentmessage(String conversationid, String agentname, String input) {
-        this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendagentmessage?id=" + conversationid + "&agentname=" + agentname + "&input=" + input,
-                String.class);
+        this.restTemplate.postForObject("http://localhost:" + port + "/webchat/sendagentmessage?id=" + conversationid + "&agentname=" + agentname + "&input=" + input,
+                null, String.class);
     }
     private void sendbotmessage(String conversationid, String input) {
         this.restTemplate.getForObject("http://localhost:" + port + "/webchat/sendbotmessage?id=" + conversationid + "&input=" + input,

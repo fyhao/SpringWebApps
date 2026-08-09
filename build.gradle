@@ -6,9 +6,9 @@ buildscript {
 		}
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.5.5")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:3.0.4")
         classpath "com.github.jk1:gradle-license-report:2.0"
-        classpath 'org.owasp:dependency-check-gradle:6.3.1'
+        classpath 'org.owasp:dependency-check-gradle:8.1.2'
     }
 }
 
@@ -17,56 +17,76 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'war'
+apply plugin: 'jacoco'
 apply plugin: "project-report"
 apply plugin: "com.github.jk1.dependency-license-report"
 apply plugin: 'org.owasp.dependencycheck'
 
 bootJar {
-    baseName = 'SpringWebApps'
-    version = '0.1.0'
+    enabled = false
+}
+
+bootWar {
+    archiveBaseName = 'SpringWebApps'
+    archiveVersion = '0.1.0'
 }
 
 repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 11
-targetCompatibility = 11
+sourceCompatibility = 17
+targetCompatibility = 17
 
 dependencies {
-    compile group: 'com.lmax', name: 'disruptor', version:'3.4.4'
+    implementation group: 'com.lmax', name: 'disruptor', version:'3.4.4'
     compileOnly("org.springframework.boot:spring-boot-devtools")
-	  compile("org.springframework.boot:spring-boot-starter-web:2.5.5")
-	  compile 'org.springframework.boot:spring-boot-starter-log4j2:2.5.5'
-    compile("org.springframework.boot:spring-boot-starter-data-jpa:2.5.5")
-    compile("org.springframework.boot:spring-boot-starter-data-rest:2.5.5")
-    compile("com.h2database:h2:1.4.200")
-    compile group: 'org.modelmapper', name: 'modelmapper', version: '2.4.4'
-    compile group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '9.4.0.jre8'
-    compile group: 'org.modelmapper', name: 'modelmapper', version: '2.4.4'
-    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-    compile group: 'com.sun.xml.bind', name: 'jaxb-core', version: '3.0.2'
-    compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '3.0.2'
-    compile group: 'javax.activation', name: 'activation', version: '1.1.1'
-    compile group: 'org.apache.tomcat', name: 'tomcat-dbcp', version: '10.0.11'
-    compile("org.springframework.boot:spring-boot-starter-websocket:3.0.4")
-    compile("org.webjars:webjars-locator-core")
-    compile("org.webjars:sockjs-client:1.5.1")
-    compile("org.webjars:stomp-websocket:2.3.4")
-    compile("org.webjars:bootstrap:5.1.1")
-    compile("org.webjars:jquery:3.6.0")
-    testImplementation('org.springframework.boot:spring-boot-starter-test:2.5.5') {
+	  implementation("org.springframework.boot:spring-boot-starter-web:3.0.4")
+	  implementation 'org.springframework.boot:spring-boot-starter-log4j2:3.0.4'
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.0.4")
+    implementation("org.springframework.boot:spring-boot-starter-data-rest:3.0.4")
+    implementation("com.h2database:h2:2.1.214")
+    implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.4.4'
+    implementation group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '9.4.0.jre8'
+    implementation group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: '4.0.0'
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-core', version: '4.0.2'
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '4.0.2'
+    implementation group: 'jakarta.activation', name: 'jakarta.activation-api', version: '2.1.2'
+    implementation group: 'org.apache.tomcat', name: 'tomcat-dbcp', version: '10.1.7'
+    implementation("org.springframework.boot:spring-boot-starter-websocket:3.0.4")
+    implementation("org.webjars:webjars-locator-core")
+    implementation("org.webjars:sockjs-client:1.5.1")
+    implementation("org.webjars:stomp-websocket:2.3.4")
+    implementation("org.webjars:bootstrap:5.2.3")
+    implementation("org.webjars:jquery:3.6.0")
+    testImplementation('org.springframework.boot:spring-boot-starter-test:3.0.4') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
-	compile("javax.servlet:jstl")	
-	compile("org.apache.tomcat.embed:tomcat-embed-jasper")
+	implementation("jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.0")
+	runtimeOnly("org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.1")
+	implementation("org.apache.tomcat.embed:tomcat-embed-jasper")
+    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat:3.0.4")
 }
 
 test {
 	useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }
 configurations {
 	all {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 	}
+}
+
+task stage {
+    dependsOn bootWar
 }
