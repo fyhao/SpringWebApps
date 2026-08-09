@@ -223,7 +223,7 @@ public class QueueService implements ApplicationListener<CustomEvent> {
 		System.out.println("onApplicationEvent:start:" + locked);
 		lock.lock();
 		locked++;
-		String[] checkQueueEvents = new String[] {"agentRegistered", "agentReady", "conversationQueued"};
+		String[] checkQueueEvents = new String[] {"agentRegistered", "agentReady", "agentAvailable", "conversationQueued"};
 		if(Arrays.asList(checkQueueEvents).contains(event.getAction())) {
 			checkQueue();
 		}

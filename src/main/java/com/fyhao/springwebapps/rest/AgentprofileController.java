@@ -86,7 +86,7 @@ public class AgentprofileController {
         logger.info("getmaxconcurrenttaskofagent");
 		return agentProfileService.getMaxConcurrentTaskOfAgent(agentname);
     }
-    @RequestMapping("/setmaxconcurrenttaskofagent")
+    @RequestMapping(method = RequestMethod.POST, value = "/setmaxconcurrenttaskofagent")
 	public @ResponseBody long setmaxconcurrenttaskofagent(@RequestParam String agentname, @RequestParam int maxconcurrenttask) {
         logger.info("setmaxconcurrenttaskofagent");
 		return agentProfileService.setMaxConcurrentTaskOfAgent(agentname, maxconcurrenttask);
