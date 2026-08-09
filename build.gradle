@@ -17,11 +17,17 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'war'
+apply plugin: 'jacoco'
 apply plugin: "project-report"
 apply plugin: "com.github.jk1.dependency-license-report"
 apply plugin: 'org.owasp.dependencycheck'
 
 bootJar {
+    enabled = false
+}
+
+bootWar {
     baseName = 'SpringWebApps'
     version = '0.1.0'
 }
@@ -60,13 +66,27 @@ dependencies {
 	}
 	compile("javax.servlet:jstl")	
 	compile("org.apache.tomcat.embed:tomcat-embed-jasper")
+    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat:2.5.5")
 }
 
 test {
 	useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
 }
 configurations {
 	all {
 		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 	}
+}
+
+task stage {
+    dependsOn bootWar
 }
