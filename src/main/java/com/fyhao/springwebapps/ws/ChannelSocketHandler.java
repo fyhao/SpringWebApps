@@ -1,8 +1,6 @@
 package com.fyhao.springwebapps.ws;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.sql.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,19 +11,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fyhao.springwebapps.service.MessagingService;
 
 @Component
 public class ChannelSocketHandler extends TextWebSocketHandler {
     static Logger logger = LoggerFactory.getLogger(ChannelSocketHandler.class);
 
     public static List<WebSocketSession> sessions = new CopyOnWriteArrayList<WebSocketSession>();
+    private final MessagingService messagingService;
+
+    public ChannelSocketHandler(MessagingService messagingService) {
+        this.messagingService = messagingService;
+    }
     
     public void handleTextMessage(WebSocketSession session, TextMessage message)
 			throws InterruptedException, IOException {
@@ -35,38 +38,33 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
         Map<String, Object> jsonMap = springParser.parseMap(message.getPayload());
         if(jsonMap.get("action").equals("register")) {
             String conversationid = (String)jsonMap.get("conversationid");
-            Integer serverport = (Integer)jsonMap.get("serverport");
             Map<String,Object> response = new HashMap<String,Object>();
             response.put("action", "connectionready");
             response.put("conversationid", conversationid);
             session.getAttributes().put("conversationid", conversationid);
-            session.getAttributes().put("serverport", serverport);
             String responseMessage = objectMapper.writeValueAsString(response);
             session.sendMessage(new TextMessage(responseMessage));
-            checkExistingMessageForCustomer(conversationid, serverport);
+            checkExistingMessageForCustomer(conversationid);
         }
         else if(jsonMap.get("action").equals("sendChatMessage")) {
             logger.info("ChannelSocketHandler customer to system sendChatMessage");
             String conversationid = (String)jsonMap.get("conversationid");
             logger.info("ChannelSocketHandler conversationid " + conversationid);
             String chatMessage = (String)jsonMap.get("chatMessage");
-            Integer serverport = (Integer)session.getAttributes().get("serverport");
             logger.info("ChannelSocketHandler chatMessage " + chatMessage);
-            sendCustomerMessage(conversationid, chatMessage, serverport);
+            sendCustomerMessage(conversationid, chatMessage);
         }
         else if(jsonMap.get("action").equals("startTyping")) {
             logger.info("ChannelSocketHandler customer to system startTyping");
             String conversationid = (String)jsonMap.get("conversationid");
             logger.info("ChannelSocketHandler conversationid " + conversationid);
-            Integer serverport = (Integer)session.getAttributes().get("serverport");
-            sendCustomerStartTyping(conversationid, serverport);
+            sendCustomerStartTyping(conversationid);
         }
         else if(jsonMap.get("action").equals("stopTyping")) {
             logger.info("ChannelSocketHandler customer to stopTyping startTyping");
             String conversationid = (String)jsonMap.get("conversationid");
             logger.info("ChannelSocketHandler conversationid " + conversationid);
-            Integer serverport = (Integer)session.getAttributes().get("serverport");
-            sendCustomerStopTyping(conversationid, serverport);
+            sendCustomerStopTyping(conversationid);
         }
 	}
 
@@ -144,30 +142,22 @@ public class ChannelSocketHandler extends TextWebSocketHandler {
             }
 		}
     }
-    public void sendCustomerMessage(String conversationid, String message, Integer port) {
+    public void sendCustomerMessage(String conversationid, String message) {
         logger.info("ChannelSocketHandler sendCustomerMessage " + conversationid + " - " + message);
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.postForObject("http://localhost:" + port + "/webchat/sendmessage?id=" + conversationid + "&input=" + URLEncoder.encode(message),
-                null, String.class);
+        messagingService.sendCustomerMessage(conversationid, message);
     }
     //sendCustomerStartTyping
-    public void sendCustomerStartTyping(String conversationid, Integer port) {
+    public void sendCustomerStartTyping(String conversationid) {
         logger.info("ChannelSocketHandler sendCustomerStartTyping " + conversationid );
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getForObject("http://localhost:" + port + "/webchat/sendcustomerstarttyping?id=" + conversationid,
-                String.class);
+        messagingService.sendCustomerStartTyping(conversationid);
     }
-    public void sendCustomerStopTyping(String conversationid, Integer port) {
+    public void sendCustomerStopTyping(String conversationid) {
         logger.info("ChannelSocketHandler sendCustomerStopTyping " + conversationid );
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getForObject("http://localhost:" + port + "/webchat/sendcustomerstoptyping?id=" + conversationid,
-                String.class);
+        messagingService.sendCustomerStopTyping(conversationid);
     }
     //checkExistingMessageForCustomer(conversationid);
-    public void checkExistingMessageForCustomer(String conversationid, Integer port) {
+    public void checkExistingMessageForCustomer(String conversationid) {
         logger.info("ChannelSocketHandler checkExistingMessageForCustomer " + conversationid );
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getForObject("http://localhost:" + port + "/webchat/checkexistingmessageforcustomer?id=" + conversationid,
-                String.class);
+        messagingService.checkExistingMessageForCustomer(conversationid);
     }
 }

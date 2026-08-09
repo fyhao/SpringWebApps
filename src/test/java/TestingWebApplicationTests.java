@@ -283,7 +283,6 @@ public class TestingWebApplicationTests {
                     Map<String, Object> jsonMap = new HashMap<String, Object>();
                     jsonMap.put("action", "register");
                     jsonMap.put("conversationid", conversationid5);
-                    jsonMap.put("serverport", port);
                     try {
                         String message = objectMapper.writeValueAsString(jsonMap);
                         session.sendMessage(new TextMessage(message));
