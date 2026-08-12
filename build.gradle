@@ -7,7 +7,7 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:4.1.0")
-        classpath "com.github.jk1:gradle-license-report:3.1.5"
+        classpath "com.github.jk1:gradle-license-report:3.1.4"
         classpath 'org.owasp:dependency-check-gradle:12.1.3'
     }
 }
