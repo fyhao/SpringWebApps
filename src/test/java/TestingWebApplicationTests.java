@@ -17,7 +17,8 @@ import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -41,6 +42,7 @@ import com.fyhao.springwebapps.dto.SkillDto;
 import com.fyhao.springwebapps.entity.AgentTerminal;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = SpringWebMain.class)
+@AutoConfigureTestRestTemplate
 public class TestingWebApplicationTests {
 
     @LocalServerPort
@@ -240,7 +242,7 @@ public class TestingWebApplicationTests {
         try {
             WebSocketClient webSocketClient = new StandardWebSocketClient();
 
-            WebSocketSession webSocketSession = webSocketClient.doHandshake(new TextWebSocketHandler() {
+            WebSocketSession webSocketSession = webSocketClient.execute(new TextWebSocketHandler() {
                 int c = 0;
                 boolean isAfterSendAgent = false;
 
@@ -330,7 +332,7 @@ public class TestingWebApplicationTests {
         try {
             WebSocketClient webSocketClient = new StandardWebSocketClient();
 
-            WebSocketSession webSocketSession = webSocketClient.doHandshake(new TextWebSocketHandler() {
+            WebSocketSession webSocketSession = webSocketClient.execute(new TextWebSocketHandler() {
                 int c = 0;
                 int testedScenario = 0;
 
