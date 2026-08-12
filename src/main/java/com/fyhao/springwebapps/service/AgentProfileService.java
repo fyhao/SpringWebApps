@@ -72,15 +72,15 @@ public class AgentProfileService {
         skillRepository.save(skill);
     }
     public void createCQueueProfile(CQueueDto cqueueDto) {
-    	CQueue cqueue = cqueueRepository.findByName(cqueueDto.getName());
-    	if(cqueue != null)
-    		return;
-    	cqueue = modelMapper.map(cqueueDto, CQueue.class);
-    	cqueue.setName(cqueue.getName().isEmpty() ? "Unnamed" : cqueue.getName());
-    	cqueueRepository.save(cqueue);
-    	Map<String, Object> eventObj = new HashMap<String,Object>();
-    	eventObj.put("queuename", cqueue.getName());
-    	publisher.publishEvent("cqueueCreated", eventObj);
+		CQueue cqueue = cqueueRepository.findByName(cqueueDto.getName());
+		if(cqueue != null)
+			return;
+		cqueue = modelMapper.map(cqueueDto, CQueue.class);
+		cqueue.setName(cqueue.getName().isEmpty() ? "Unnamed" : cqueue.getName());
+		cqueueRepository.save(cqueue);
+		Map<String, Object> eventObj = new HashMap<String,Object>();
+		eventObj.put("queuename", cqueue.getName());
+		publisher.publishEvent("cqueueCreated", eventObj);
     }
 
     public int removeAgentProfile(AgentProfileDto agentDto) {
