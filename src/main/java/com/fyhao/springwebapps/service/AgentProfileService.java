@@ -45,7 +45,9 @@ public class AgentProfileService {
     @Bean
     public ModelMapper modelMapper() {
         ModelMapper m = new ModelMapper();
-        m.getConfiguration().setPropertyCondition(Conditions.isNotNull());
+        m.getConfiguration()
+                .setPropertyCondition(Conditions.isNotNull())
+                .setCollectionsMergeEnabled(true);
         return m;
     }
 
@@ -54,7 +56,7 @@ public class AgentProfileService {
         if (agent != null) {
             return;
         }
-        agent = modelMapper().map(agentDto, Agent.class);
+        agent = modelMapper.map(agentDto, Agent.class);
         agent.setName(agent.getName().isEmpty() ? "Unnamed" : agent.getName());
         agent.setMaxConcurrentTask(3); // default
         agentRepository.save(agent);
@@ -65,7 +67,7 @@ public class AgentProfileService {
         if (skill != null) {
             return;
         }
-        skill = modelMapper().map(skillDto, Skill.class);
+        skill = modelMapper.map(skillDto, Skill.class);
         skill.setName(skill.getName().isEmpty() ? "Unnamed" : skill.getName());
         skillRepository.save(skill);
     }
@@ -73,7 +75,7 @@ public class AgentProfileService {
     	CQueue cqueue = cqueueRepository.findByName(cqueueDto.getName());
     	if(cqueue != null)
     		return;
-    	cqueue = modelMapper().map(cqueueDto, CQueue.class);
+    	cqueue = modelMapper.map(cqueueDto, CQueue.class);
     	cqueue.setName(cqueue.getName().isEmpty() ? "Unnamed" : cqueue.getName());
     	cqueueRepository.save(cqueue);
     	Map<String, Object> eventObj = new HashMap<String,Object>();

@@ -8,8 +8,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
+          distribution: temurin
           java-version: 17
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -18,7 +19,7 @@ jobs:
         env:
           VULNDB_HOME: ${{ github.workspace }}/db
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v4
         with:
           name: reports
           path: reports 
