@@ -6,7 +6,7 @@ buildscript {
 		}
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:3.0.4")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:4.1.0")
         classpath "com.github.jk1:gradle-license-report:2.0"
         classpath 'org.owasp:dependency-check-gradle:8.1.2'
     }
@@ -42,10 +42,10 @@ targetCompatibility = 17
 dependencies {
     implementation group: 'com.lmax', name: 'disruptor', version:'3.4.4'
     compileOnly("org.springframework.boot:spring-boot-devtools")
-	  implementation("org.springframework.boot:spring-boot-starter-web:3.0.4")
-	  implementation 'org.springframework.boot:spring-boot-starter-log4j2:3.0.4'
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.0.4")
-    implementation("org.springframework.boot:spring-boot-starter-data-rest:3.0.4")
+	  implementation("org.springframework.boot:spring-boot-starter-web:4.1.0")
+	  implementation 'org.springframework.boot:spring-boot-starter-log4j2:4.1.0'
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa:4.1.0")
+    implementation("org.springframework.boot:spring-boot-starter-data-rest:4.1.0")
     implementation("com.h2database:h2:2.4.240")
     implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
     implementation group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '9.4.0.jre8'
@@ -54,19 +54,19 @@ dependencies {
     implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '4.0.2'
     implementation group: 'jakarta.activation', name: 'jakarta.activation-api', version: '2.1.2'
     implementation group: 'org.apache.tomcat', name: 'tomcat-dbcp', version: '10.1.7'
-    implementation("org.springframework.boot:spring-boot-starter-websocket:3.0.4")
+    implementation("org.springframework.boot:spring-boot-starter-websocket:4.1.0")
     implementation("org.webjars:webjars-locator-core")
     implementation("org.webjars:sockjs-client:1.5.1")
     implementation("org.webjars:stomp-websocket:2.3.4")
     implementation("org.webjars:bootstrap:5.3.8")
     implementation("org.webjars:jquery:3.6.0")
-    testImplementation('org.springframework.boot:spring-boot-starter-test:3.0.4') {
+    testImplementation('org.springframework.boot:spring-boot-starter-test:4.1.0') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
 	implementation("jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.0")
 	runtimeOnly("org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.1")
 	implementation("org.apache.tomcat.embed:tomcat-embed-jasper")
-    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat:3.0.4")
+    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat:4.1.0")
 }
 
 test {
