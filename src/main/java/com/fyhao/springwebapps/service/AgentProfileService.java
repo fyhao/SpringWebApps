@@ -6,10 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import com.fyhao.springwebapps.dto.AgentProfileDto;
@@ -41,15 +39,6 @@ public class AgentProfileService {
     
     @Autowired
     EventPublisher publisher;
-
-    @Bean
-    public ModelMapper modelMapper() {
-        ModelMapper m = new ModelMapper();
-        m.getConfiguration()
-                .setPropertyCondition(Conditions.isNotNull())
-                .setCollectionsMergeEnabled(true);
-        return m;
-    }
 
     public void createAgentProfile(AgentProfileDto agentDto) {
         Agent agent = agentRepository.findByName(agentDto.getName());

@@ -28,11 +28,12 @@ class ChannelSocketHandlerTest {
     @BeforeEach
     void setUp() {
         handler = new ChannelSocketHandler(messagingService);
-        when(session.getAttributes()).thenReturn(new HashMap<String, Object>());
     }
 
     @Test
     void registersWithoutClientSuppliedServerPort() throws Exception {
+        when(session.getAttributes()).thenReturn(new HashMap<String, Object>());
+
         handler.handleTextMessage(session,
                 new TextMessage("{\"action\":\"register\",\"conversationid\":\"conversation1\"}"));
 
