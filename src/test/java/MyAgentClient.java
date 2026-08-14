@@ -39,7 +39,7 @@ public class MyAgentClient {
         try {
             webSocketClient = new StandardWebSocketClient();
 
-            webSocketSession = webSocketClient.doHandshake(new TextWebSocketHandler() {
+            webSocketSession = webSocketClient.execute(new TextWebSocketHandler() {
                 
                 @Override
                 public void handleTextMessage(WebSocketSession session, TextMessage message) {

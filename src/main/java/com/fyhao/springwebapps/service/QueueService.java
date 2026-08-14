@@ -10,9 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -206,16 +204,6 @@ public class QueueService implements ApplicationListener<CustomEvent> {
         ArrayList<QueueDto> queues = new ArrayList<QueueDto>();
         listOfQueues.put(cq.getName(), queues);
         System.out.println("addcqueue " + cq.getName() + " - " + listOfQueues.size() + " - " + list.size());
-	}
-	@Bean
-	public ThreadPoolTaskScheduler taskScheduler() {
-		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-
-	    scheduler.setPoolSize(2);
-	    scheduler.setThreadNamePrefix("scheduled-task-");
-	    scheduler.setDaemon(true);
-
-	    return scheduler;
 	}
 	int locked = 0;
 	@Override

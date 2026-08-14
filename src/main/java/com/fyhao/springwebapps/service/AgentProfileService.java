@@ -6,10 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import com.fyhao.springwebapps.dto.AgentProfileDto;
@@ -42,19 +40,12 @@ public class AgentProfileService {
     @Autowired
     EventPublisher publisher;
 
-    @Bean
-    public ModelMapper modelMapper() {
-        ModelMapper m = new ModelMapper();
-        m.getConfiguration().setPropertyCondition(Conditions.isNotNull());
-        return m;
-    }
-
     public void createAgentProfile(AgentProfileDto agentDto) {
         Agent agent = agentRepository.findByName(agentDto.getName());
         if (agent != null) {
             return;
         }
-        agent = modelMapper().map(agentDto, Agent.class);
+        agent = modelMapper.map(agentDto, Agent.class);
         agent.setName(agent.getName().isEmpty() ? "Unnamed" : agent.getName());
         agent.setMaxConcurrentTask(3); // default
         agentRepository.save(agent);
@@ -65,20 +56,20 @@ public class AgentProfileService {
         if (skill != null) {
             return;
         }
-        skill = modelMapper().map(skillDto, Skill.class);
+        skill = modelMapper.map(skillDto, Skill.class);
         skill.setName(skill.getName().isEmpty() ? "Unnamed" : skill.getName());
         skillRepository.save(skill);
     }
     public void createCQueueProfile(CQueueDto cqueueDto) {
-    	CQueue cqueue = cqueueRepository.findByName(cqueueDto.getName());
-    	if(cqueue != null)
-    		return;
-    	cqueue = modelMapper().map(cqueueDto, CQueue.class);
-    	cqueue.setName(cqueue.getName().isEmpty() ? "Unnamed" : cqueue.getName());
-    	cqueueRepository.save(cqueue);
-    	Map<String, Object> eventObj = new HashMap<String,Object>();
-    	eventObj.put("queuename", cqueue.getName());
-    	publisher.publishEvent("cqueueCreated", eventObj);
+		CQueue cqueue = cqueueRepository.findByName(cqueueDto.getName());
+		if(cqueue != null)
+			return;
+		cqueue = modelMapper.map(cqueueDto, CQueue.class);
+		cqueue.setName(cqueue.getName().isEmpty() ? "Unnamed" : cqueue.getName());
+		cqueueRepository.save(cqueue);
+		Map<String, Object> eventObj = new HashMap<String,Object>();
+		eventObj.put("queuename", cqueue.getName());
+		publisher.publishEvent("cqueueCreated", eventObj);
     }
 
     public int removeAgentProfile(AgentProfileDto agentDto) {
