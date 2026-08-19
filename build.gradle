@@ -61,7 +61,7 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-test:4.1.0') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
-	implementation("jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.0")
+	implementation("jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.2")
 	runtimeOnly("org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.1")
 	implementation("org.apache.tomcat.embed:tomcat-embed-jasper")
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat:4.1.0")
