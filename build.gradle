@@ -50,7 +50,7 @@ dependencies {
     implementation group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: '4.0.0'
     implementation group: 'com.sun.xml.bind', name: 'jaxb-core', version: '4.0.9'
     implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '4.0.9'
-    implementation group: 'jakarta.activation', name: 'jakarta.activation-api', version: '2.1.2'
+    implementation group: 'jakarta.activation', name: 'jakarta.activation-api', version: '2.1.4'
     implementation group: 'org.apache.tomcat', name: 'tomcat-dbcp', version: '10.1.7'
     implementation("org.springframework.boot:spring-boot-starter-websocket:4.1.0")
     implementation("org.webjars:webjars-locator-core")
