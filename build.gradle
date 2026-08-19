@@ -8,7 +8,6 @@ buildscript {
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:4.1.0")
         classpath "com.github.jk1:gradle-license-report:2.0"
-        classpath 'org.owasp:dependency-check-gradle:8.1.2'
     }
 }
 
@@ -21,7 +20,6 @@ apply plugin: 'war'
 apply plugin: 'jacoco'
 apply plugin: "project-report"
 apply plugin: "com.github.jk1.dependency-license-report"
-apply plugin: 'org.owasp.dependencycheck'
 
 bootJar {
     enabled = false
