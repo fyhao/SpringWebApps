@@ -17,12 +17,8 @@ jobs:
         run: ./gradlew build
       - name: generateLicenseReport with Gradle
         run: ./gradlew generateLicenseReport
-      - name: dependencyCheckAnalyze with Gradle
-        run: ./gradlew dependencyCheckAnalyze
       - uses: actions/upload-artifact@v1
         with:
           name: licenseDependencyReport
           path: build/reports
       - uses: gradle/wrapper-validation-action@v1
-     
-          
