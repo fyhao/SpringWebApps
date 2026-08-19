@@ -38,7 +38,7 @@ sourceCompatibility = 17
 targetCompatibility = 17
 
 dependencies {
-    implementation group: 'com.lmax', name: 'disruptor', version:'3.4.4'
+    implementation group: 'com.lmax', name: 'disruptor', version:'4.0.0'
     compileOnly("org.springframework.boot:spring-boot-devtools")
 	  implementation("org.springframework.boot:spring-boot-starter-web:4.1.0")
 	  implementation 'org.springframework.boot:spring-boot-starter-log4j2:4.1.0'
